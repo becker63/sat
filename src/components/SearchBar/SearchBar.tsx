@@ -3,11 +3,13 @@
 import { useHover } from "@use-gesture/react";
 import { motion } from "framer-motion";
 import { type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import { useAtomValue } from "jotai";
 import { HStack } from "../../../styled-system/jsx";
 import { Input, Button } from "@/components/ui";
 import { useSearchBar } from "./useSearchBar";
 import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
 import { SURFACE_STYLE } from "./surfaceStyle";
+import { flowDraggingAtom } from "@/state/searchbar";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -25,6 +27,7 @@ export const HOVER_SEGMENT_LENGTH = 240;
 export const OUTLINE_INSET_PX = OUTLINE_INSET;
 
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
+  const flowDragging = useAtomValue(flowDraggingAtom);
   const {
     containerRef,
     focusOrigin,
@@ -48,6 +51,8 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
     onReplay,
   });
 
+  const hidden = flowDragging;
+
   const svgWidth = size.width;
   const svgHeight = size.height;
 
@@ -67,6 +72,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       ref={containerRef}
       {...bindHover()}
       data-focused={focused}
+       data-hidden={hidden}
       alignItems="center"
       gap="12px"
       w="100%"
@@ -90,6 +96,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       style={{
         position: "relative",
         display: "flex",
+        visibility: hidden ? "hidden" : "visible",
         borderRadius: SURFACE_STYLE.borderRadius,
         padding: "12px 28px",
         background: SURFACE_STYLE.background,
@@ -98,6 +105,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         border: SURFACE_STYLE.border,
         boxShadow: SURFACE_STYLE.boxShadow,
         overflow: "visible",
+        pointerEvents: hidden ? "none" : "auto",
       }}
     >
       {svgWidth > 0 && svgHeight > 0 && (

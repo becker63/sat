@@ -2,10 +2,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import { VStack, HStack, HStack as Stack } from "../../../styled-system/jsx";
 import { useSearchScopeMenu } from "./useSearchScopeMenu";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   hoverAnchorAtom,
   hoverOffsetAtom,
+  flowDraggingAtom,
   pointerPositionAtom,
   scopeMenuHoverAtom,
 } from "@/state/searchbar";
@@ -39,6 +40,7 @@ export function SearchScopeMenu({
     outlineInset,
     segmentLength,
   });
+  const flowDragging = useAtomValue(flowDraggingAtom);
   const setMenuHover = useSetAtom(scopeMenuHoverAtom);
   const setHover = useSetAtom(hoverOffsetAtom);
   const setAnchor = useSetAtom(hoverAnchorAtom);
@@ -111,6 +113,8 @@ export function SearchScopeMenu({
       )}
     </AnimatePresence>
   );
+
+  if (flowDragging) return null;
 
   if (typeof document === "undefined") return null;
 

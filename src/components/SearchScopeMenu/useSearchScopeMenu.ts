@@ -9,6 +9,7 @@ import {
   searchBarPositionAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
+  flowDraggingAtom,
 } from "@/state/searchbar";
 
 const TRIGGER_MARGIN = 6;
@@ -30,6 +31,7 @@ export function useSearchScopeMenu({
   const menuHover = useAtomValue(scopeMenuHoverAtom);
   const position = useAtomValue(searchBarPositionAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
   const lastPointerY = useRef<number | null>(null);
 
   const contentHeight = Math.max(0, size.height - outlineInset * 2);
@@ -61,6 +63,7 @@ export function useSearchScopeMenu({
     pointer.y >= lastPointerY.current;
 
   const visible =
+    !flowDragging &&
     hoverOffset !== null &&
     (((pointer !== null &&
       pointer.y >= triggerY &&

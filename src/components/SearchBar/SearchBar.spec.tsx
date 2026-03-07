@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Provider, createStore } from "jotai";
 import SearchBar from "@/components/SearchBar";
 import * as perimeterModule from "@/components/SearchBar/perimeter";
+import { flowDraggingAtom } from "@/state/searchbar";
 
 const movePointer = (element: HTMLElement, x: number, y: number) => {
   fireEvent.pointerMove(element, { clientX: x, clientY: y });
@@ -16,11 +17,14 @@ const getContainer = () =>
 const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) => {
   const store = createStore();
 
-  return render(
-    <Provider store={store}>
-      <SearchBar {...props} />
-    </Provider>,
-  );
+  return {
+    store,
+    ...render(
+      <Provider store={store}>
+        <SearchBar {...props} />
+      </Provider>,
+    ),
+  };
 };
 
 const mockRect = (width = 320, height = 64, left = 0, top = 0) => {
@@ -362,6 +366,42 @@ describe("SearchBar (vitest)", () => {
     await new Promise((resolve) => setTimeout(resolve, 700));
 
     expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("hides the search UI while React Flow is dragging", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    const { store } = renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+
+    await screen.findByTestId("searchscope-menu");
+
+    act(() => {
+      store.set(flowDraggingAtom, true);
+    });
+
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+
+    act(() => {
+      store.set(flowDraggingAtom, false);
+    });
+
+    expect(await screen.findByRole("textbox")).toBeInTheDocument();
   });
 
   it("positions the scope menu under the segment and follows its movement", async () => {

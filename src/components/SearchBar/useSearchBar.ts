@@ -1,5 +1,5 @@
 import { useEffect, useRef, type PointerEvent } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 
 import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
 import {
@@ -15,6 +15,7 @@ import {
   searchFocusedAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
+  flowDraggingAtom,
 } from "@/state/searchbar";
 
 const MENU_HOLD_MARGIN = 24;
@@ -45,6 +46,7 @@ export function useSearchBar({
   const [pointerPosition, setPointerPosition] = useAtom(pointerPositionAtom);
   const [menuHover, setMenuHover] = useAtom(scopeMenuHoverAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -104,7 +106,7 @@ export function useSearchBar({
     clientX: number;
     clientY: number;
   }) => {
-    if (focused) return;
+    if (focused || flowDragging) return;
 
     const container = containerRef.current;
     const path = hoverPathRef.current;
@@ -167,6 +169,8 @@ export function useSearchBar({
   };
 
   const handlePointerLeave = () => {
+    if (flowDragging) return;
+
     const container = containerRef.current;
     const containerRect = container?.getBoundingClientRect();
 
@@ -207,6 +211,8 @@ export function useSearchBar({
   };
 
   const handleFocus = () => {
+    if (flowDragging) return;
+
     setFocused(true);
     setOutlineLocked(false);
     setMenuHover(false);
@@ -301,6 +307,28 @@ export function useSearchBar({
     setMenuVisible,
     setPointerPosition,
     size.width,
+  ]);
+
+  useEffect(() => {
+    if (!flowDragging) return;
+
+    setFocused(false);
+    setOutlineLocked(false);
+    setHoverOffset(null);
+    setHoverAnchor(null);
+    setPointerPosition(null);
+    setMenuHover(false);
+    setMenuVisible(false);
+    inputRef.current?.blur();
+  }, [
+    flowDragging,
+    setFocused,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    setMenuVisible,
+    setOutlineLocked,
+    setPointerPosition,
   ]);
 
   return {

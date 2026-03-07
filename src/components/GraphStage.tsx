@@ -7,8 +7,11 @@ import {
   type Node,
   type Edge,
 } from "@xyflow/react";
+import { useCallback, useEffect } from "react";
+import { useSetAtom } from "jotai";
 
 import "@xyflow/react/dist/style.css";
+import { flowDraggingAtom } from "@/state/searchbar";
 
 const nodeTypes = {};
 const edgeTypes = {};
@@ -35,6 +38,20 @@ const initialEdges: Edge[] = [
 ];
 
 export default function GraphStage() {
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
   return (
     <div
       style={{
@@ -51,6 +68,10 @@ export default function GraphStage() {
         fitView
         colorMode="dark"
         proOptions={{ hideAttribution: true }}
+        onMoveStart={handleDragStart}
+        onMoveEnd={handleDragEnd}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
       >
         <Background
           variant={BackgroundVariant.Cross}

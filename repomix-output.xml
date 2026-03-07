@@ -69,8 +69,16 @@ src/
     SearchBar/
       idea.md
       index.ts
+      perimeter.ts
       SearchBar.spec.tsx
       SearchBar.tsx
+      surfaceStyle.ts
+      useSearchBar.ts
+    SearchScopeMenu/
+      SearchScopeMenu.e2e.spec.ts
+      SearchScopeMenu.spec.tsx
+      SearchScopeMenu.tsx
+      useSearchScopeMenu.ts
     ui/
       absolute-center.tsx
       button.tsx
@@ -85,6 +93,8 @@ src/
     GraphStage.tsx
   lib/
     clientLogger.ts
+  state/
+    searchbar.ts
   theme/
     colors/
       green.ts
@@ -119,6 +129,7 @@ flake.nix
 next.config.ts
 package.json
 panda.config.ts
+playwright.config.ts
 README.md
 tsconfig.json
 vitest.config.ts
@@ -183,6 +194,26 @@ This section contains the contents of the repository's files.
 </file>
 
 <file path="playwright/.cache/window.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="public/file.svg">
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+</file>
+
+<file path="public/globe.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+</file>
+
+<file path="public/next.svg">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+</file>
+
+<file path="public/vercel.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+</file>
+
+<file path="public/window.svg">
 <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
 </file>
 
@@ -414,557 +445,500 @@ Also: Make the repo selector width match the search bar exactly.
 export { default } from "./SearchBar";
 </file>
 
-<file path="src/components/SearchBar/SearchBar.spec.tsx">
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import SearchBar from "@/components/SearchBar";
-
-const movePointer = (element: HTMLElement, x: number, y: number) => {
-  fireEvent.pointerMove(element, { clientX: x, clientY: y });
+<file path="src/components/SearchBar/surfaceStyle.ts">
+export const SURFACE_STYLE = {
+  background: "rgba(0,0,0,0.16)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+  borderRadius: "24px",
+  backdropFilter: "blur(10px)",
 };
+</file>
 
-const getContainer = () =>
-  screen.getByRole("textbox").closest("[data-focused]") as HTMLElement;
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts">
+import { expect, test } from "@playwright/test";
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
+test.describe("SearchScopeMenu (playwright)", () => {
+  test("appears under the hover segment, matches its width, and follows movement", async ({
+    page,
+  }) => {
+    const logRects = async (label: string) => {
+      const bar = page.locator("[data-focused]");
+      const menu = page.getByTestId("searchscope-menu");
+      const [barBox, menuBox] = await Promise.all([bar.boundingBox(), menu.boundingBox()]);
+      // eslint-disable-next-line no-console
+      console.log(label, { barBox, menuBox });
+    };
 
-describe("SearchBar (vitest)", () => {
-  it("renders input and replay button", () => {
-    render(<SearchBar />);
+    await page.goto("/");
 
-    const input = screen.getByRole("textbox");
-    const button = screen.getByRole("button", { name: /replay/i });
+    const bar = page.locator("[data-focused]");
+    await bar.waitFor();
 
-    expect(input).toBeInTheDocument();
-    expect(button).toBeInTheDocument();
-    expect(input).toHaveAttribute("placeholder", "Search symbol...");
-    expect(screen.getAllByRole("textbox")).toHaveLength(1);
-    expect(screen.getAllByRole("button")).toHaveLength(1);
-  });
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("Search bar bounding box not found");
 
-  it("invokes onReplay when the replay button is clicked", async () => {
-    const user = userEvent.setup();
-    const onReplay = vi.fn();
+    const centerX = box.x + box.width / 2;
+    const nearBottomY = box.y + box.height - 2;
 
-    render(<SearchBar onReplay={onReplay} />);
+    const steps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
+    for (const y of steps) {
+      await page.mouse.move(centerX, y);
+    }
 
-    await user.click(screen.getByRole("button", { name: /replay/i }));
+    await expect(page.getByTestId("searchbar-outline-hover")).toBeVisible();
 
-    expect(onReplay).toHaveBeenCalledTimes(1);
-  });
+    const menu = page.getByTestId("searchscope-menu");
+    await expect(menu).toBeVisible();
+    await logRects("after-center");
 
-  it("passes the query when replay is triggered", async () => {
-    const user = userEvent.setup();
-    const onReplay = vi.fn();
-
-    render(<SearchBar onReplay={onReplay} />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.type(input, "useQuery");
-    await user.click(screen.getByRole("button", { name: /replay/i }));
-
-    expect(onReplay).toHaveBeenCalledWith("useQuery");
-  });
-
-  it("triggers replay when pressing Enter", async () => {
-    const user = userEvent.setup();
-    const onReplay = vi.fn();
-
-    render(<SearchBar onReplay={onReplay} />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.type(input, "focusManager{enter}");
-
-    expect(onReplay).toHaveBeenCalledWith("focusManager");
-  });
-
-  it("clears the input after replay", async () => {
-    const user = userEvent.setup();
-    const onReplay = vi.fn();
-
-    render(<SearchBar onReplay={onReplay} />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.type(input, "reactQuery");
-    await user.keyboard("{enter}");
-
-    await waitFor(() => {
-      expect(input).toHaveValue("");
+    const barStyles = await bar.evaluate((el) => {
+      const s = getComputedStyle(el as HTMLElement);
+      return {
+        backgroundColor: s.backgroundColor,
+        boxShadow: s.boxShadow,
+        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
+      };
     });
-    expect(onReplay).toHaveBeenCalledTimes(1);
-  });
-
-  it("shows focus highlight when input is focused", async () => {
-    const user = userEvent.setup();
-
-    render(<SearchBar />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.click(input);
-
-    const container = input.closest('[data-focused="true"]');
-
-    expect(container).toBeTruthy();
-  });
-
-  it("removes highlight when input loses focus", async () => {
-    const user = userEvent.setup();
-
-    render(<SearchBar />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.click(input);
-    await user.tab();
-
-    const container = input.closest('[data-focused="true"]');
-
-    expect(container).toBeNull();
-  });
-
-  it("keeps the input focused after replay", async () => {
-    const user = userEvent.setup();
-    const onReplay = vi.fn();
-
-    render(<SearchBar onReplay={onReplay} />);
-
-    const input = screen.getByRole("textbox");
-
-    await user.type(input, "query{enter}");
-
-    await waitFor(() => {
-      expect(input).toHaveFocus();
+    const menuStyles = await menu.evaluate((el) => {
+      const s = getComputedStyle(el as HTMLElement);
+      return {
+        backgroundColor: s.backgroundColor,
+        boxShadow: s.boxShadow,
+        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
+      };
     });
-  });
+    const corpusColor = await menu
+      .locator("text=Corpus")
+      .evaluate((el) => getComputedStyle(el as HTMLElement).color);
 
-  it("spawns two hover lines from the pointer center", async () => {
-    render(<SearchBar />);
+    const expectedShadow = "rgba(0, 0, 0, 0.55) 0px 10px 30px 0px";
+    const expectedBg = "rgba(0, 0, 0, 0.16)";
+    const expectedBlur = "blur(10px)";
 
-    const container = getContainer();
+    expect(barStyles.backgroundColor).toBe(expectedBg);
+    expect(menuStyles.backgroundColor).toBe(expectedBg);
+    expect(barStyles.boxShadow).toBe(expectedShadow);
+    expect(menuStyles.boxShadow).toBe(expectedShadow);
+    expect(barStyles.backdropFilter).toBe(expectedBlur);
+    expect(menuStyles.backdropFilter).toBe(expectedBlur);
+    expect(corpusColor).toBe("rgb(255, 255, 255)");
 
-    movePointer(container, 50, 20);
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("Menu bounding box not found");
 
-    const lines = await screen.findAllByTestId("searchbar-line");
-    const left = lines.find(
-      (line) => line.getAttribute("data-side") === "left",
+    const expectedWidth = 240;
+    const widthTolerance = Math.max(6, expectedWidth * 0.1);
+
+    expect(menuBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
+    expect(menuBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
+    expect(menuBox.y).toBeGreaterThanOrEqual(box.y + box.height - 2);
+
+    const outsideX = box.x + box.width + 50;
+    await page.mouse.move(outsideX, nearBottomY);
+    await page.mouse.move(outsideX, box.y - 20);
+    await page.evaluate(
+      ({ x, y }) =>
+        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+      { x: outsideX, y: box.y - 20 },
     );
-    const right = lines.find(
-      (line) => line.getAttribute("data-side") === "right",
-    );
+    await expect(menu).toBeHidden();
 
-    expect(left).toHaveAttribute("data-state", "hover");
-    expect(left).toHaveAttribute("data-start-x", "50");
-    expect(left).toHaveAttribute("data-end-x", "-50");
-    expect(left).toHaveAttribute("data-y", "20");
-
-    expect(right).toHaveAttribute("data-state", "hover");
-    expect(right).toHaveAttribute("data-start-x", "50");
-    expect(right).toHaveAttribute("data-end-x", "150");
-    expect(right).toHaveAttribute("data-y", "20");
-  });
-
-  it("moves hover lines with pointer updates", async () => {
-    render(<SearchBar />);
-
-    const container = getContainer();
-
-    movePointer(container, 30, 18);
-    movePointer(container, 90, 32);
-
-    await waitFor(() => {
-      const right = container.querySelector(
-        '[data-testid="searchbar-line"][data-side="right"]',
-      );
-
-      expect(right).toHaveAttribute("data-start-x", "90");
-      expect(right).toHaveAttribute("data-end-x", "190");
-      expect(right).toHaveAttribute("data-y", "32");
-    });
-  });
-
-  it("removes hover lines when the pointer leaves", async () => {
-    render(<SearchBar />);
-
-    const container = getContainer();
-
-    movePointer(container, 30, 18);
-    fireEvent.pointerLeave(container);
-
-    await waitFor(() => {
-      expect(screen.queryAllByTestId("searchbar-line")).toHaveLength(0);
-    });
-  });
-
-  it("wraps a line around the field when the input is focused", async () => {
-    const user = userEvent.setup();
-
-    render(<SearchBar />);
-
-    const input = screen.getByRole("textbox");
-    const container = getContainer();
-
-    movePointer(container, 44, 22);
-    await screen.findAllByTestId("searchbar-line");
-    fireEvent.focus(input);
-
-    const wrapLine = await screen.findByTestId("searchbar-line");
-
-    expect(wrapLine).toHaveAttribute("data-state", "wrap");
-    expect(wrapLine).toHaveAttribute("data-origin-x", "44");
-    expect(wrapLine).toHaveAttribute("data-origin-y", "22");
-    expect(wrapLine).toHaveStyle({
-      top: "-8px",
-      left: "-8px",
-      right: "-8px",
-      bottom: "-8px",
-    });
+    const returnSteps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
+    for (const y of returnSteps) {
+      await page.mouse.move(centerX, y);
+    }
+    await expect(menu).toBeVisible();
+    await logRects("after-center-return");
   });
 });
 </file>
 
-<file path="src/components/SearchBar/SearchBar.tsx">
-"use client";
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { describe, expect, it } from "vitest";
+import { SearchScopeMenu } from "./SearchScopeMenu";
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+} from "@/state/searchbar";
 
-import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
-import { HStack } from "../../../styled-system/jsx";
-import { Input, Button } from "@/components/ui";
+const outlineInset = 8;
 
-type Props = {
-  onReplay?: (query?: string) => void;
+const renderWithState = (
+  setState: (store: ReturnType<typeof createStore>) => void,
+) => {
+  const store = createStore();
+  setState(store);
+
+  const result = render(
+    <Provider store={store}>
+      <div style={{ position: "relative", width: "320px", height: "100px" }}>
+        <SearchScopeMenu outlineInset={outlineInset} />
+      </div>
+    </Provider>,
+  );
+  return { ...result, store };
 };
 
-const MotionStack = motion.create(HStack);
-const MotionButton = motion.create(Button);
-const MotionRect = motion.rect;
+const setStateEntries = (
+  store: ReturnType<typeof createStore>,
+  entries: Array<[any, any]>,
+) => {
+  for (const [atom, value] of entries) {
+    store.set(atom, value);
+  }
+};
 
-const OUTLINE_INSET = 8;
-const OUTLINE_RADIUS = 24;
+describe("SearchScopeMenu", () => {
+  it("shows when hover is active and the pointer moves below the bar", () => {
+    const { store } = renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 20 }],
+      ]),
+    );
 
-/* shorter hover line */
-const HOVER_SEGMENT_LENGTH = 120;
-
-/* fewer samples = smoother + cheaper */
-const SAMPLE_STEPS = 120;
-
-type Size = { width: number; height: number };
-
-export default function SearchBar({ onReplay }: Props) {
-  const [value, setValue] = useState("");
-  const [focused, setFocused] = useState(false);
-  const [outlineLocked, setOutlineLocked] = useState(false);
-  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
-  const [hoverOffset, setHoverOffset] = useState<number | null>(null);
-  const [focusOrigin, setFocusOrigin] = useState(0);
-  const [perimeter, setPerimeter] = useState(0);
-
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const hoverPathRef = useRef<SVGRectElement>(null);
-  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    const node = containerRef.current;
-    if (!node) return;
-
-    const update = () => {
-      const rect = node.getBoundingClientRect();
-
-      setSize({
-        width: rect.width + OUTLINE_INSET * 2,
-        height: rect.height + OUTLINE_INSET * 2,
-      });
-    };
-
-    update();
-
-    const ro = new ResizeObserver(update);
-    ro.observe(node);
-
-    return () => ro.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const path = hoverPathRef.current;
-    if (!path) return;
-
-    setPerimeter(path.getTotalLength());
-  }, [size]);
-
-  const triggerReplay = () => {
-    if (!onReplay) return;
-
-    onReplay(value);
-    setValue("");
-
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
+    act(() => {
+      store.set(pointerPositionAtom, { x: 160, y: 90 });
     });
-  };
 
-  const findClosestLength = (clientX: number, clientY: number) => {
-    const container = containerRef.current;
-    const path = hoverPathRef.current;
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
 
-    if (!container || !path) return null;
+  it("hides when no hover offset is present", () => {
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, null],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 90 }],
+      ]),
+    );
 
-    const containerRect = container.getBoundingClientRect();
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+  });
 
-    const svgX = clientX - containerRect.left + OUTLINE_INSET;
-    const svgY = clientY - containerRect.top + OUTLINE_INSET;
+  it("stays visible when hovered even if pointer leaves trigger area", () => {
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [scopeMenuHoverAtom, true],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, null],
+      ]),
+    );
 
-    const total = path.getTotalLength();
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
 
-    let bestLength = 0;
-    let bestDistance = Number.POSITIVE_INFINITY;
+  it("does not show if the pointer is above the trigger line", () => {
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 5 }],
+      ]),
+    );
 
-    for (let i = 0; i <= SAMPLE_STEPS; i++) {
-      const length = (i / SAMPLE_STEPS) * total;
-      const point = path.getPointAtLength(length);
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+  });
 
-      const dx = point.x - svgX;
-      const dy = point.y - svgY;
+  it("shows across the entire bottom band under the segment", () => {
+    const height = 80 + outlineInset * 2;
+    const contentHeight = 80;
+    const triggerY = 76;
 
-      const dist = dx * dx + dy * dy;
+    const bandSamples = [
+      triggerY,
+      triggerY + 4,
+      triggerY + 8,
+      contentHeight + 4,
+    ];
 
-      if (dist < bestDistance) {
-        bestDistance = dist;
-        bestLength = length;
-      }
+    for (const y of bandSamples) {
+      const { store, unmount } = renderWithState((store) =>
+        setStateEntries(store, [
+          [hoverOffsetAtom, 10],
+          [searchBarSizeAtom, { width: 320, height }],
+          [pointerPositionAtom, { x: 160, y: triggerY - 10 }],
+        ]),
+      );
+
+      act(() => {
+        store.set(pointerPositionAtom, { x: 160, y });
+      });
+
+      expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+      unmount();
     }
+  });
 
-    return { bestLength, total };
+  it("aligns left based on the hover anchor and bar position", () => {
+    const { store } = renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 200, height: 80 + outlineInset * 2 }],
+        [searchBarPositionAtom, { left: 100, top: 50 }],
+        [pointerPositionAtom, { x: 120, y: 60 }],
+        [scopeMenuHoverAtom, true],
+        [hoverAnchorAtom, { x: 150, y: 0 }],
+      ]),
+    );
+
+    act(() => {
+      store.set(pointerPositionAtom, { x: 120, y: 90 });
+    });
+
+    const menu = screen.getByTestId("searchscope-menu");
+    expect(Number(menu.getAttribute("data-left"))).toBeCloseTo(58, 0);
+    expect(Number(menu.getAttribute("data-width"))).toBeCloseTo(184, 0);
+    expect(Number(menu.getAttribute("data-top"))).toBeGreaterThan(140);
+  });
+
+  it("hides when leaving the menu itself", () => {
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [scopeMenuHoverAtom, true],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 90 }],
+      ]),
+    );
+
+    const menu = screen.getByTestId("searchscope-menu");
+    fireEvent.pointerLeave(menu);
+
+    return waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
+  });
+});
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
+import { VStack, HStack, HStack as Stack } from "../../../styled-system/jsx";
+import { useSearchScopeMenu } from "./useSearchScopeMenu";
+import { useSetAtom } from "jotai";
+import {
+  hoverAnchorAtom,
+  hoverOffsetAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+} from "@/state/searchbar";
+
+type Props = {
+  outlineInset: number;
+  segmentLength?: number;
+  surfaceStyle?: {
+    background: string;
+    border: string;
+    boxShadow: string;
+    borderRadius: string;
+    backdropFilter: string;
   };
+};
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (focused) return;
+const MotionBox = motion.create(VStack);
 
-    const result = findClosestLength(event.clientX, event.clientY);
-    if (!result) return;
+export function SearchScopeMenu({
+  outlineInset,
+  segmentLength,
+  surfaceStyle = {
+    background: "rgba(0,0,0,0.16)",
+    border: "1px solid rgba(255,255,255,0.06)",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+    borderRadius: "16px",
+    backdropFilter: "blur(10px)",
+  },
+}: Props) {
+  const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
+    outlineInset,
+    segmentLength,
+  });
+  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
+  const setHover = useSetAtom(hoverOffsetAtom);
+  const setAnchor = useSetAtom(hoverAnchorAtom);
+  const setPointer = useSetAtom(pointerPositionAtom);
 
-    const { bestLength, total } = result;
-
-    const centered = bestLength - HOVER_SEGMENT_LENGTH / 2;
-    const normalized = ((centered % total) + total) % total;
-
-    setHoverOffset(normalized);
-  };
-
-  const handlePointerLeave = () => {
-    if (!focused) setHoverOffset(null);
-  };
-
-  const svgWidth = size.width;
-  const svgHeight = size.height;
-
-  return (
-    <MotionStack
-      ref={containerRef}
-      data-focused={focused}
-      alignItems="center"
-      gap="12px"
-      w="100%"
-      h="100%"
-      boxSizing="border-box"
-      onPointerMove={handlePointerMove}
-      onPointerEnter={handlePointerMove}
-      onPointerLeave={handlePointerLeave}
-      animate={{
-        boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 200,
-        damping: 28,
-      }}
-      style={{
-        position: "relative",
-        display: "flex",
-        borderRadius: "16px",
-        padding: "12px 28px",
-        background: "rgba(0,0,0,0.16)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255,255,255,0.06)",
-        overflow: "visible",
-      }}
-    >
-      {svgWidth > 0 && svgHeight > 0 && (
-        <svg
-          width={svgWidth}
-          height={svgHeight}
-          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+  const content = (
+    <AnimatePresence>
+      {visible && (
+        <MotionBox
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
+          position="absolute"
+          top={`${offsetTop}px`}
+          left={`${offsetLeft}px`}
+          mt="0"
+          w={`${Math.max(0, width)}px`}
+          p="12px"
+          gap="10px"
+          borderRadius={surfaceStyle.borderRadius}
+          background={surfaceStyle.background}
+          border={surfaceStyle.border}
+          backdropFilter={surfaceStyle.backdropFilter}
+          boxShadow={surfaceStyle.boxShadow}
+          data-testid="searchscope-menu"
+          data-left={`${offsetLeft}`}
+          data-top={`${offsetTop}`}
+          data-width={`${Math.max(0, width)}`}
+          zIndex={1}
           style={{
+            width: `${Math.max(0, width)}px`,
+            left: `${offsetLeft}px`,
+            top: `${offsetTop}px`,
             position: "absolute",
-            top: -OUTLINE_INSET,
-            left: -OUTLINE_INSET,
-            pointerEvents: "none",
-            overflow: "visible",
-            zIndex: 0,
+            backgroundColor: surfaceStyle.background,
+            boxShadow: surfaceStyle.boxShadow,
+            backdropFilter: surfaceStyle.backdropFilter,
+            WebkitBackdropFilter: surfaceStyle.backdropFilter,
+            borderRadius: surfaceStyle.borderRadius,
+          }}
+          onPointerEnter={() => setMenuHover(true)}
+          onPointerLeave={() => {
+            setMenuHover(false);
+            setHover(null);
+            setAnchor(null);
+            setPointer(null);
           }}
         >
-          <rect
-            ref={hoverPathRef}
-            x="0.5"
-            y="0.5"
-            width={Math.max(0, svgWidth - 1)}
-            height={Math.max(0, svgHeight - 1)}
-            rx={OUTLINE_RADIUS}
-            ry={OUTLINE_RADIUS}
-            fill="none"
-            stroke="transparent"
-            strokeWidth="1"
-          />
-
-          {!focused && hoverOffset !== null && (
-            <MotionRect
-              x="0.5"
-              y="0.5"
-              width={Math.max(0, svgWidth - 1)}
-              height={Math.max(0, svgHeight - 1)}
-              rx={OUTLINE_RADIUS}
-              ry={OUTLINE_RADIUS}
-              fill="none"
-              stroke="rgba(255,255,255,0.35)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: 1,
-                strokeDasharray: `${HOVER_SEGMENT_LENGTH} 9999`,
-                strokeDashoffset: -hoverOffset,
-              }}
-              transition={{
-                opacity: { duration: 0.08 },
-                strokeDashoffset: {
-                  type: "spring",
-                  stiffness: 180,
-                  damping: 30,
-                },
-              }}
-              style={{
-                filter: "drop-shadow(0 0 3px rgba(255,255,255,0.12))",
-              }}
-            />
-          )}
-
-          {focused && !outlineLocked && (
-            <MotionRect
-              x="0.5"
-              y="0.5"
-              width={Math.max(0, svgWidth - 1)}
-              height={Math.max(0, svgHeight - 1)}
-              rx={OUTLINE_RADIUS}
-              ry={OUTLINE_RADIUS}
-              fill="none"
-              stroke="rgba(255,255,255,0.45)"
-              strokeWidth="1.8"
-              initial={{
-                pathLength: 0,
-                pathOffset: focusOrigin,
-              }}
-              animate={{
-                pathLength: 1,
-                pathOffset: 0,
-              }}
-              transition={{
-                duration: 0.28,
-                ease: "easeOut",
-              }}
-            />
-          )}
-
-          {outlineLocked && (
-            <rect
-              x="0.5"
-              y="0.5"
-              width={Math.max(0, svgWidth - 1)}
-              height={Math.max(0, svgHeight - 1)}
-              rx={OUTLINE_RADIUS}
-              ry={OUTLINE_RADIUS}
-              fill="none"
-              stroke="rgba(255,255,255,0.45)"
-              strokeWidth="1.8"
-            />
-          )}
-        </svg>
+          <HStack justify="space-between" fontSize="14px" color="#fff">
+            <span style={{ color: "#fff" }}>Corpus</span>
+          </HStack>
+          <VStack alignItems="flex-start" gap="8px">
+            {["TanStack Query", "Redux Toolkit", "Zustand"].map((label) => (
+              <Stack key={label} alignItems="center" gap="8px" color="#fff">
+                <input
+                  type="checkbox"
+                  defaultChecked={label === "TanStack Query"}
+                  style={{
+                    width: "14px",
+                    height: "14px",
+                    accentColor: "#9ad4ff",
+                  }}
+                />
+                <span style={{ fontSize: "13px", color: "#fff" }}>{label}</span>
+              </Stack>
+            ))}
+          </VStack>
+        </MotionBox>
       )}
-
-      <Input
-        ref={inputRef}
-        value={value}
-        placeholder="Search symbol..."
-        onFocus={() => {
-          setFocused(true);
-          setOutlineLocked(false);
-
-          const origin =
-            hoverOffset !== null && perimeter > 0 ? hoverOffset / perimeter : 0;
-
-          setFocusOrigin(origin);
-
-          if (lockTimer.current) clearTimeout(lockTimer.current);
-
-          lockTimer.current = setTimeout(() => {
-            setOutlineLocked(true);
-          }, 300);
-        }}
-        onBlur={() => {
-          setFocused(false);
-          setOutlineLocked(false);
-
-          if (lockTimer.current) clearTimeout(lockTimer.current);
-        }}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") triggerReplay();
-        }}
-        style={{
-          flex: "1 1 0",
-          minWidth: 0,
-          height: "48px",
-          background: "transparent",
-          border: "none",
-          outline: "none",
-          color: "#eee",
-          fontSize: "16px",
-          zIndex: 1,
-        }}
-      />
-
-      <MotionButton
-        variant="surface"
-        onClick={triggerReplay}
-        whileHover={{
-          scale: 1.02,
-        }}
-        whileTap={{ scale: 0.97 }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 25,
-        }}
-        style={{
-          flex: "0 0 auto",
-          height: "48px",
-          padding: "0 24px",
-          borderRadius: "10px",
-          background: "rgba(70,70,70,0.28)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          color: "#eee",
-          zIndex: 1,
-        }}
-      >
-        Replay
-      </MotionButton>
-    </MotionStack>
+    </AnimatePresence>
   );
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(content, document.body);
+}
+</file>
+
+<file path="src/components/SearchScopeMenu/useSearchScopeMenu.ts">
+import { useAtom, useAtomValue } from "jotai";
+import { useEffect, useRef } from "react";
+
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+} from "@/state/searchbar";
+
+const TRIGGER_MARGIN = 6;
+const HORIZONTAL_MARGIN = 12;
+
+type Options = {
+  outlineInset: number;
+  segmentLength?: number;
+};
+
+export function useSearchScopeMenu({
+  outlineInset,
+  segmentLength,
+}: Options) {
+  const hoverOffset = useAtomValue(hoverOffsetAtom);
+  const pointer = useAtomValue(pointerPositionAtom);
+  const size = useAtomValue(searchBarSizeAtom);
+  const anchor = useAtomValue(hoverAnchorAtom);
+  const menuHover = useAtomValue(scopeMenuHoverAtom);
+  const position = useAtomValue(searchBarPositionAtom);
+  const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const lastPointerY = useRef<number | null>(null);
+
+  const contentHeight = Math.max(0, size.height - outlineInset * 2);
+  const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
+  const triggerY = Math.max(
+    0,
+    Math.min(contentHeight - 2, triggerCandidate),
+  );
+  const contentWidth = Math.max(0, size.width - outlineInset * 2);
+
+  const anchorAbsX =
+    anchor?.x ??
+    (pointer
+      ? position.left + pointer.x
+      : position.left + contentWidth / 2);
+  const anchorLocalX = anchorAbsX - position.left;
+
+  const menuWidth =
+    Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
+    contentWidth;
+  const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
+  const pointerWithinBand =
+    pointer !== null &&
+    pointer.x >= anchorLocalX - horizontalBandHalf &&
+    pointer.x <= anchorLocalX + horizontalBandHalf;
+  const isDescending =
+    pointer !== null &&
+    lastPointerY.current !== null &&
+    pointer.y >= lastPointerY.current;
+
+  const visible =
+    hoverOffset !== null &&
+    (((pointer !== null &&
+      pointer.y >= triggerY &&
+      pointerWithinBand &&
+      isDescending) ||
+      menuHover));
+  const viewportWidth =
+    typeof window !== "undefined" && window.innerWidth
+      ? window.innerWidth
+      : size.width;
+  const desiredLeft = anchorAbsX - menuWidth / 2;
+  const clampedLeft = Math.max(
+    0,
+    Math.min(desiredLeft, viewportWidth - menuWidth),
+  );
+  const top = position.top + size.height - outlineInset + 8;
+
+  useEffect(() => {
+    if (menuVisible !== visible) {
+      setMenuVisible(visible);
+    }
+  }, [menuVisible, setMenuVisible, visible]);
+
+  useEffect(() => {
+    lastPointerY.current = pointer?.y ?? null;
+  }, [pointer?.y]);
+
+  return {
+    visible,
+    width: menuWidth,
+    offsetLeft: clampedLeft,
+    offsetTop: top,
+  };
 }
 </file>
 
@@ -2380,13 +2354,40 @@ export const textStyles = defineTextStyles({
 })
 </file>
 
-<file path="test-results/.last-run.json">
+<file path="biome.json">
 {
-  "status": "failed",
-  "failedTests": [
-    "58d44fce413694e1966d-dd14728ccc774ce5afa2",
-    "58d44fce413694e1966d-1b637a35e66fbd338891"
-  ]
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
 }
 </file>
 
@@ -2546,6 +2547,79 @@ export const textStyles = defineTextStyles({
 }
 </file>
 
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="playwright.config.ts">
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./src/components",
+  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
+  timeout: 30_000,
+  use: {
+    headless: true,
+    baseURL: "http://127.0.0.1:5173",
+    browserName: "chromium",
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+    },
+  },
+  webServer: {
+    command: "npx next dev --hostname 127.0.0.1 --port 5173",
+    url: "http://127.0.0.1:5173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
+});
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</file>
+
 <file path="vitest.config.ts">
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
@@ -2586,66 +2660,1205 @@ class ResizeObserver {
 
 if (!globalThis.ResizeObserver) {
   // ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
-  // @ts-expect-error - global assignment for test environment
   globalThis.ResizeObserver = ResizeObserver;
 }
 </file>
 
-<file path="public/file.svg">
-<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
-</file>
+<file path="src/components/SearchBar/perimeter.ts">
+type Point = { x: number; y: number };
 
-<file path="public/globe.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
-</file>
+type Segment = { start: Point; end: Point; length: number };
 
-<file path="public/next.svg">
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
-</file>
+type ClosestLengthInput = {
+  container: HTMLElement | null;
+  path: SVGRectElement | null;
+  clientX: number;
+  clientY: number;
+  inset: number;
+};
 
-<file path="public/vercel.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
-</file>
+const toPoint = (x: number, y: number): Point => ({ x, y });
 
-<file path="public/window.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
-</file>
+const segmentLength = (segment: Segment) => segment.length;
 
-<file path="biome.json">
-{
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    },
-    "domains": {
-      "next": "recommended",
-      "react": "recommended"
+const makeSegments = (width: number, height: number): Segment[] => {
+  const p1 = toPoint(0, 0);
+  const p2 = toPoint(width, 0);
+  const p3 = toPoint(width, height);
+  const p4 = toPoint(0, height);
+
+  const build = (start: Point, end: Point): Segment => ({
+    start,
+    end,
+    length: Math.hypot(end.x - start.x, end.y - start.y),
+  });
+
+  return [build(p1, p2), build(p2, p3), build(p3, p4), build(p4, p1)];
+};
+
+const closestOnSegment = (point: Point, segment: Segment) => {
+  const vx = segment.end.x - segment.start.x;
+  const vy = segment.end.y - segment.start.y;
+  const wx = point.x - segment.start.x;
+  const wy = point.y - segment.start.y;
+
+  const segLenSq = vx * vx + vy * vy;
+  if (segLenSq === 0) return { closest: segment.start, distanceSq: 0, t: 0 };
+
+  const t = Math.max(0, Math.min(1, (wx * vx + wy * vy) / segLenSq));
+  const closest = toPoint(segment.start.x + vx * t, segment.start.y + vy * t);
+  const dx = point.x - closest.x;
+  const dy = point.y - closest.y;
+
+  return { closest, distanceSq: dx * dx + dy * dy, t };
+};
+
+export function findClosestPerimeterLength({
+  container,
+  path,
+  clientX,
+  clientY,
+  inset,
+}: ClosestLengthInput) {
+  if (!container || !path) return null;
+
+  const containerRect = container.getBoundingClientRect();
+  const svgX = clientX - containerRect.left + inset;
+  const svgY = clientY - containerRect.top + inset;
+
+  const originX = path.x?.baseVal?.value ?? 0;
+  const originY = path.y?.baseVal?.value ?? 0;
+  const width = path.width?.baseVal?.value ?? 0;
+  const height = path.height?.baseVal?.value ?? 0;
+
+  if (width <= 0 || height <= 0) return null;
+
+  const pointer = toPoint(svgX - originX, svgY - originY);
+  const segments = makeSegments(width, height);
+  const perimeterSimple = segments.reduce(
+    (total, segment) => total + segmentLength(segment),
+    0,
+  );
+
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let bestLengthSimple = 0;
+  let traversed = 0;
+
+  for (const segment of segments) {
+    const { distanceSq, t } = closestOnSegment(pointer, segment);
+    if (distanceSq < bestDistance) {
+      bestDistance = distanceSq;
+      bestLengthSimple = traversed + segment.length * t;
     }
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
+    traversed += segment.length;
+  }
+
+  const total =
+    typeof path.getTotalLength === "function"
+      ? path.getTotalLength()
+      : perimeterSimple;
+
+  if (!Number.isFinite(total) || total <= 0) return null;
+
+  const scaledLength =
+    perimeterSimple > 0 ? (bestLengthSimple / perimeterSimple) * total : 0;
+
+  const point =
+    typeof path.getPointAtLength === "function"
+      ? path.getPointAtLength(scaledLength)
+      : { x: 0, y: 0 };
+
+  return { bestLength: scaledLength, total, point };
+}
+</file>
+
+<file path="src/components/SearchBar/SearchBar.spec.tsx">
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { type ComponentProps } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Provider, createStore } from "jotai";
+import SearchBar from "@/components/SearchBar";
+import * as perimeterModule from "@/components/SearchBar/perimeter";
+
+const movePointer = (element: HTMLElement, x: number, y: number) => {
+  fireEvent.pointerMove(element, { clientX: x, clientY: y });
+};
+
+const getContainer = () =>
+  screen.getByRole("textbox").closest("[data-focused]") as HTMLElement;
+
+const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) => {
+  const store = createStore();
+
+  return render(
+    <Provider store={store}>
+      <SearchBar {...props} />
+    </Provider>,
+  );
+};
+
+const mockRect = (width = 320, height = 64, left = 0, top = 0) => {
+  const right = left + width;
+  const bottom = top + height;
+  return {
+    width,
+    height,
+    top,
+    left,
+    right,
+    bottom,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  };
+};
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describe("SearchBar (vitest)", () => {
+  it("renders input and replay button", () => {
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+    const button = screen.getByRole("button", { name: /replay/i });
+
+    expect(input).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
+    expect(input).toHaveAttribute("placeholder", "Search symbol...");
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+  });
+
+  it("invokes onReplay when the replay button is clicked", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    renderSearchBar({ onReplay });
+
+    await user.click(screen.getByRole("button", { name: /replay/i }));
+
+    expect(onReplay).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes the query when replay is triggered", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    renderSearchBar({ onReplay });
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "useQuery");
+    await user.click(screen.getByRole("button", { name: /replay/i }));
+
+    expect(onReplay).toHaveBeenCalledWith("useQuery");
+  });
+
+  it("triggers replay when pressing Enter", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    renderSearchBar({ onReplay });
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "focusManager{enter}");
+
+    expect(onReplay).toHaveBeenCalledWith("focusManager");
+  });
+
+  it("clears the input after replay", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    renderSearchBar({ onReplay });
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "reactQuery");
+    await user.keyboard("{enter}");
+
+    await waitFor(() => {
+      expect(input).toHaveValue("");
+    });
+    expect(onReplay).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows focus highlight when input is focused", async () => {
+    const user = userEvent.setup();
+
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+
+    await user.click(input);
+
+    const container = input.closest('[data-focused="true"]');
+
+    expect(container).toBeTruthy();
+  });
+
+  it("removes highlight when input loses focus", async () => {
+    const user = userEvent.setup();
+
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+
+    await user.click(input);
+    await user.tab();
+
+    const container = input.closest('[data-focused="true"]');
+
+    expect(container).toBeNull();
+  });
+
+  it("keeps the input focused after replay", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    renderSearchBar({ onReplay });
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "query{enter}");
+
+    await waitFor(() => {
+      expect(input).toHaveFocus();
+    });
+  });
+
+  it("projects pointer moves to a hover segment along the perimeter", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect() as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    const perimeterSpy = vi
+      .spyOn(perimeterModule, "findClosestPerimeterLength")
+      .mockReturnValue({ bestLength: 120, total: 400, point: { x: 0, y: 0 } });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 50, 20);
+
+    const hoverOutline = await screen.findByTestId(
+      "searchbar-outline-hover",
+    );
+
+    expect(perimeterSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        clientX: 50,
+        clientY: 20,
+      }),
+    );
+    expect(hoverOutline).toHaveAttribute("data-offset", "0");
+    expect(hoverOutline).toHaveAttribute("data-variant", "hover");
+  });
+
+  it("updates the hover segment offset and clears it on leave", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect() as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength")
+      .mockReturnValueOnce({ bestLength: 200, total: 400, point: { x: 0, y: 0 } })
+      .mockReturnValueOnce({ bestLength: 260, total: 400, point: { x: 0, y: 0 } });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 30, 18);
+
+    let hoverOutline = await screen.findByTestId("searchbar-outline-hover");
+    expect(hoverOutline).toHaveAttribute("data-offset", "80");
+
+    movePointer(container, 90, 32);
+
+    hoverOutline = await screen.findByTestId("searchbar-outline-hover");
+    expect(hoverOutline).toHaveAttribute("data-offset", "140");
+
+    fireEvent.pointerLeave(container);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("searchbar-outline-hover")).toBeNull();
+    });
+  });
+
+  it("wraps the outline from the last hover point when the input focuses", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect() as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 0, y: 0 },
+    });
+
+    renderSearchBar({ outlineLockDelayMs: 1000 });
+
+    const input = screen.getByRole("textbox");
+    const container = getContainer();
+
+    movePointer(container, 44, 22);
+    await screen.findByTestId("searchbar-outline-hover");
+    fireEvent.focus(input);
+
+    expect(getContainer()).toHaveAttribute("data-focused", "true");
+
+    const focusOutline = screen.getByTestId("searchbar-outline-focus");
+
+    expect(focusOutline).toHaveAttribute("data-focus-origin", "0.2");
+    expect(focusOutline).toHaveAttribute("data-variant", "focus");
+  });
+
+  it("clears hover segments when focus is lost", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect() as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 150,
+      total: 400,
+      point: { x: 0, y: 0 },
+    });
+
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+    const container = getContainer();
+
+    movePointer(container, 10, 10);
+
+    await screen.findByTestId("searchbar-outline-hover");
+
+    fireEvent.focus(input);
+    fireEvent.blur(input);
+
+    expect(screen.queryByTestId("searchbar-outline-hover")).toBeNull();
+  });
+
+  it("hides the scope menu when the input is focused", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+    await screen.findByTestId("searchscope-menu");
+
+    await userEvent.click(input);
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
+  });
+
+  it("keeps the scope menu visible when exiting downward from the bar", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+
+    await screen.findByTestId("searchbar-outline-hover");
+    await screen.findByTestId("searchscope-menu");
+
+    fireEvent.pointerLeave(container);
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("keeps the scope menu visible for at least 600ms after exit near the bottom", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 84);
+
+    await screen.findByTestId("searchbar-outline-hover");
+    await screen.findByTestId("searchscope-menu");
+
+    fireEvent.pointerLeave(container);
+
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("positions the scope menu under the segment and follows its movement", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(300, 60, 100, 200) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength")
+      .mockReturnValueOnce({
+        bestLength: 180,
+        total: 400,
+        point: { x: 50, y: 0 },
+      })
+      .mockReturnValueOnce({
+        bestLength: 220,
+        total: 400,
+        point: { x: 220, y: 0 },
+      });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 220, 240);
+    movePointer(container, 220, 280);
+    await screen.findByTestId("searchscope-menu");
+    const firstMenu = screen.getByTestId("searchscope-menu");
+    const firstTop = Number(firstMenu.getAttribute("data-top"));
+    const firstWidth = Number(firstMenu.getAttribute("data-width"));
+
+    expect(firstWidth).toBeCloseTo(240, 0);
+    expect(firstTop).toBeGreaterThanOrEqual(276);
+
+    movePointer(container, 520, 240);
+    movePointer(container, 520, 280);
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
+
+    const hoverOutline = screen.getByTestId("searchbar-outline-hover");
+    expect(hoverOutline).toBeInTheDocument();
+  });
+});
+</file>
+
+<file path="src/components/SearchBar/SearchBar.tsx">
+"use client";
+
+import { useHover } from "@use-gesture/react";
+import { motion } from "framer-motion";
+import { type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import { HStack } from "../../../styled-system/jsx";
+import { Input, Button } from "@/components/ui";
+import { useSearchBar } from "./useSearchBar";
+import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
+import { SURFACE_STYLE } from "./surfaceStyle";
+
+type Props = {
+  onReplay?: (query?: string) => void;
+  outlineLockDelayMs?: number;
+};
+
+const MotionStack = motion.create(HStack as ComponentType<any>);
+const MotionButton = motion.create(Button);
+const MotionRect = motion.rect;
+
+const OUTLINE_INSET = 8;
+const OUTLINE_RADIUS = 24;
+/* shorter hover line */
+export const HOVER_SEGMENT_LENGTH = 240;
+export const OUTLINE_INSET_PX = OUTLINE_INSET;
+
+export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
+  const {
+    containerRef,
+    focusOrigin,
+    focused,
+    handleBlur,
+    handleFocus,
+    handlePointerLeave,
+    handlePointerMove,
+    hoverOffset,
+    hoverPathRef,
+    inputRef,
+    outlineLocked,
+    size,
+    triggerReplay,
+    setValue,
+    value,
+  } = useSearchBar({
+    hoverSegmentLength: HOVER_SEGMENT_LENGTH,
+    outlineInset: OUTLINE_INSET,
+    outlineLockDelay: outlineLockDelayMs,
+    onReplay,
+  });
+
+  const svgWidth = size.width;
+  const svgHeight = size.height;
+
+  const bindHover = useHover(({ hovering, event }) => {
+    if (hovering) {
+      handlePointerMove({
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
+    } else {
+      handlePointerLeave();
+    }
+  });
+
+  return (
+    <MotionStack
+      ref={containerRef}
+      {...bindHover()}
+      data-focused={focused}
+      alignItems="center"
+      gap="12px"
+      w="100%"
+      h="100%"
+      boxSizing="border-box"
+      onPointerMove={(event: ReactPointerEvent<HTMLDivElement>) =>
+        handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
+      }
+      onPointerEnter={(event: ReactPointerEvent<HTMLDivElement>) =>
+        handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
+      }
+      onPointerLeave={handlePointerLeave}
+      animate={{
+        boxShadow: SURFACE_STYLE.boxShadow,
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 200,
+        damping: 28,
+      }}
+      style={{
+        position: "relative",
+        display: "flex",
+        borderRadius: SURFACE_STYLE.borderRadius,
+        padding: "12px 28px",
+        background: SURFACE_STYLE.background,
+        backdropFilter: SURFACE_STYLE.backdropFilter,
+        WebkitBackdropFilter: SURFACE_STYLE.backdropFilter,
+        border: SURFACE_STYLE.border,
+        boxShadow: SURFACE_STYLE.boxShadow,
+        overflow: "visible",
+      }}
+    >
+      {svgWidth > 0 && svgHeight > 0 && (
+        <svg
+          width={svgWidth}
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style={{
+            position: "absolute",
+            top: -OUTLINE_INSET,
+            left: -OUTLINE_INSET,
+            pointerEvents: "none",
+            overflow: "visible",
+            zIndex: 0,
+          }}
+        >
+          <rect
+            ref={hoverPathRef}
+            x="0.5"
+            y="0.5"
+            width={Math.max(0, svgWidth - 1)}
+            height={Math.max(0, svgHeight - 1)}
+            rx={OUTLINE_RADIUS}
+            ry={OUTLINE_RADIUS}
+            fill="none"
+            stroke="transparent"
+            strokeWidth="1"
+          />
+
+          {!focused && hoverOffset !== null && (
+            <MotionRect
+              data-testid="searchbar-outline-hover"
+              data-variant="hover"
+              data-offset={hoverOffset}
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              initial={{ opacity: 0, strokeDashoffset: -hoverOffset }}
+              animate={{
+                opacity: 1,
+                strokeDasharray: `${HOVER_SEGMENT_LENGTH} 9999`,
+                strokeDashoffset: -hoverOffset,
+              }}
+              transition={{
+                opacity: { duration: 0.08 },
+                strokeDashoffset: {
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 30,
+                },
+              }}
+              style={{
+                filter: "drop-shadow(0 0 3px rgba(255,255,255,0.12))",
+              }}
+            />
+          )}
+
+          {focused && !outlineLocked && (
+            <MotionRect
+              data-testid="searchbar-outline-focus"
+              data-variant="focus"
+              data-focus-origin={focusOrigin}
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.8"
+              initial={{
+                pathLength: 0,
+                pathOffset: focusOrigin,
+              }}
+              animate={{
+                pathLength: 1,
+                pathOffset: 0,
+              }}
+              transition={{
+                duration: 0.28,
+                ease: "easeOut",
+              }}
+            />
+          )}
+
+          {outlineLocked && (
+            <rect
+              data-testid="searchbar-outline-locked"
+              data-variant="locked"
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.8"
+            />
+          )}
+        </svg>
+      )}
+
+      <SearchScopeMenu
+        outlineInset={OUTLINE_INSET}
+        segmentLength={HOVER_SEGMENT_LENGTH}
+        surfaceStyle={SURFACE_STYLE}
+      />
+
+      <Input
+        ref={inputRef}
+        value={value}
+        placeholder="Search symbol..."
+        onFocus={() => {
+          handleFocus();
+        }}
+        onBlur={() => {
+          handleBlur();
+        }}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") triggerReplay();
+        }}
+        style={{
+          flex: "1 1 0",
+          minWidth: 0,
+          height: "48px",
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          color: "#eee",
+          fontSize: "16px",
+          zIndex: 1,
+        }}
+      />
+
+      <MotionButton
+        variant="surface"
+        onClick={triggerReplay}
+        whileHover={{
+          scale: 1.02,
+        }}
+        whileTap={{ scale: 0.97 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+        style={{
+          flex: "0 0 auto",
+          height: "48px",
+          padding: "0 24px",
+          borderRadius: "10px",
+          background: "rgba(70,70,70,0.28)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          color: "#eee",
+          zIndex: 1,
+        }}
+      >
+        Replay
+      </MotionButton>
+    </MotionStack>
+  );
+}
+</file>
+
+<file path="src/components/SearchBar/useSearchBar.ts">
+import { useEffect, useRef, type PointerEvent } from "react";
+import { useAtom } from "jotai";
+
+import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
+import {
+  focusOriginAtom,
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  outlineLockedAtom,
+  perimeterAtom,
+  pointerPositionAtom,
+  queryAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+  searchFocusedAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+} from "@/state/searchbar";
+
+const MENU_HOLD_MARGIN = 24;
+const MENU_HORIZONTAL_MARGIN = 12;
+
+type UseSearchBarOptions = {
+  outlineInset: number;
+  hoverSegmentLength: number;
+  outlineLockDelay?: number;
+  onReplay?: (query?: string) => void;
+};
+
+export function useSearchBar({
+  outlineInset,
+  hoverSegmentLength,
+  outlineLockDelay = 300,
+  onReplay,
+}: UseSearchBarOptions) {
+  const [value, setValue] = useAtom(queryAtom);
+  const [focused, setFocused] = useAtom(searchFocusedAtom);
+  const [outlineLocked, setOutlineLocked] = useAtom(outlineLockedAtom);
+  const [size, setSize] = useAtom(searchBarSizeAtom);
+  const [, setPosition] = useAtom(searchBarPositionAtom);
+  const [hoverOffset, setHoverOffset] = useAtom(hoverOffsetAtom);
+  const [hoverAnchor, setHoverAnchor] = useAtom(hoverAnchorAtom);
+  const [focusOrigin, setFocusOrigin] = useAtom(focusOriginAtom);
+  const [perimeter, setPerimeter] = useAtom(perimeterAtom);
+  const [pointerPosition, setPointerPosition] = useAtom(pointerPositionAtom);
+  const [menuHover, setMenuHover] = useAtom(scopeMenuHoverAtom);
+  const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hoverPathRef = useRef<SVGRectElement>(null);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (lockTimer.current) clearTimeout(lockTimer.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+
+      setSize({
+        width: rect.width + outlineInset * 2,
+        height: rect.height + outlineInset * 2,
+      });
+      setPosition({ left: rect.left, top: rect.top });
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(node);
+
+    return () => ro.disconnect();
+  }, [outlineInset, setSize]);
+
+  useEffect(() => {
+    const path = hoverPathRef.current;
+    if (!path) return;
+
+    setPerimeter(path.getTotalLength());
+  }, [setPerimeter, size]);
+
+  const triggerReplay = () => {
+    if (!onReplay) return;
+
+    onReplay(value);
+    setValue("");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
+  const handlePointerMove = ({
+    clientX,
+    clientY,
+  }: {
+    clientX: number;
+    clientY: number;
+  }) => {
+    if (focused) return;
+
+    const container = containerRef.current;
+    const path = hoverPathRef.current;
+    if (!container || !path) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const menuWidth =
+      Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
+    const anchorAbsX =
+      hoverAnchor?.x ?? containerRect.left + contentWidth / 2;
+    const horizontalBandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
+    const pointerWithinBand =
+      clientX >= anchorAbsX - horizontalBandHalf &&
+      clientX <= anchorAbsX + horizontalBandHalf;
+
+    const menuDeactivated = menuVisible && !pointerWithinBand;
+
+    if (menuDeactivated) {
+      setMenuHover(false);
+      setMenuVisible(false);
+      setHoverOffset(null);
+      setHoverAnchor(null);
+      setPointerPosition(null);
+      return;
+    }
+
+    if (menuVisible && pointerWithinBand) {
+      return;
+    }
+    setPointerPosition({
+      x: clientX - containerRect.left,
+      y: clientY - containerRect.top,
+    });
+
+    const result = findClosestPerimeterLength({
+      container,
+      path,
+      clientX,
+      clientY,
+      inset: outlineInset,
+    });
+    if (!result) return;
+
+    const { bestLength, total, point } = result;
+    if (!Number.isFinite(total) || total <= 0) return;
+
+    const centered = bestLength - hoverSegmentLength / 2;
+    const normalized = ((centered % total) + total) % total;
+
+    setHoverOffset(normalized);
+    if (point && !menuDeactivated) {
+      const anchorX = containerRect.left + point.x;
+      const anchorY = containerRect.top + point.y;
+      setHoverAnchor({
+        x: anchorX,
+        y: anchorY,
+      });
+    }
+  };
+
+  const handlePointerLeave = () => {
+    const container = containerRef.current;
+    const containerRect = container?.getBoundingClientRect();
+
+    if (menuVisible) {
+      const contentWidth = Math.max(0, size.width - outlineInset * 2);
+      const menuWidth =
+        Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
+      const anchorAbsX =
+        hoverAnchor?.x ??
+        (containerRect ? containerRect.left + contentWidth / 2 : 0);
+      const horizontalBandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
+      const anchorLocalX = containerRect
+        ? anchorAbsX - containerRect.left
+        : anchorAbsX;
+
+      const outsideBand =
+        pointerPosition === null ||
+        pointerPosition.x < anchorLocalX - horizontalBandHalf ||
+        pointerPosition.x > anchorLocalX + horizontalBandHalf;
+
+      if (outsideBand) {
+        setMenuHover(false);
+        setMenuVisible(false);
+        setHoverOffset(null);
+        setPointerPosition(null);
+        return;
       }
     }
-  }
+
+    const nearBottom =
+      pointerPosition !== null &&
+      pointerPosition.y >= size.height - outlineInset - MENU_HOLD_MARGIN;
+
+    if (!focused && !menuHover && !nearBottom) {
+      setHoverOffset(null);
+      setPointerPosition(null);
+    }
+  };
+
+  const handleFocus = () => {
+    setFocused(true);
+    setOutlineLocked(false);
+    setMenuHover(false);
+    setMenuVisible(false);
+
+    const origin =
+      hoverOffset !== null && perimeter > 0 ? hoverOffset / perimeter : 0;
+
+    setFocusOrigin(origin);
+    setHoverOffset(null);
+    setPointerPosition(null);
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+
+    lockTimer.current = setTimeout(() => {
+      setOutlineLocked(true);
+    }, outlineLockDelay);
+  };
+
+  const handleBlur = () => {
+    setFocused(false);
+    setOutlineLocked(false);
+    setHoverOffset(null);
+    setHoverAnchor(null);
+    setPointerPosition(null);
+    setMenuHover(false);
+    setMenuVisible(false);
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+  };
+
+  useEffect(() => {
+    const handleWindowBlur = () => {
+      setFocused(false);
+      setOutlineLocked(false);
+      setHoverOffset(null);
+      setHoverAnchor(null);
+      setPointerPosition(null);
+      setMenuHover(false);
+
+      if (lockTimer.current) clearTimeout(lockTimer.current);
+    };
+
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => window.removeEventListener("blur", handleWindowBlur);
+  }, [setFocused, setHoverOffset, setOutlineLocked]);
+
+  useEffect(() => {
+    if (!menuVisible) return;
+
+    const onPointerMove = (event: PointerEvent | MouseEvent) => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const contentWidth = Math.max(0, size.width - outlineInset * 2);
+      const menuWidth =
+        Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
+      const anchorAbsX =
+        hoverAnchor?.x ?? rect.left + contentWidth / 2;
+      const bandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
+
+      const withinX =
+        event.clientX >= anchorAbsX - bandHalf &&
+        event.clientX <= anchorAbsX + bandHalf;
+
+      if (!withinX) {
+        setMenuHover(false);
+        setMenuVisible(false);
+        setHoverOffset(null);
+        setHoverAnchor(null);
+        setPointerPosition(null);
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("mousemove", onPointerMove);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("mousemove", onPointerMove);
+    };
+  }, [
+    hoverAnchor?.x,
+    hoverSegmentLength,
+    menuVisible,
+    outlineInset,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    setMenuVisible,
+    setPointerPosition,
+    size.width,
+  ]);
+
+  return {
+    containerRef,
+    focusOrigin,
+    focused,
+    handleBlur,
+    handleFocus,
+    handlePointerLeave,
+    handlePointerMove,
+    hoverOffset,
+    hoverPathRef,
+    inputRef,
+    outlineLocked,
+    size,
+    triggerReplay,
+    setValue,
+    value,
+  };
 }
+</file>
+
+<file path="src/state/searchbar.ts">
+import { atom } from "jotai";
+
+export type SearchBarSize = { width: number; height: number };
+export type SearchBarPosition = { left: number; top: number };
+
+export const queryAtom = atom("");
+export const searchFocusedAtom = atom(false);
+export const outlineLockedAtom = atom(false);
+export const hoverOffsetAtom = atom<number | null>(null);
+export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
+export const focusOriginAtom = atom(0);
+export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
+export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
+export const perimeterAtom = atom(0);
+export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
+export const scopeMenuHoverAtom = atom(false);
+export const scopeMenuVisibleAtom = atom(false);
+</file>
+
+<file path="test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+## Panda
+styled-system
+styled-system-studio
 </file>
 
 <file path="flake.nix">
@@ -2707,16 +3920,6 @@ if (!globalThis.ResizeObserver) {
       }
     );
 }
-</file>
-
-<file path="next.config.ts">
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
 </file>
 
 <file path="panda.config.ts">
@@ -2823,45 +4026,6 @@ export default defineConfig({
   globalCss: globalCss,
   conditions: conditions
 });
-</file>
-
-<file path="README.md">
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 </file>
 
 <file path="tsconfig.json">
@@ -2978,54 +4142,6 @@ export default function Home() {
 }
 </file>
 
-<file path=".gitignore">
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-## Panda
-styled-system
-styled-system-studio
-</file>
-
 <file path="package.json">
 {
   "name": "sat",
@@ -3041,8 +4157,11 @@ styled-system-studio
   },
   "dependencies": {
     "@ark-ui/react": "^5.34.1",
+    "@use-gesture/react": "^10.3.1",
     "@xyflow/react": "^12.10.1",
+    "flatten-js": "^0.6.9",
     "framer-motion": "^12.35.0",
+    "jotai": "^2.18.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",

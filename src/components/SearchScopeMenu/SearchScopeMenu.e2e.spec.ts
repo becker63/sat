@@ -39,7 +39,11 @@ test.describe("SearchScopeMenu (playwright)", () => {
       return {
         backgroundColor: s.backgroundColor,
         boxShadow: s.boxShadow,
-        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
+        backdropFilter:
+          s.backdropFilter ||
+          (s as CSSStyleDeclaration & { webkitBackdropFilter?: string })
+            .webkitBackdropFilter ||
+          "",
       };
     });
     const menuStyles = await menu.evaluate((el) => {
@@ -47,7 +51,11 @@ test.describe("SearchScopeMenu (playwright)", () => {
       return {
         backgroundColor: s.backgroundColor,
         boxShadow: s.boxShadow,
-        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
+        backdropFilter:
+          s.backdropFilter ||
+          (s as CSSStyleDeclaration & { webkitBackdropFilter?: string })
+            .webkitBackdropFilter ||
+          "",
       };
     });
     const corpusColor = await menu
