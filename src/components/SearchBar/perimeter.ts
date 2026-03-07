@@ -96,5 +96,10 @@ export function findClosestPerimeterLength({
   const scaledLength =
     perimeterSimple > 0 ? (bestLengthSimple / perimeterSimple) * total : 0;
 
-  return { bestLength: scaledLength, total };
+  const point =
+    typeof path.getPointAtLength === "function"
+      ? path.getPointAtLength(scaledLength)
+      : { x: 0, y: 0 };
+
+  return { bestLength: scaledLength, total, point };
 }

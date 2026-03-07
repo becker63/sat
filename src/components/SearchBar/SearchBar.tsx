@@ -6,6 +6,8 @@ import { type ComponentType, type PointerEvent as ReactPointerEvent } from "reac
 import { HStack } from "../../../styled-system/jsx";
 import { Input, Button } from "@/components/ui";
 import { useSearchBar } from "./useSearchBar";
+import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
+import { SURFACE_STYLE } from "./surfaceStyle";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -18,9 +20,9 @@ const MotionRect = motion.rect;
 
 const OUTLINE_INSET = 8;
 const OUTLINE_RADIUS = 24;
-
 /* shorter hover line */
 export const HOVER_SEGMENT_LENGTH = 240;
+export const OUTLINE_INSET_PX = OUTLINE_INSET;
 
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
   const {
@@ -78,7 +80,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       }
       onPointerLeave={handlePointerLeave}
       animate={{
-        boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+        boxShadow: SURFACE_STYLE.boxShadow,
       }}
       transition={{
         type: "spring",
@@ -88,11 +90,13 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       style={{
         position: "relative",
         display: "flex",
-        borderRadius: "16px",
+        borderRadius: SURFACE_STYLE.borderRadius,
         padding: "12px 28px",
-        background: "rgba(0,0,0,0.16)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: SURFACE_STYLE.background,
+        backdropFilter: SURFACE_STYLE.backdropFilter,
+        WebkitBackdropFilter: SURFACE_STYLE.backdropFilter,
+        border: SURFACE_STYLE.border,
+        boxShadow: SURFACE_STYLE.boxShadow,
         overflow: "visible",
       }}
     >
@@ -204,6 +208,12 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
           )}
         </svg>
       )}
+
+      <SearchScopeMenu
+        outlineInset={OUTLINE_INSET}
+        segmentLength={HOVER_SEGMENT_LENGTH}
+        surfaceStyle={SURFACE_STYLE}
+      />
 
       <Input
         ref={inputRef}

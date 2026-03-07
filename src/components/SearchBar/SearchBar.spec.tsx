@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -23,17 +23,21 @@ const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) => {
   );
 };
 
-const mockRect = (width = 320, height = 64) => ({
-  width,
-  height,
-  top: 0,
-  left: 0,
-  right: width,
-  bottom: height,
-  x: 0,
-  y: 0,
-  toJSON: () => ({}),
-});
+const mockRect = (width = 320, height = 64, left = 0, top = 0) => {
+  const right = left + width;
+  const bottom = top + height;
+  return {
+    width,
+    height,
+    top,
+    left,
+    right,
+    bottom,
+    x: left,
+    y: top,
+    toJSON: () => ({}),
+  };
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -161,7 +165,7 @@ describe("SearchBar (vitest)", () => {
     );
     const perimeterSpy = vi
       .spyOn(perimeterModule, "findClosestPerimeterLength")
-      .mockReturnValue({ bestLength: 120, total: 400 });
+      .mockReturnValue({ bestLength: 120, total: 400, point: { x: 0, y: 0 } });
 
     renderSearchBar();
 
@@ -191,8 +195,8 @@ describe("SearchBar (vitest)", () => {
       400,
     );
     vi.spyOn(perimeterModule, "findClosestPerimeterLength")
-      .mockReturnValueOnce({ bestLength: 200, total: 400 })
-      .mockReturnValueOnce({ bestLength: 260, total: 400 });
+      .mockReturnValueOnce({ bestLength: 200, total: 400, point: { x: 0, y: 0 } })
+      .mockReturnValueOnce({ bestLength: 260, total: 400, point: { x: 0, y: 0 } });
 
     renderSearchBar();
 
@@ -225,6 +229,7 @@ describe("SearchBar (vitest)", () => {
     vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
       bestLength: 200,
       total: 400,
+      point: { x: 0, y: 0 },
     });
 
     renderSearchBar({ outlineLockDelayMs: 1000 });
@@ -254,6 +259,7 @@ describe("SearchBar (vitest)", () => {
     vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
       bestLength: 150,
       total: 400,
+      point: { x: 0, y: 0 },
     });
 
     renderSearchBar();
@@ -269,5 +275,136 @@ describe("SearchBar (vitest)", () => {
     fireEvent.blur(input);
 
     expect(screen.queryByTestId("searchbar-outline-hover")).toBeNull();
+  });
+
+  it("hides the scope menu when the input is focused", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const input = screen.getByRole("textbox");
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+    await screen.findByTestId("searchscope-menu");
+
+    await userEvent.click(input);
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
+  });
+
+  it("keeps the scope menu visible when exiting downward from the bar", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+
+    await screen.findByTestId("searchbar-outline-hover");
+    await screen.findByTestId("searchscope-menu");
+
+    fireEvent.pointerLeave(container);
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("keeps the scope menu visible for at least 600ms after exit near the bottom", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 84);
+
+    await screen.findByTestId("searchbar-outline-hover");
+    await screen.findByTestId("searchscope-menu");
+
+    fireEvent.pointerLeave(container);
+
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("positions the scope menu under the segment and follows its movement", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(300, 60, 100, 200) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength")
+      .mockReturnValueOnce({
+        bestLength: 180,
+        total: 400,
+        point: { x: 50, y: 0 },
+      })
+      .mockReturnValueOnce({
+        bestLength: 220,
+        total: 400,
+        point: { x: 220, y: 0 },
+      });
+
+    renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 220, 240);
+    movePointer(container, 220, 280);
+    await screen.findByTestId("searchscope-menu");
+    const firstMenu = screen.getByTestId("searchscope-menu");
+    const firstTop = Number(firstMenu.getAttribute("data-top"));
+    const firstWidth = Number(firstMenu.getAttribute("data-width"));
+
+    expect(firstWidth).toBeCloseTo(240, 0);
+    expect(firstTop).toBeGreaterThanOrEqual(276);
+
+    movePointer(container, 520, 240);
+    movePointer(container, 520, 280);
+
+    await waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
+
+    const hoverOutline = screen.getByTestId("searchbar-outline-hover");
+    expect(hoverOutline).toBeInTheDocument();
   });
 });
