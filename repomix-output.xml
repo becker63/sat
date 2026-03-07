@@ -40,6 +40,17 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+playwright/
+  .cache/
+    assets/
+      index-l0sNRNKZ.js.map
+    file.svg
+    globe.svg
+    index.html
+    metainfo.json
+    next.svg
+    vercel.svg
+    window.svg
 public/
   file.svg
   globe.svg
@@ -48,42 +59,2536 @@ public/
   window.svg
 src/
   app/
+    api/
+      log/
+        route.ts
     globals.css
     layout.tsx
     page.tsx
+  components/
+    SearchBar/
+      idea.md
+      index.ts
+      SearchBar.spec.tsx
+      SearchBar.tsx
+    ui/
+      absolute-center.tsx
+      button.tsx
+      field.tsx
+      group.tsx
+      index.ts
+      input.tsx
+      loader.tsx
+      span.tsx
+      spinner.tsx
+    ClientConsoleBridge.tsx
+    GraphStage.tsx
+  lib/
+    clientLogger.ts
+  theme/
+    colors/
+      green.ts
+      red.ts
+      slate.ts
+    recipes/
+      absolute-center.ts
+      button.ts
+      field.ts
+      group.ts
+      index.ts
+      input.ts
+      spinner.ts
+    tokens/
+      colors.ts
+      durations.ts
+      shadows.ts
+      z-index.ts
+    animation-styles.ts
+    conditions.ts
+    global-css.ts
+    keyframes.ts
+    layer-styles.ts
+    text-styles.ts
+test-results/
+  .last-run.json
 .gitignore
 biome.json
+components.json
+flake.lock
+flake.nix
 next.config.ts
 package.json
 panda.config.ts
 README.md
 tsconfig.json
+vitest.config.ts
+vitest.setup.ts
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
 
-<file path="panda.config.ts">
-import { defineConfig } from "@pandacss/dev";
+<file path="playwright/.cache/assets/index-l0sNRNKZ.js.map">
+{"version":3,"file":"index-l0sNRNKZ.js","sources":[],"sourcesContent":[],"names":[],"mappings":""}
+</file>
+
+<file path="playwright/.cache/file.svg">
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+</file>
+
+<file path="playwright/.cache/globe.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+</file>
+
+<file path="playwright/.cache/index.html">
+<!doctype html>
+<html>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+</file>
+
+<file path="playwright/.cache/metainfo.json">
+{
+  "version": "1.58.2",
+  "viteVersion": "6.4.1",
+  "registerSourceHash": "ea233d95b980072c81eb49458aee55f5d33fdb02",
+  "components": [
+    {
+      "id": "_home_becker_projects_sat_src_components_SearchBar___components_SearchBar",
+      "filename": "/home/becker/projects/sat/src/components/SearchBar/SearchBar.ct.spec.tsx",
+      "importSource": "@/components/SearchBar"
+    }
+  ],
+  "sources": {
+    "/home/becker/projects/sat/playwright/index.html": {
+      "timestamp": 1772867891089.0696
+    }
+  },
+  "deps": {
+    "/home/becker/projects/sat/src/components/SearchBar/index.ts": [
+      "/home/becker/projects/sat/src/components/SearchBar/index.ts"
+    ]
+  }
+}
+</file>
+
+<file path="playwright/.cache/next.svg">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+</file>
+
+<file path="playwright/.cache/vercel.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+</file>
+
+<file path="playwright/.cache/window.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="src/app/api/log/route.ts">
+let renderCounter = 0;
+
+export async function POST(req: Request) {
+  try {
+    const text = await req.text();
+    const data = JSON.parse(text);
+
+    const ts = new Date(data.ts).toISOString();
+    const msg = String(data.args?.[0] ?? "");
+
+    if (msg.includes("[HMR] connected")) {
+      renderCounter++;
+
+      console.log(
+        "\n\n" +
+          "══════════════════════════════════════════════\n" +
+          `   PAGE RENDER #${renderCounter}\n` +
+          `   ${ts}\n` +
+          "══════════════════════════════════════════════\n\n",
+      );
+    }
+
+    const level = data.type.replace("console.", "").toUpperCase();
+
+    console.log("\n\n    [CLIENT " + level + "]", ...data.args, "\n\n");
+
+    return new Response(null, { status: 204 });
+  } catch (err) {
+    // absolutely never throw here or the logger loops
+    console.log("\n[LOGGER ERROR]", err);
+    return new Response(null, { status: 204 });
+  }
+}
+</file>
+
+<file path="src/components/SearchBar/idea.md">
+Got it — this is actually **even better** than the scroll idea because it keeps the interaction **spatially local** to the bar. Nothing depends on page movement; everything is **cursor proximity**. That makes it feel tighter and more intentional.
+
+Here’s the corrected overview.
+
+---
+
+# Demo Interaction Overview
+
+## Core Principle
+
+The UI is **stage-first**.
+
+Permanent elements:
+
+```text
+query input
+reasoning graph (React Flow)
+```
+
+Everything else appears **only when the user’s cursor indicates intent**.
+
+The graph remains the **visual center of the demo**.
+
+---
+
+# Interaction Flow
+
+## 1. Idle State
+
+The interface starts minimal.
+
+```
+[ Search symbol... ]  Replay
+```
+
+The graph canvas sits behind it as the main stage.
+
+No menus or controls are visible.
+
+---
+
+## 2. Hover State (Segment Activation)
+
+When the cursor enters the search bar area:
+
+```
+perimeter segment appears
+```
+
+A short animated line follows the cursor around the border.
+
+Purpose:
+
+* subtle affordance
+* indicates the bar is interactive
+* visually anchors attention without distracting from the graph
+
+The segment disappears when the cursor leaves the bar.
+
+---
+
+## 3. Cursor Moves Below the Bar (Corpus Selector Appears)
+
+When the segment is active **and the cursor moves downward past the bar**, a small menu **materializes geometrically below it**.
+
+Example:
+
+```
+Corpus
+
+TanStack Query
+Redux Toolkit
+Zustand
+React Router
+```
+
+Properties:
+
+* appears directly below the search bar
+* aligned with the bar’s width
+* fades in quickly
+* anchored visually to the bar
+
+No dropdown arrows or explicit buttons are required.
+
+The menu exists only while the cursor remains within the **interactive region around the bar**.
+
+---
+
+## 4. Cursor Leaves the Interaction Region
+
+When the cursor leaves the search bar area:
+
+```
+segment fades
+repo selector fades
+```
+
+Both disappear together with the same timing.
+
+The UI returns to the minimal state.
+
+---
+
+# Interaction Model
+
+The behavior follows **cursor proximity**, not clicks or scroll events.
+
+```
+cursor enters bar → segment appears
+cursor moves below → repo selector appears
+cursor leaves region → both fade out
+```
+
+This creates a single **coherent interaction zone**.
+
+---
+
+# Why This Works for the Demo
+
+### 1. The Graph Remains the Focus
+
+Only two persistent elements exist:
+
+```
+query
+graph
+```
+
+All controls are temporary.
+
+---
+
+### 2. The UI Feels Spatial
+
+The menu appears because the cursor moves **through space**, not because a button was pressed.
+
+That feels natural and exploratory.
+
+---
+
+### 3. The Interaction Matches the Concept
+
+The system flow is:
+
+```
+query
+↓
+select repository
+↓
+reason over minimal graph
+```
+
+The UI reveals these steps in the same order.
+
+---
+
+### 4. It Shows Frontend Discipline
+
+The design demonstrates:
+
+* progressive disclosure
+* minimal interface
+* animation tied to intent
+* no dashboard clutter
+
+The interaction feels **purposeful rather than decorative**.
+
+---
+
+# Final Result
+
+The interface becomes a **two-element stage**:
+
+```
+query interface
++
+graph reasoning visualization
+```
+
+All other controls appear **only when the user’s movement suggests they need them**.
+
+This keeps attention on the **graph-based reasoning system**, which is the real subject of the demo.
+
+Also: Make the repo selector width match the search bar exactly.
+</file>
+
+<file path="src/components/SearchBar/index.ts">
+export { default } from "./SearchBar";
+</file>
+
+<file path="src/components/SearchBar/SearchBar.spec.tsx">
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import SearchBar from "@/components/SearchBar";
+
+const movePointer = (element: HTMLElement, x: number, y: number) => {
+  fireEvent.pointerMove(element, { clientX: x, clientY: y });
+};
+
+const getContainer = () =>
+  screen.getByRole("textbox").closest("[data-focused]") as HTMLElement;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describe("SearchBar (vitest)", () => {
+  it("renders input and replay button", () => {
+    render(<SearchBar />);
+
+    const input = screen.getByRole("textbox");
+    const button = screen.getByRole("button", { name: /replay/i });
+
+    expect(input).toBeInTheDocument();
+    expect(button).toBeInTheDocument();
+    expect(input).toHaveAttribute("placeholder", "Search symbol...");
+    expect(screen.getAllByRole("textbox")).toHaveLength(1);
+    expect(screen.getAllByRole("button")).toHaveLength(1);
+  });
+
+  it("invokes onReplay when the replay button is clicked", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    render(<SearchBar onReplay={onReplay} />);
+
+    await user.click(screen.getByRole("button", { name: /replay/i }));
+
+    expect(onReplay).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes the query when replay is triggered", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    render(<SearchBar onReplay={onReplay} />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "useQuery");
+    await user.click(screen.getByRole("button", { name: /replay/i }));
+
+    expect(onReplay).toHaveBeenCalledWith("useQuery");
+  });
+
+  it("triggers replay when pressing Enter", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    render(<SearchBar onReplay={onReplay} />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "focusManager{enter}");
+
+    expect(onReplay).toHaveBeenCalledWith("focusManager");
+  });
+
+  it("clears the input after replay", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    render(<SearchBar onReplay={onReplay} />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "reactQuery");
+    await user.keyboard("{enter}");
+
+    await waitFor(() => {
+      expect(input).toHaveValue("");
+    });
+    expect(onReplay).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows focus highlight when input is focused", async () => {
+    const user = userEvent.setup();
+
+    render(<SearchBar />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.click(input);
+
+    const container = input.closest('[data-focused="true"]');
+
+    expect(container).toBeTruthy();
+  });
+
+  it("removes highlight when input loses focus", async () => {
+    const user = userEvent.setup();
+
+    render(<SearchBar />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.click(input);
+    await user.tab();
+
+    const container = input.closest('[data-focused="true"]');
+
+    expect(container).toBeNull();
+  });
+
+  it("keeps the input focused after replay", async () => {
+    const user = userEvent.setup();
+    const onReplay = vi.fn();
+
+    render(<SearchBar onReplay={onReplay} />);
+
+    const input = screen.getByRole("textbox");
+
+    await user.type(input, "query{enter}");
+
+    await waitFor(() => {
+      expect(input).toHaveFocus();
+    });
+  });
+
+  it("spawns two hover lines from the pointer center", async () => {
+    render(<SearchBar />);
+
+    const container = getContainer();
+
+    movePointer(container, 50, 20);
+
+    const lines = await screen.findAllByTestId("searchbar-line");
+    const left = lines.find(
+      (line) => line.getAttribute("data-side") === "left",
+    );
+    const right = lines.find(
+      (line) => line.getAttribute("data-side") === "right",
+    );
+
+    expect(left).toHaveAttribute("data-state", "hover");
+    expect(left).toHaveAttribute("data-start-x", "50");
+    expect(left).toHaveAttribute("data-end-x", "-50");
+    expect(left).toHaveAttribute("data-y", "20");
+
+    expect(right).toHaveAttribute("data-state", "hover");
+    expect(right).toHaveAttribute("data-start-x", "50");
+    expect(right).toHaveAttribute("data-end-x", "150");
+    expect(right).toHaveAttribute("data-y", "20");
+  });
+
+  it("moves hover lines with pointer updates", async () => {
+    render(<SearchBar />);
+
+    const container = getContainer();
+
+    movePointer(container, 30, 18);
+    movePointer(container, 90, 32);
+
+    await waitFor(() => {
+      const right = container.querySelector(
+        '[data-testid="searchbar-line"][data-side="right"]',
+      );
+
+      expect(right).toHaveAttribute("data-start-x", "90");
+      expect(right).toHaveAttribute("data-end-x", "190");
+      expect(right).toHaveAttribute("data-y", "32");
+    });
+  });
+
+  it("removes hover lines when the pointer leaves", async () => {
+    render(<SearchBar />);
+
+    const container = getContainer();
+
+    movePointer(container, 30, 18);
+    fireEvent.pointerLeave(container);
+
+    await waitFor(() => {
+      expect(screen.queryAllByTestId("searchbar-line")).toHaveLength(0);
+    });
+  });
+
+  it("wraps a line around the field when the input is focused", async () => {
+    const user = userEvent.setup();
+
+    render(<SearchBar />);
+
+    const input = screen.getByRole("textbox");
+    const container = getContainer();
+
+    movePointer(container, 44, 22);
+    await screen.findAllByTestId("searchbar-line");
+    fireEvent.focus(input);
+
+    const wrapLine = await screen.findByTestId("searchbar-line");
+
+    expect(wrapLine).toHaveAttribute("data-state", "wrap");
+    expect(wrapLine).toHaveAttribute("data-origin-x", "44");
+    expect(wrapLine).toHaveAttribute("data-origin-y", "22");
+    expect(wrapLine).toHaveStyle({
+      top: "-8px",
+      left: "-8px",
+      right: "-8px",
+      bottom: "-8px",
+    });
+  });
+});
+</file>
+
+<file path="src/components/SearchBar/SearchBar.tsx">
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { HStack } from "../../../styled-system/jsx";
+import { Input, Button } from "@/components/ui";
+
+type Props = {
+  onReplay?: (query?: string) => void;
+};
+
+const MotionStack = motion.create(HStack);
+const MotionButton = motion.create(Button);
+const MotionRect = motion.rect;
+
+const OUTLINE_INSET = 8;
+const OUTLINE_RADIUS = 24;
+
+/* shorter hover line */
+const HOVER_SEGMENT_LENGTH = 120;
+
+/* fewer samples = smoother + cheaper */
+const SAMPLE_STEPS = 120;
+
+type Size = { width: number; height: number };
+
+export default function SearchBar({ onReplay }: Props) {
+  const [value, setValue] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [outlineLocked, setOutlineLocked] = useState(false);
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
+  const [hoverOffset, setHoverOffset] = useState<number | null>(null);
+  const [focusOrigin, setFocusOrigin] = useState(0);
+  const [perimeter, setPerimeter] = useState(0);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hoverPathRef = useRef<SVGRectElement>(null);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+
+      setSize({
+        width: rect.width + OUTLINE_INSET * 2,
+        height: rect.height + OUTLINE_INSET * 2,
+      });
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(node);
+
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const path = hoverPathRef.current;
+    if (!path) return;
+
+    setPerimeter(path.getTotalLength());
+  }, [size]);
+
+  const triggerReplay = () => {
+    if (!onReplay) return;
+
+    onReplay(value);
+    setValue("");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
+  const findClosestLength = (clientX: number, clientY: number) => {
+    const container = containerRef.current;
+    const path = hoverPathRef.current;
+
+    if (!container || !path) return null;
+
+    const containerRect = container.getBoundingClientRect();
+
+    const svgX = clientX - containerRect.left + OUTLINE_INSET;
+    const svgY = clientY - containerRect.top + OUTLINE_INSET;
+
+    const total = path.getTotalLength();
+
+    let bestLength = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    for (let i = 0; i <= SAMPLE_STEPS; i++) {
+      const length = (i / SAMPLE_STEPS) * total;
+      const point = path.getPointAtLength(length);
+
+      const dx = point.x - svgX;
+      const dy = point.y - svgY;
+
+      const dist = dx * dx + dy * dy;
+
+      if (dist < bestDistance) {
+        bestDistance = dist;
+        bestLength = length;
+      }
+    }
+
+    return { bestLength, total };
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (focused) return;
+
+    const result = findClosestLength(event.clientX, event.clientY);
+    if (!result) return;
+
+    const { bestLength, total } = result;
+
+    const centered = bestLength - HOVER_SEGMENT_LENGTH / 2;
+    const normalized = ((centered % total) + total) % total;
+
+    setHoverOffset(normalized);
+  };
+
+  const handlePointerLeave = () => {
+    if (!focused) setHoverOffset(null);
+  };
+
+  const svgWidth = size.width;
+  const svgHeight = size.height;
+
+  return (
+    <MotionStack
+      ref={containerRef}
+      data-focused={focused}
+      alignItems="center"
+      gap="12px"
+      w="100%"
+      h="100%"
+      boxSizing="border-box"
+      onPointerMove={handlePointerMove}
+      onPointerEnter={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      animate={{
+        boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 200,
+        damping: 28,
+      }}
+      style={{
+        position: "relative",
+        display: "flex",
+        borderRadius: "16px",
+        padding: "12px 28px",
+        background: "rgba(0,0,0,0.16)",
+        backdropFilter: "blur(10px)",
+        border: "1px solid rgba(255,255,255,0.06)",
+        overflow: "visible",
+      }}
+    >
+      {svgWidth > 0 && svgHeight > 0 && (
+        <svg
+          width={svgWidth}
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          style={{
+            position: "absolute",
+            top: -OUTLINE_INSET,
+            left: -OUTLINE_INSET,
+            pointerEvents: "none",
+            overflow: "visible",
+            zIndex: 0,
+          }}
+        >
+          <rect
+            ref={hoverPathRef}
+            x="0.5"
+            y="0.5"
+            width={Math.max(0, svgWidth - 1)}
+            height={Math.max(0, svgHeight - 1)}
+            rx={OUTLINE_RADIUS}
+            ry={OUTLINE_RADIUS}
+            fill="none"
+            stroke="transparent"
+            strokeWidth="1"
+          />
+
+          {!focused && hoverOffset !== null && (
+            <MotionRect
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: 1,
+                strokeDasharray: `${HOVER_SEGMENT_LENGTH} 9999`,
+                strokeDashoffset: -hoverOffset,
+              }}
+              transition={{
+                opacity: { duration: 0.08 },
+                strokeDashoffset: {
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 30,
+                },
+              }}
+              style={{
+                filter: "drop-shadow(0 0 3px rgba(255,255,255,0.12))",
+              }}
+            />
+          )}
+
+          {focused && !outlineLocked && (
+            <MotionRect
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.8"
+              initial={{
+                pathLength: 0,
+                pathOffset: focusOrigin,
+              }}
+              animate={{
+                pathLength: 1,
+                pathOffset: 0,
+              }}
+              transition={{
+                duration: 0.28,
+                ease: "easeOut",
+              }}
+            />
+          )}
+
+          {outlineLocked && (
+            <rect
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke="rgba(255,255,255,0.45)"
+              strokeWidth="1.8"
+            />
+          )}
+        </svg>
+      )}
+
+      <Input
+        ref={inputRef}
+        value={value}
+        placeholder="Search symbol..."
+        onFocus={() => {
+          setFocused(true);
+          setOutlineLocked(false);
+
+          const origin =
+            hoverOffset !== null && perimeter > 0 ? hoverOffset / perimeter : 0;
+
+          setFocusOrigin(origin);
+
+          if (lockTimer.current) clearTimeout(lockTimer.current);
+
+          lockTimer.current = setTimeout(() => {
+            setOutlineLocked(true);
+          }, 300);
+        }}
+        onBlur={() => {
+          setFocused(false);
+          setOutlineLocked(false);
+
+          if (lockTimer.current) clearTimeout(lockTimer.current);
+        }}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") triggerReplay();
+        }}
+        style={{
+          flex: "1 1 0",
+          minWidth: 0,
+          height: "48px",
+          background: "transparent",
+          border: "none",
+          outline: "none",
+          color: "#eee",
+          fontSize: "16px",
+          zIndex: 1,
+        }}
+      />
+
+      <MotionButton
+        variant="surface"
+        onClick={triggerReplay}
+        whileHover={{
+          scale: 1.02,
+        }}
+        whileTap={{ scale: 0.97 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+        style={{
+          flex: "0 0 auto",
+          height: "48px",
+          padding: "0 24px",
+          borderRadius: "10px",
+          background: "rgba(70,70,70,0.28)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          color: "#eee",
+          zIndex: 1,
+        }}
+      >
+        Replay
+      </MotionButton>
+    </MotionStack>
+  );
+}
+</file>
+
+<file path="src/components/ui/absolute-center.tsx">
+import { ark } from '@ark-ui/react/factory'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { absoluteCenter } from 'styled-system/recipes'
+
+export type AbsoluteCenterProps = ComponentProps<typeof AbsoluteCenter>
+export const AbsoluteCenter = styled(ark.div, absoluteCenter)
+</file>
+
+<file path="src/components/ui/button.tsx">
+'use client'
+import { ark } from '@ark-ui/react/factory'
+import { createContext, mergeProps } from '@ark-ui/react/utils'
+import { type ComponentProps, forwardRef, useMemo } from 'react'
+import { styled } from 'styled-system/jsx'
+import { type ButtonVariantProps, button } from 'styled-system/recipes'
+import { Group, type GroupProps } from './group'
+import { Loader } from './loader'
+
+interface ButtonLoadingProps {
+  /**
+   * If `true`, the button will show a loading spinner.
+   * @default false
+   */
+  loading?: boolean | undefined
+  /**
+   * The text to show while loading.
+   */
+  loadingText?: React.ReactNode | undefined
+  /**
+   * The spinner to show while loading.
+   */
+  spinner?: React.ReactNode | undefined
+  /**
+   * The placement of the spinner
+   * @default "start"
+   */
+  spinnerPlacement?: 'start' | 'end' | undefined
+}
+
+type BaseButtonProps = ComponentProps<typeof BaseButton>
+const BaseButton = styled(ark.button, button)
+
+export interface ButtonProps extends BaseButtonProps, ButtonLoadingProps {}
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(props, ref) {
+  const propsContext = useButtonPropsContext()
+  const buttonProps = useMemo(
+    () => mergeProps<ButtonProps>(propsContext, props),
+    [propsContext, props],
+  )
+
+  const { loading, loadingText, children, spinner, spinnerPlacement, ...rest } = buttonProps
+  return (
+    <BaseButton
+      type="button"
+      ref={ref}
+      {...rest}
+      data-loading={loading ? '' : undefined}
+      disabled={loading || rest.disabled}
+    >
+      {!props.asChild && loading ? (
+        <Loader spinner={spinner} text={loadingText} spinnerPlacement={spinnerPlacement}>
+          {children}
+        </Loader>
+      ) : (
+        children
+      )}
+    </BaseButton>
+  )
+})
+
+export interface ButtonGroupProps extends GroupProps, ButtonVariantProps {}
+
+export const ButtonGroup = forwardRef<HTMLDivElement, ButtonGroupProps>(
+  function ButtonGroup(props, ref) {
+    const [variantProps, otherProps] = useMemo(() => button.splitVariantProps(props), [props])
+    return (
+      <ButtonPropsProvider value={variantProps}>
+        <Group ref={ref} {...otherProps} />
+      </ButtonPropsProvider>
+    )
+  },
+)
+
+const [ButtonPropsProvider, useButtonPropsContext] = createContext<ButtonVariantProps>({
+  name: 'ButtonPropsContext',
+  hookName: 'useButtonPropsContext',
+  providerName: '<PropsProvider />',
+  strict: false,
+})
+</file>
+
+<file path="src/components/ui/field.tsx">
+'use client'
+import { Field } from '@ark-ui/react/field'
+import type { ComponentProps } from 'react'
+import { createStyleContext } from 'styled-system/jsx'
+import { field } from 'styled-system/recipes'
+
+const { withProvider, withContext } = createStyleContext(field)
+
+export type RootProps = ComponentProps<typeof Root>
+export const Root = withProvider(Field.Root, 'root')
+export const RootProvider = withProvider(Field.RootProvider, 'root')
+export const ErrorText = withContext(Field.ErrorText, 'errorText')
+export const HelperText = withContext(Field.HelperText, 'helperText')
+export const Label = withContext(Field.Label, 'label')
+export const RequiredIndicator = withContext(Field.RequiredIndicator, 'requiredIndicator')
+
+export { FieldContext as Context } from '@ark-ui/react/field'
+</file>
+
+<file path="src/components/ui/group.tsx">
+import { ark } from '@ark-ui/react'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { group } from 'styled-system/recipes'
+
+export type GroupProps = ComponentProps<typeof Group>
+export const Group = styled(ark.div, group)
+</file>
+
+<file path="src/components/ui/index.ts">
+export { AbsoluteCenter, type AbsoluteCenterProps } from "./absolute-center";
+export { Button, ButtonGroup, type ButtonGroupProps, type ButtonProps } from "./button";
+export * as Field from "./field";
+export { Group, type GroupProps } from "./group";
+export { Input, type InputProps } from "./input";
+export { Loader, type LoaderProps } from "./loader";
+export { Span, type SpanProps } from "./span";
+export { Spinner, type SpinnerProps } from "./spinner";
+</file>
+
+<file path="src/components/ui/input.tsx">
+import { Field } from '@ark-ui/react/field'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { input } from 'styled-system/recipes'
+
+export type InputProps = ComponentProps<typeof Input>
+export const Input = styled(Field.Input, input)
+</file>
+
+<file path="src/components/ui/loader.tsx">
+'use client'
+import { forwardRef } from 'react'
+import type { HTMLStyledProps } from 'styled-system/jsx'
+import { AbsoluteCenter } from './absolute-center'
+import { Span } from './span'
+import { Spinner } from './spinner'
+
+export interface LoaderProps extends HTMLStyledProps<'span'> {
+  /**
+   * Whether the loader is visible
+   * @default true
+   */
+  visible?: boolean | undefined
+  /**
+   * The spinner to display when loading
+   */
+  spinner?: React.ReactNode | undefined
+  /**
+   * The placement of the spinner
+   * @default "start"
+   */
+  spinnerPlacement?: 'start' | 'end' | undefined
+  /**
+   * The text to display when loading
+   */
+  text?: React.ReactNode | undefined
+
+  children?: React.ReactNode
+}
+
+export const Loader = forwardRef<HTMLSpanElement, LoaderProps>(function Loader(props, ref) {
+  const {
+    spinner = <Spinner size="inherit" borderWidth="0.125em" color="inherit" />,
+    spinnerPlacement = 'start',
+    children,
+    text,
+    visible = true,
+    ...rest
+  } = props
+
+  if (!visible) return children
+
+  if (text) {
+    return (
+      <Span ref={ref} display="contents" {...rest}>
+        {spinnerPlacement === 'start' && spinner}
+        {text}
+        {spinnerPlacement === 'end' && spinner}
+      </Span>
+    )
+  }
+
+  if (spinner) {
+    return (
+      <Span ref={ref} display="contents" {...rest}>
+        <AbsoluteCenter display="inline-flex">{spinner}</AbsoluteCenter>
+        <Span visibility="hidden" display="contents">
+          {children}
+        </Span>
+      </Span>
+    )
+  }
+
+  return (
+    <Span ref={ref} display="contents" {...rest}>
+      {children}
+    </Span>
+  )
+})
+</file>
+
+<file path="src/components/ui/span.tsx">
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+
+export type SpanProps = ComponentProps<typeof Span>
+export const Span = styled('span')
+</file>
+
+<file path="src/components/ui/spinner.tsx">
+import { ark } from '@ark-ui/react/factory'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { spinner } from 'styled-system/recipes'
+
+export type SpinnerProps = ComponentProps<typeof Spinner>
+export const Spinner = styled(ark.span, spinner)
+</file>
+
+<file path="src/components/ClientConsoleBridge.tsx">
+"use client";
+
+import { mirrorConsole } from "@/lib/clientLogger";
+
+mirrorConsole();
+
+export default function ClientConsoleBridge() {
+  return null;
+}
+</file>
+
+<file path="src/components/GraphStage.tsx">
+"use client";
+
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  type Node,
+  type Edge,
+} from "@xyflow/react";
+
+import "@xyflow/react/dist/style.css";
+
+const nodeTypes = {};
+const edgeTypes = {};
+
+const initialNodes: Node[] = [
+  {
+    id: "1",
+    position: { x: 0, y: 0 },
+    data: { label: "Anchor: useQuery" },
+  },
+  {
+    id: "2",
+    position: { x: 200, y: 120 },
+    data: { label: "focusManager" },
+  },
+];
+
+const initialEdges: Edge[] = [
+  {
+    id: "e1-2",
+    source: "1",
+    target: "2",
+  },
+];
+
+export default function GraphStage() {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 0,
+      }}
+    >
+      <ReactFlow
+        nodes={initialNodes}
+        edges={initialEdges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background
+          variant={BackgroundVariant.Cross}
+          gap={32}
+          size={1}
+          color="#3a3a3a"
+        />
+      </ReactFlow>
+    </div>
+  );
+}
+</file>
+
+<file path="src/lib/clientLogger.ts">
+let sending = false;
+let installed = false;
+
+export function mirrorConsole() {
+  if (typeof window === "undefined") return;
+  if (installed) return; // prevent Fast Refresh duplication
+  installed = true;
+
+  const send = (type: string, args: unknown[]) => {
+    if (sending) return;
+
+    try {
+      sending = true;
+
+      const payload = JSON.stringify({
+        type,
+        args,
+        ts: Date.now(),
+        path: window.location.pathname,
+      });
+
+      navigator.sendBeacon(
+        "/api/log",
+        new Blob([payload], { type: "application/json" }),
+      );
+    } catch {
+      // never log logger errors
+    } finally {
+      sending = false;
+    }
+  };
+
+  const methods = ["error", "warn", "log", "info", "debug"] as const;
+
+  for (const method of methods) {
+    const original = console[method];
+
+    console[method] = (...args: unknown[]) => {
+      send(`console.${method}`, args);
+      original.apply(console, args);
+    };
+  }
+
+  window.addEventListener("error", (event) => {
+    if (String(event.filename ?? "").includes("/api/log")) return;
+
+    send("window.error", [
+      event.message,
+      event.filename,
+      event.lineno,
+      event.colno,
+      event.error?.stack,
+    ]);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const msg = String(event.reason ?? "");
+    if (msg.includes("/api/log")) return;
+
+    send("unhandledrejection", [event.reason]);
+  });
+}
+</file>
+
+<file path="src/theme/colors/green.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const green = defineSemanticTokens.colors({
+  '1': { value: { _light: '#fbfefc', _dark: '#0e1512' } },
+  '2': { value: { _light: '#f4fbf6', _dark: '#121b17' } },
+  '3': { value: { _light: '#e6f6eb', _dark: '#132d21' } },
+  '4': { value: { _light: '#d6f1df', _dark: '#113b29' } },
+  '5': { value: { _light: '#c4e8d1', _dark: '#174933' } },
+  '6': { value: { _light: '#adddc0', _dark: '#20573e' } },
+  '7': { value: { _light: '#8eceaa', _dark: '#28684a' } },
+  '8': { value: { _light: '#5bb98b', _dark: '#2f7c57' } },
+  '9': { value: { _light: '#30a46c', _dark: '#30a46c' } },
+  '10': { value: { _light: '#2b9a66', _dark: '#33b074' } },
+  '11': { value: { _light: '#218358', _dark: '#3dd68c' } },
+  '12': { value: { _light: '#193b2d', _dark: '#b1f1cb' } },
+  a1: { value: { _light: '#00c04004', _dark: '#00de4505' } },
+  a2: { value: { _light: '#00a32f0b', _dark: '#29f99d0b' } },
+  a3: { value: { _light: '#00a43319', _dark: '#22ff991e' } },
+  a4: { value: { _light: '#00a83829', _dark: '#11ff992d' } },
+  a5: { value: { _light: '#019c393b', _dark: '#2bffa23c' } },
+  a6: { value: { _light: '#00963c52', _dark: '#44ffaa4b' } },
+  a7: { value: { _light: '#00914071', _dark: '#50fdac5e' } },
+  a8: { value: { _light: '#00924ba4', _dark: '#54ffad73' } },
+  a9: { value: { _light: '#008f4acf', _dark: '#44ffa49e' } },
+  a10: { value: { _light: '#008647d4', _dark: '#43fea4ab' } },
+  a11: { value: { _light: '#00713fde', _dark: '#46fea5d4' } },
+  a12: { value: { _light: '#002616e6', _dark: '#bbffd7f0' } },
+  solid: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.green.9}', _dark: '{colors.green.9}' } },
+      hover: { value: { _light: '{colors.green.10}', _dark: '{colors.green.10}' } },
+    },
+    fg: { DEFAULT: { value: { _light: 'white', _dark: 'white' } } },
+  },
+  subtle: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.green.a3}', _dark: '{colors.green.a3}' } },
+      hover: { value: { _light: '{colors.green.a4}', _dark: '{colors.green.a4}' } },
+      active: { value: { _light: '{colors.green.a5}', _dark: '{colors.green.a5}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.green.a11}', _dark: '{colors.green.a11}' } } },
+  },
+  surface: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.green.a2}', _dark: '{colors.green.a2}' } },
+      active: { value: { _light: '{colors.green.a3}', _dark: '{colors.green.a3}' } },
+    },
+    border: {
+      DEFAULT: { value: { _light: '{colors.green.a6}', _dark: '{colors.green.a6}' } },
+      hover: { value: { _light: '{colors.green.a7}', _dark: '{colors.green.a7}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.green.a11}', _dark: '{colors.green.a11}' } } },
+  },
+  outline: {
+    bg: {
+      hover: { value: { _light: '{colors.green.a2}', _dark: '{colors.green.a2}' } },
+      active: { value: { _light: '{colors.green.a3}', _dark: '{colors.green.a3}' } },
+    },
+    border: { DEFAULT: { value: { _light: '{colors.green.a7}', _dark: '{colors.green.a7}' } } },
+    fg: { DEFAULT: { value: { _light: '{colors.green.a11}', _dark: '{colors.green.a11}' } } },
+  },
+  plain: {
+    bg: {
+      hover: { value: { _light: '{colors.green.a3}', _dark: '{colors.green.a3}' } },
+      active: { value: { _light: '{colors.green.a4}', _dark: '{colors.green.a4}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.green.a11}', _dark: '{colors.green.a11}' } } },
+  },
+})
+</file>
+
+<file path="src/theme/colors/red.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const red = defineSemanticTokens.colors({
+  '1': { value: { _light: '#fffcfc', _dark: '#191111' } },
+  '2': { value: { _light: '#fff7f7', _dark: '#201314' } },
+  '3': { value: { _light: '#feebec', _dark: '#3b1219' } },
+  '4': { value: { _light: '#ffdbdc', _dark: '#500f1c' } },
+  '5': { value: { _light: '#ffcdce', _dark: '#611623' } },
+  '6': { value: { _light: '#fdbdbe', _dark: '#72232d' } },
+  '7': { value: { _light: '#f4a9aa', _dark: '#8c333a' } },
+  '8': { value: { _light: '#eb8e90', _dark: '#b54548' } },
+  '9': { value: { _light: '#e5484d', _dark: '#e5484d' } },
+  '10': { value: { _light: '#dc3e42', _dark: '#ec5d5e' } },
+  '11': { value: { _light: '#ce2c31', _dark: '#ff9592' } },
+  '12': { value: { _light: '#641723', _dark: '#ffd1d9' } },
+  a1: { value: { _light: '#ff000003', _dark: '#f4121209' } },
+  a2: { value: { _light: '#ff000008', _dark: '#f22f3e11' } },
+  a3: { value: { _light: '#f3000d14', _dark: '#ff173f2d' } },
+  a4: { value: { _light: '#ff000824', _dark: '#fe0a3b44' } },
+  a5: { value: { _light: '#ff000632', _dark: '#ff204756' } },
+  a6: { value: { _light: '#f8000442', _dark: '#ff3e5668' } },
+  a7: { value: { _light: '#df000356', _dark: '#ff536184' } },
+  a8: { value: { _light: '#d2000571', _dark: '#ff5d61b0' } },
+  a9: { value: { _light: '#db0007b7', _dark: '#fe4e54e4' } },
+  a10: { value: { _light: '#d10005c1', _dark: '#ff6465eb' } },
+  a11: { value: { _light: '#c40006d3', _dark: '#ff9592' } },
+  a12: { value: { _light: '#55000de8', _dark: '#ffd1d9' } },
+  solid: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.red.9}', _dark: '{colors.red.9}' } },
+      hover: { value: { _light: '{colors.red.10}', _dark: '{colors.red.10}' } },
+    },
+    fg: { DEFAULT: { value: { _light: 'white', _dark: 'white' } } },
+  },
+  subtle: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.red.a3}', _dark: '{colors.red.a3}' } },
+      hover: { value: { _light: '{colors.red.a4}', _dark: '{colors.red.a4}' } },
+      active: { value: { _light: '{colors.red.a5}', _dark: '{colors.red.a5}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.red.a11}', _dark: '{colors.red.a11}' } } },
+  },
+  surface: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.red.a2}', _dark: '{colors.red.a2}' } },
+      active: { value: { _light: '{colors.red.a3}', _dark: '{colors.red.a3}' } },
+    },
+    border: {
+      DEFAULT: { value: { _light: '{colors.red.a6}', _dark: '{colors.red.a6}' } },
+      hover: { value: { _light: '{colors.red.a7}', _dark: '{colors.red.a7}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.red.a11}', _dark: '{colors.red.a11}' } } },
+  },
+  outline: {
+    bg: {
+      hover: { value: { _light: '{colors.red.a2}', _dark: '{colors.red.a2}' } },
+      active: { value: { _light: '{colors.red.a3}', _dark: '{colors.red.a3}' } },
+    },
+    border: { DEFAULT: { value: { _light: '{colors.red.a7}', _dark: '{colors.red.a7}' } } },
+    fg: { DEFAULT: { value: { _light: '{colors.red.a11}', _dark: '{colors.red.a11}' } } },
+  },
+  plain: {
+    bg: {
+      hover: { value: { _light: '{colors.red.a3}', _dark: '{colors.red.a3}' } },
+      active: { value: { _light: '{colors.red.a4}', _dark: '{colors.red.a4}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.red.a11}', _dark: '{colors.red.a11}' } } },
+  },
+})
+</file>
+
+<file path="src/theme/colors/slate.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const slate = defineSemanticTokens.colors({
+  '1': { value: { _light: '#fcfcfd', _dark: '#111113' } },
+  '2': { value: { _light: '#f9f9fb', _dark: '#18191b' } },
+  '3': { value: { _light: '#f0f0f3', _dark: '#212225' } },
+  '4': { value: { _light: '#e8e8ec', _dark: '#272a2d' } },
+  '5': { value: { _light: '#e0e1e6', _dark: '#2e3135' } },
+  '6': { value: { _light: '#d9d9e0', _dark: '#363a3f' } },
+  '7': { value: { _light: '#cdced6', _dark: '#43484e' } },
+  '8': { value: { _light: '#b9bbc6', _dark: '#5a6169' } },
+  '9': { value: { _light: '#8b8d98', _dark: '#696e77' } },
+  '10': { value: { _light: '#80838d', _dark: '#777b84' } },
+  '11': { value: { _light: '#60646c', _dark: '#b0b4ba' } },
+  '12': { value: { _light: '#1c2024', _dark: '#edeef0' } },
+  a1: { value: { _light: '#00005503', _dark: '#00000000' } },
+  a2: { value: { _light: '#00005506', _dark: '#d8f4f609' } },
+  a3: { value: { _light: '#0000330f', _dark: '#ddeaf814' } },
+  a4: { value: { _light: '#00002d17', _dark: '#d3edf81d' } },
+  a5: { value: { _light: '#0009321f', _dark: '#d9edfe25' } },
+  a6: { value: { _light: '#00002f26', _dark: '#d6ebfd30' } },
+  a7: { value: { _light: '#00062e32', _dark: '#d9edff40' } },
+  a8: { value: { _light: '#00083046', _dark: '#d9edff5d' } },
+  a9: { value: { _light: '#00051d74', _dark: '#dfebfd6d' } },
+  a10: { value: { _light: '#00071b7f', _dark: '#e5edfd7b' } },
+  a11: { value: { _light: '#0007149f', _dark: '#f1f7feb5' } },
+  a12: { value: { _light: '#000509e3', _dark: '#fcfdffef' } },
+  solid: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.black}', _dark: '{colors.white}' } },
+      hover: { value: { _light: '{colors.gray.12}', _dark: '{colors.gray.12}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.white}', _dark: '{colors.black}' } } },
+  },
+  subtle: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.gray.a3}', _dark: '{colors.gray.a3}' } },
+      hover: { value: { _light: '{colors.gray.a4}', _dark: '{colors.gray.a4}' } },
+      active: { value: { _light: '{colors.gray.a5}', _dark: '{colors.gray.a5}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.gray.12}', _dark: '{colors.gray.12}' } } },
+  },
+  surface: {
+    bg: {
+      DEFAULT: { value: { _light: '{colors.white}', _dark: '{colors.gray.1}' } },
+      hover: { value: { _light: '{colors.gray.2}', _dark: '{colors.gray.2}' } },
+      active: { value: { _light: '{colors.gray.3}', _dark: '{colors.gray.3}' } },
+    },
+    border: {
+      DEFAULT: { value: { _light: '{colors.gray.6}', _dark: '{colors.gray.6}' } },
+      hover: { value: { _light: '{colors.gray.7}', _dark: '{colors.gray.7}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.gray.12}', _dark: '{colors.gray.12}' } } },
+  },
+  outline: {
+    bg: {
+      hover: { value: { _light: '{colors.gray.a2}', _dark: '{colors.gray.a2}' } },
+      active: { value: { _light: '{colors.gray.a3}', _dark: '{colors.gray.a3}' } },
+    },
+    border: { DEFAULT: { value: { _light: '{colors.gray.6}', _dark: '{colors.gray.6}' } } },
+    fg: { DEFAULT: { value: { _light: '{colors.gray.12}', _dark: '{colors.gray.12}' } } },
+  },
+  plain: {
+    bg: {
+      hover: { value: { _light: '{colors.gray.a3}', _dark: '{colors.gray.a3}' } },
+      active: { value: { _light: '{colors.gray.a4}', _dark: '{colors.gray.a4}' } },
+    },
+    fg: { DEFAULT: { value: { _light: '{colors.gray.12}', _dark: '{colors.gray.12}' } } },
+  },
+})
+</file>
+
+<file path="src/theme/recipes/absolute-center.ts">
+import { defineRecipe } from '@pandacss/dev'
+
+export const absoluteCenter = defineRecipe({
+  className: 'absolute-center',
+  base: {
+    position: 'absolute',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  defaultVariants: {
+    axis: 'both',
+  },
+  variants: {
+    axis: {
+      horizontal: {
+        insetStart: '50%',
+        translate: '-50%',
+        _rtl: {
+          translate: '50%',
+        },
+      },
+      vertical: {
+        top: '50%',
+        translate: '0 -50%',
+      },
+      both: {
+        insetStart: '50%',
+        top: '50%',
+        translate: '-50% -50%',
+        _rtl: {
+          translate: '50% -50%',
+        },
+      },
+    },
+  },
+})
+</file>
+
+<file path="src/theme/recipes/button.ts">
+import { defineRecipe } from '@pandacss/dev'
+
+export const button = defineRecipe({
+  className: 'button',
+  jsx: ['Button', 'IconButton', 'CloseButton', 'ButtonGroup'],
+  base: {
+    alignItems: 'center',
+    appearance: 'none',
+    borderRadius: 'l2',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    flexShrink: '0',
+    fontWeight: 'semibold',
+    gap: '2',
+    isolation: 'isolate',
+    justifyContent: 'center',
+    outline: '0',
+    position: 'relative',
+    transition: 'colors',
+    transitionProperty: 'background-color, border-color, color, box-shadow',
+    userSelect: 'none',
+    verticalAlign: 'middle',
+    whiteSpace: 'nowrap',
+    _icon: {
+      flexShrink: '0',
+    },
+    _disabled: {
+      layerStyle: 'disabled',
+    },
+    focusVisibleRing: 'outside',
+  },
+  defaultVariants: {
+    variant: 'solid',
+    size: 'md',
+  },
+  variants: {
+    variant: {
+      solid: {
+        bg: 'colorPalette.solid.bg',
+        color: 'colorPalette.solid.fg',
+        _hover: {
+          bg: 'colorPalette.solid.bg.hover',
+        },
+      },
+      surface: {
+        bg: 'colorPalette.surface.bg',
+        borderWidth: '1px',
+        borderColor: 'colorPalette.surface.border',
+        color: 'colorPalette.surface.fg',
+        _hover: {
+          borderColor: 'colorPalette.surface.border.hover',
+        },
+        _active: {
+          bg: 'colorPalette.surface.bg.active',
+        },
+        _on: {
+          bg: 'colorPalette.surface.bg.active',
+        },
+      },
+      subtle: {
+        bg: 'colorPalette.subtle.bg',
+        color: 'colorPalette.subtle.fg',
+        _hover: {
+          bg: 'colorPalette.subtle.bg.hover',
+        },
+        _active: {
+          bg: 'colorPalette.subtle.bg.active',
+        },
+        _on: {
+          bg: 'colorPalette.subtle.bg.active',
+        },
+      },
+      outline: {
+        borderWidth: '1px',
+        borderColor: 'colorPalette.outline.border',
+        color: 'colorPalette.outline.fg',
+        _hover: {
+          bg: 'colorPalette.outline.bg.hover',
+        },
+        _active: {
+          bg: 'colorPalette.outline.bg.active',
+        },
+        _on: {
+          bg: 'colorPalette.outline.bg.active',
+        },
+      },
+      plain: {
+        color: 'colorPalette.plain.fg',
+        _hover: {
+          bg: 'colorPalette.plain.bg.hover',
+        },
+        _active: {
+          bg: 'colorPalette.plain.bg.active',
+        },
+        _on: {
+          bg: 'colorPalette.plain.bg.active',
+        },
+      },
+    },
+    size: {
+      '2xs': { h: '6', minW: '6', textStyle: 'xs', px: '2', _icon: { boxSize: '3.5' } },
+      xs: { h: '8', minW: '8', textStyle: 'sm', px: '2.5', _icon: { boxSize: '4' } },
+      sm: { h: '9', minW: '9', textStyle: 'sm', px: '3', _icon: { boxSize: '4' } },
+      md: { h: '10', minW: '10', textStyle: 'sm', px: '3.5', _icon: { boxSize: '5' } },
+      lg: { h: '11', minW: '11', textStyle: 'md', px: '4', _icon: { boxSize: '5' } },
+      xl: { h: '12', minW: '12', textStyle: 'md', px: '4.5', _icon: { boxSize: '5.5' } },
+      '2xl': { h: '16', minW: '16', textStyle: 'xl', px: '6', _icon: { boxSize: '6' } },
+    },
+  },
+})
+</file>
+
+<file path="src/theme/recipes/field.ts">
+import { fieldAnatomy } from '@ark-ui/react/anatomy'
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const field = defineSlotRecipe({
+  className: 'field',
+  slots: fieldAnatomy.keys(),
+  base: {
+    root: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1.5',
+    },
+    label: {
+      alignItems: 'center',
+      color: 'fg.default',
+      display: 'flex',
+      gap: '0.5',
+      textAlign: 'start',
+      userSelect: 'none',
+      textStyle: 'label',
+      _disabled: {
+        layerStyle: 'disabled',
+      },
+    },
+    requiredIndicator: {
+      color: 'colorPalette.solid',
+    },
+    helperText: {
+      color: 'fg.muted',
+      textStyle: 'sm',
+      _disabled: {
+        layerStyle: 'disabled',
+      },
+    },
+    errorText: {
+      color: 'error',
+      textStyle: 'sm',
+    },
+  },
+})
+</file>
+
+<file path="src/theme/recipes/group.ts">
+import { defineRecipe } from '@pandacss/dev'
+
+export const group = defineRecipe({
+  className: 'group',
+  base: {
+    display: 'inline-flex',
+    position: 'relative',
+    gap: '2',
+    '& > *': {
+      _focusVisible: {
+        zIndex: 1,
+      },
+    },
+  },
+  defaultVariants: {
+    orientation: 'horizontal',
+  },
+  variants: {
+    orientation: {
+      horizontal: {
+        flexDirection: 'row',
+      },
+      vertical: {
+        flexDirection: 'column',
+      },
+    },
+    attached: {
+      true: {
+        gap: '0',
+      },
+    },
+    grow: {
+      true: {
+        display: 'flex',
+        '& > *': {
+          flex: 1,
+        },
+      },
+    },
+  },
+  compoundVariants: [
+    {
+      orientation: 'horizontal',
+      attached: true,
+      css: {
+        '& > *:first-child': {
+          borderEndRadius: '0',
+          marginEnd: '-1px',
+        },
+        '& > *:last-child': {
+          borderStartRadius: '0',
+        },
+        '& > *:not(:first-child):not(:last-child)': {
+          borderRadius: '0',
+          marginEnd: '-1px',
+        },
+      },
+    },
+    {
+      orientation: 'vertical',
+      attached: true,
+      css: {
+        '& > *:first-child': {
+          borderBottomRadius: '0',
+          marginBottom: '-1px',
+        },
+        '& > *:last-child': {
+          borderTopRadius: '0',
+        },
+        '& > *:not(:first-child):not(:last-child)': {
+          borderRadius: '0',
+          marginBottom: '-1px',
+        },
+      },
+    },
+  ],
+})
+</file>
+
+<file path="src/theme/recipes/index.ts">
+import { field } from "./field";
+import { input } from "./input";
+import { spinner } from "./spinner";
+import { absoluteCenter } from "./absolute-center";
+import { group } from "./group";
+import { button } from "./button";
+export const recipes = {
+  button,
+  group,
+  absoluteCenter,
+  spinner,
+  input,
+  field
+}
+export const slotRecipes = {}
+</file>
+
+<file path="src/theme/recipes/input.ts">
+import type { RecipeConfig } from '@pandacss/dev'
+
+export const input = {
+  className: 'input',
+  jsx: ['Input', 'Field.Input'],
+  base: {
+    appearance: 'none',
+    borderRadius: 'l2',
+    height: 'var(--input-height)',
+    minHeight: 'var(--input-height)',
+    minW: 'var(--input-height)',
+    outline: '0',
+    position: 'relative',
+    textAlign: 'start',
+    transition: 'colors',
+    width: '100%',
+    _disabled: {
+      layerStyle: 'disabled',
+    },
+  },
+  defaultVariants: {
+    size: 'md',
+    variant: 'outline',
+  },
+  variants: {
+    variant: {
+      outline: {
+        borderWidth: '1px',
+        borderColor: 'gray.outline.border',
+        focusVisibleRing: 'inside',
+        _invalid: {
+          focusRingColor: 'error',
+          borderColor: 'error',
+        },
+      },
+      surface: {
+        bg: 'gray.surface.bg',
+        borderWidth: '1px',
+        borderColor: 'gray.surface.border',
+        focusVisibleRing: 'inside',
+
+        _invalid: {
+          focusRingColor: 'error',
+          borderColor: 'error',
+        },
+      },
+      subtle: {
+        borderWidth: '1px',
+        borderColor: 'transparent',
+        bg: 'gray.subtle.bg',
+        color: 'gray.subtle.fg',
+        focusVisibleRing: 'inside',
+
+        _invalid: {
+          focusRingColor: 'error',
+          borderColor: 'error',
+        },
+      },
+      flushed: {
+        borderBottomWidth: '1px',
+        borderBottomColor: 'gray.outline.border',
+        borderRadius: '0',
+        color: 'fg.default',
+        px: '0',
+        _invalid: {
+          borderColor: 'error',
+        },
+        _focus: {
+          borderColor: 'colorPalette.solid.bg',
+          boxShadowColor: 'colorPalette.solid.bg',
+          boxShadow: '0 1px 0 0 var(--shadow-color)',
+          _invalid: {
+            borderColor: 'error',
+            boxShadowColor: 'error',
+          },
+        },
+      },
+    },
+    size: {
+      '2xs': { textStyle: 'xs', px: '1.5', '--input-height': 'sizes.7' },
+      xs: { textStyle: 'sm', px: '2', '--input-height': 'sizes.8' },
+      sm: { textStyle: 'sm', px: '2.5', '--input-height': 'sizes.9' },
+      md: { textStyle: 'md', px: '3', '--input-height': 'sizes.10' },
+      lg: { textStyle: 'md', px: '3.5', '--input-height': 'sizes.11' },
+      xl: { textStyle: 'lg', px: '4', '--input-height': 'sizes.12' },
+      '2xl': { textStyle: '3xl', px: '4.5', '--input-height': 'sizes.16' },
+    },
+  },
+} satisfies RecipeConfig
+</file>
+
+<file path="src/theme/recipes/spinner.ts">
+import { defineRecipe } from '@pandacss/dev'
+
+export const spinner = defineRecipe({
+  className: 'spinner',
+  base: {
+    '--spinner-track-color': 'transparent',
+    animation: 'spin',
+    animationDuration: 'slowest',
+    borderBottomColor: 'var(--spinner-track-color)',
+    borderColor: 'currentColor',
+    borderInlineStartColor: 'var(--spinner-track-color)',
+    borderRadius: 'full',
+    borderStyle: 'solid',
+    borderWidth: '2px',
+    display: 'inline-block',
+    height: 'var(--spinner-size)',
+    width: 'var(--spinner-size)',
+  },
+  defaultVariants: {
+    size: 'md',
+  },
+  variants: {
+    size: {
+      inherit: { '--spinner-size': '1em' },
+      xs: { '--spinner-size': 'sizes.3' },
+      sm: { '--spinner-size': 'sizes.4' },
+      md: { '--spinner-size': 'sizes.5' },
+      lg: { '--spinner-size': 'sizes.6' },
+      xl: { '--spinner-size': 'sizes.7' },
+      '2xl': { '--spinner-size': 'sizes.8' },
+    },
+  },
+})
+</file>
+
+<file path="src/theme/tokens/colors.ts">
+import { defineTokens } from '@pandacss/dev'
+
+const black = defineTokens.colors({
+  DEFAULT: { value: '#000000' },
+  a1: { value: 'rgba(0, 0, 0, 0.05)' },
+  a2: { value: 'rgba(0, 0, 0, 0.1)' },
+  a3: { value: 'rgba(0, 0, 0, 0.15)' },
+  a4: { value: 'rgba(0, 0, 0, 0.2)' },
+  a5: { value: 'rgba(0, 0, 0, 0.3)' },
+  a6: { value: 'rgba(0, 0, 0, 0.4)' },
+  a7: { value: 'rgba(0, 0, 0, 0.5)' },
+  a8: { value: 'rgba(0, 0, 0, 0.6)' },
+  a9: { value: 'rgba(0, 0, 0, 0.7)' },
+  a10: { value: 'rgba(0, 0, 0, 0.8)' },
+  a11: { value: 'rgba(0, 0, 0, 0.9)' },
+  a12: { value: 'rgba(0, 0, 0, 0.95)' },
+})
+
+const white = defineTokens.colors({
+  DEFAULT: { value: '#ffffff' },
+  a1: { value: 'rgba(255, 255, 255, 0.05)' },
+  a2: { value: 'rgba(255, 255, 255, 0.1)' },
+  a3: { value: 'rgba(255, 255, 255, 0.15)' },
+  a4: { value: 'rgba(255, 255, 255, 0.2)' },
+  a5: { value: 'rgba(255, 255, 255, 0.3)' },
+  a6: { value: 'rgba(255, 255, 255, 0.4)' },
+  a7: { value: 'rgba(255, 255, 255, 0.5)' },
+  a8: { value: 'rgba(255, 255, 255, 0.6)' },
+  a9: { value: 'rgba(255, 255, 255, 0.7)' },
+  a10: { value: 'rgba(255, 255, 255, 0.8)' },
+  a11: { value: 'rgba(255, 255, 255, 0.9)' },
+  a12: { value: 'rgba(255, 255, 255, 0.95)' },
+})
+
+export const colors = { black, white }
+</file>
+
+<file path="src/theme/tokens/durations.ts">
+import { defineTokens } from '@pandacss/dev'
+
+export const durations = defineTokens.durations({
+  fastest: { value: '50ms' },
+  faster: { value: '100ms' },
+  fast: { value: '150ms' },
+  normal: { value: '200ms' },
+  slow: { value: '250ms' },
+  slower: { value: '300ms' },
+  slowest: { value: '400ms' },
+})
+</file>
+
+<file path="src/theme/tokens/shadows.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const shadows = defineSemanticTokens.shadows({
+  xs: {
+    value: {
+      _light: '0px 1px 2px {colors.gray.a6}, 0px 0px 1px {colors.gray.a7}',
+      _dark: '0px 1px 1px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  sm: {
+    value: {
+      _light: '0px 2px 4px {colors.gray.a4}, 0px 0px 1px {colors.gray.a4}',
+      _dark: '0px 2px 4px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  md: {
+    value: {
+      _light: '0px 4px 8px {colors.gray.a4}, 0px 0px 1px {colors.gray.a4}',
+      _dark: '0px 4px 8px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  lg: {
+    value: {
+      _light: '0px 8px 16px {colors.gray.a4}, 0px 0px 1px {colors.gray.a4}',
+      _dark: '0px 8px 16px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  xl: {
+    value: {
+      _light: '0px 16px 24px {colors.gray.a4}, 0px 0px 1px {colors.gray.a4}',
+      _dark: '0px 16px 24px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  '2xl': {
+    value: {
+      _light: '0px 24px 40px {colors.gray.a4}, 0px 0px 1px {colors.gray.a4}',
+      _dark: '0px 24px 40px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
+    },
+  },
+  inset: {
+    value: {
+      _light: 'inset 8px 0 12px -8px {colors.gray.a4}',
+      _dark: 'inset 8px 0 12px -8px {colors.black.a6}',
+    },
+  },
+})
+</file>
+
+<file path="src/theme/tokens/z-index.ts">
+import { defineTokens } from '@pandacss/dev'
+
+export const zIndex = defineTokens.zIndex({
+  hide: {
+    value: -1,
+  },
+  base: {
+    value: 0,
+  },
+  docked: {
+    value: 10,
+  },
+  dropdown: {
+    value: 1000,
+  },
+  sticky: {
+    value: 1100,
+  },
+  banner: {
+    value: 1200,
+  },
+  overlay: {
+    value: 1300,
+  },
+  modal: {
+    value: 1400,
+  },
+  popover: {
+    value: 1500,
+  },
+  skipLink: {
+    value: 1600,
+  },
+  toast: {
+    value: 1700,
+  },
+  tooltip: {
+    value: 1800,
+  },
+})
+</file>
+
+<file path="src/theme/animation-styles.ts">
+import { defineAnimationStyles } from '@pandacss/dev'
+
+export const animationStyles = defineAnimationStyles({
+  'slide-fade-in': {
+    value: {
+      transformOrigin: 'var(--transform-origin)',
+      '&[data-placement^=top]': {
+        animationName: 'slide-from-bottom, fade-in',
+      },
+      '&[data-placement^=bottom]': {
+        animationName: 'slide-from-top, fade-in',
+      },
+      '&[data-placement^=left]': {
+        animationName: 'slide-from-right, fade-in',
+      },
+      '&[data-placement^=right]': {
+        animationName: 'slide-from-left, fade-in',
+      },
+    },
+  },
+  'slide-fade-out': {
+    value: {
+      transformOrigin: 'var(--transform-origin)',
+      '&[data-placement^=top]': {
+        animationName: 'slide-to-bottom, fade-out',
+      },
+      '&[data-placement^=bottom]': {
+        animationName: 'slide-to-top, fade-out',
+      },
+      '&[data-placement^=left]': {
+        animationName: 'slide-to-right, fade-out',
+      },
+      '&[data-placement^=right]': {
+        animationName: 'slide-to-left, fade-out',
+      },
+    },
+  },
+  'scale-fade-in': {
+    value: {
+      transformOrigin: 'var(--transform-origin)',
+      animationName: 'scale-in, fade-in',
+    },
+  },
+  'scale-fade-out': {
+    value: {
+      transformOrigin: 'var(--transform-origin)',
+      animationName: 'scale-out, fade-out',
+    },
+  },
+})
+</file>
+
+<file path="src/theme/conditions.ts">
+export const conditions = {
+  extend: {
+    light: ':root &, .light &',
+    invalid: '&:is(:user-invalid, [data-invalid], [aria-invalid=true])',
+    hover: '&:not(:disabled):hover',
+    active: '&:not(:disabled):active',
+    checked:
+      '&:is(:checked, [data-checked], [data-state=checked], [aria-checked=true], [data-state=indeterminate])',
+    on: '&:is([data-state=on])',
+    pinned: '&:is([data-pinned])',
+  },
+} as const
+</file>
+
+<file path="src/theme/global-css.ts">
+export const globalCss = {
+  extend: {
+    '*': {
+      '--global-color-border': 'colors.border',
+      '--global-color-placeholder': 'colors.fg.subtle',
+      '--global-color-selection': 'colors.colorPalette.subtle.bg',
+      '--global-color-focus-ring': 'colors.colorPalette.solid.bg',
+    },
+    html: {
+      colorPalette: 'gray',
+    },
+    body: {
+      background: 'canvas',
+      color: 'fg.default',
+    },
+  },
+}
+</file>
+
+<file path="src/theme/keyframes.ts">
+import { defineKeyframes } from '@pandacss/dev'
+
+export const keyframes = defineKeyframes({
+  // collapse
+  'expand-height': {
+    from: { height: '0' },
+    to: { height: 'var(--height)' },
+  },
+  'collapse-height': {
+    from: { height: 'var(--height)' },
+    to: { height: '0' },
+  },
+  'expand-width': {
+    from: { width: '0' },
+    to: { width: 'var(--width)' },
+  },
+  'collapse-width': {
+    from: { width: 'var(--width)' },
+    to: { width: '0' },
+  },
+  // fade
+  'fade-in': {
+    from: { opacity: '0' },
+    to: { opacity: '1' },
+  },
+  'fade-out': {
+    from: { opacity: '1' },
+    to: { opacity: '0' },
+  },
+  // slide from (full)
+  'slide-from-left-full': {
+    from: { translate: '-100% 0' },
+    to: { translate: '0 0' },
+  },
+  'slide-from-right-full': {
+    from: { translate: '100% 0' },
+    to: { translate: '0 0' },
+  },
+  'slide-from-top-full': {
+    from: { translate: '0 -100%' },
+    to: { translate: '0 0' },
+  },
+  'slide-from-bottom-full': {
+    from: { translate: '0 100%' },
+    to: { translate: '0 0' },
+  },
+  // slide to (full)
+  'slide-to-left-full': {
+    from: { translate: '0 0' },
+    to: { translate: '-100% 0' },
+  },
+  'slide-to-right-full': {
+    from: { translate: '0 0' },
+    to: { translate: '100% 0' },
+  },
+  'slide-to-top-full': {
+    from: { translate: '0 0' },
+    to: { translate: '0 -100%' },
+  },
+  'slide-to-bottom-full': {
+    from: { translate: '0 0' },
+    to: { translate: '0 100%' },
+  },
+  // slide from
+  'slide-from-top': {
+    '0%': { translate: '0 -0.5rem' },
+    to: { translate: '0' },
+  },
+  'slide-from-bottom': {
+    '0%': { translate: '0 0.5rem' },
+    to: { translate: '0' },
+  },
+  'slide-from-left': {
+    '0%': { translate: '-0.5rem 0' },
+    to: { translate: '0' },
+  },
+  'slide-from-right': {
+    '0%': { translate: '0.5rem 0' },
+    to: { translate: '0' },
+  },
+  // slide to
+  'slide-to-top': {
+    '0%': { translate: '0' },
+    to: { translate: '0 -0.5rem' },
+  },
+  'slide-to-bottom': {
+    '0%': { translate: '0' },
+    to: { translate: '0 0.5rem' },
+  },
+  'slide-to-left': {
+    '0%': { translate: '0' },
+    to: { translate: '-0.5rem 0' },
+  },
+  'slide-to-right': {
+    '0%': { translate: '0' },
+    to: { translate: '0.5rem 0' },
+  },
+  // scale
+  'scale-in': {
+    from: { scale: '0.95' },
+    to: { scale: '1' },
+  },
+  'scale-out': {
+    from: { scale: '1' },
+    to: { scale: '0.95' },
+  },
+  'bg-position': {
+    from: {
+      backgroundPosition: 'var(--animate-from, 1rem) 0',
+    },
+    to: {
+      backgroundPosition: 'var(--animate-to, 0) 0',
+    },
+  },
+  position: {
+    from: {
+      insetInlineStart: 'var(--animate-from-x)',
+      insetBlockStart: 'var(--animate-from-y)',
+    },
+    to: {
+      insetInlineStart: 'var(--animate-to-x)',
+      insetBlockStart: 'var(--animate-to-y)',
+    },
+  },
+})
+</file>
+
+<file path="src/theme/layer-styles.ts">
+import { defineLayerStyles } from '@pandacss/dev'
+
+export const layerStyles = defineLayerStyles({
+  disabled: {
+    value: {
+      cursor: 'not-allowed',
+      opacity: '0.67',
+      filter: 'grayscale(100%)',
+    },
+  },
+})
+</file>
+
+<file path="src/theme/text-styles.ts">
+import { defineTextStyles } from '@pandacss/dev'
+
+export const textStyles = defineTextStyles({
+  xs: { value: { fontSize: 'xs', lineHeight: '1.125rem' } },
+  sm: { value: { fontSize: 'sm', lineHeight: '1.25rem' } },
+  md: { value: { fontSize: 'md', lineHeight: '1.5rem' } },
+  lg: { value: { fontSize: 'lg', lineHeight: '1.75rem' } },
+  xl: { value: { fontSize: 'xl', lineHeight: '1.875rem' } },
+  '2xl': { value: { fontSize: '2xl', lineHeight: '2rem' } },
+  '3xl': { value: { fontSize: '3xl', lineHeight: '2.375rem' } },
+  '4xl': { value: { fontSize: '4xl', lineHeight: '2.75rem', letterSpacing: '-0.02em' } },
+  '5xl': { value: { fontSize: '5xl', lineHeight: '3.75rem', letterSpacing: '-0.02em' } },
+  '6xl': { value: { fontSize: '6xl', lineHeight: '4.5rem', letterSpacing: '-0.02em' } },
+  '7xl': { value: { fontSize: '7xl', lineHeight: '5.75rem', letterSpacing: '-0.02em' } },
+
+  label: { value: { fontSize: 'sm', lineHeight: '1.25rem', fontWeight: 'medium' } },
+})
+</file>
+
+<file path="test-results/.last-run.json">
+{
+  "status": "failed",
+  "failedTests": [
+    "58d44fce413694e1966d-dd14728ccc774ce5afa2",
+    "58d44fce413694e1966d-1b637a35e66fbd338891"
+  ]
+}
+</file>
+
+<file path="components.json">
+{
+  "$schema": "https://park-ui.com/schema/components.json",
+  "framework": "react",
+  "panda": {
+    "config": "panda.config.ts"
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "recipes": "@/theme/recipes",
+    "theme": "@/theme",
+    "ui": "@/components/ui"
+  }
+}
+</file>
+
+<file path="flake.lock">
+{
+  "nodes": {
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "git-hooks": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "gitignore": "gitignore",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1772665116,
+        "narHash": "sha256-XmjUDG/J8Z8lY5DVNVUf5aoZGc400FxcjsNCqHKiKtc=",
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "rev": "39f53203a8458c330f61cc0759fe243f0ac0d198",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "type": "github"
+      }
+    },
+    "gitignore": {
+      "inputs": {
+        "nixpkgs": [
+          "git-hooks",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1709087332,
+        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1770073757,
+        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1772624091,
+        "narHash": "sha256-QKyJ0QGWBn6r0invrMAK8dmJoBYWoOWy7lN+UHzW1jc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "80bdc1e5ce51f56b19791b52b2901187931f5353",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "git-hooks": "git-hooks",
+        "nixpkgs": "nixpkgs_2"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
+</file>
+
+<file path="vitest.config.ts">
+import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const root = fileURLToPath(new URL(".", import.meta.url));
+const srcDir = path.join(root, "src");
 
 export default defineConfig({
-  // Whether to use css reset
-  preflight: true,
+  test: {
+    environment: "happy-dom",
+    globals: true,
+    setupFiles: "./vitest.setup.ts",
+    css: true,
+    include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
 
-  // Where to look for your css declarations
-  include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
+    alias: {
+      "@": srcDir,
+      "@/components": path.join(srcDir, "components"),
+      "@/lib": path.join(srcDir, "lib"),
+      "@/theme": path.join(srcDir, "theme"),
 
-  // Files to exclude
-  exclude: [],
-
-  // Useful for theme customization
-  theme: {
-    extend: {},
+      // ⭐ THIS FIXES YOUR ERROR
+      "styled-system": path.join(root, "styled-system"),
+    },
   },
-
-  // The output directory for your css system
-  outdir: "styled-system",
 });
+</file>
+
+<file path="vitest.setup.ts">
+import "@testing-library/jest-dom/vitest";
+
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+if (!globalThis.ResizeObserver) {
+  // ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
+  // @ts-expect-error - global assignment for test environment
+  globalThis.ResizeObserver = ResizeObserver;
+}
 </file>
 
 <file path="public/file.svg">
@@ -106,55 +2611,304 @@ export default defineConfig({
 <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
 </file>
 
-<file path="src/app/globals.css">
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+<file path="biome.json">
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   }
 }
 </file>
 
+<file path="flake.nix">
+{
+  description = "Bun + Vite + Playwright + Pre-commit multi-platform dev shell";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+  };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      git-hooks,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+
+        preCommit = git-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            # Secret scanning
+            trufflehog.enable = true;
+            ripsecrets.enable = true;
+
+            # Hygiene
+            nixfmt.enable = true;
+            end-of-file-fixer.enable = true;
+            trim-trailing-whitespace.enable = true;
+          };
+        };
+      in
+      {
+        checks.pre-commit-check = preCommit;
+
+        devShells.default = pkgs.mkShell {
+          packages = [
+            pkgs.bun
+            pkgs.chromium
+          ]
+          ++ preCommit.enabledPackages;
+
+          shellHook = ''
+            ${preCommit.shellHook}
+
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            export PLAYWRIGHT_CHROMIUM_PATH=${pkgs.chromium}/bin/chromium
+            export PLAYWRIGHT_BROWSERS_PATH=0
+          '';
+        };
+      }
+    );
+}
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="panda.config.ts">
+import { green } from "@/theme/colors/green";
+import { red } from "@/theme/colors/red";
+import { slate } from "@/theme/colors/slate";
+import { animationStyles } from "@/theme/animation-styles";
+import { zIndex } from "@/theme/tokens/z-index";
+import { shadows } from "@/theme/tokens/shadows";
+import { durations } from "@/theme/tokens/durations";
+import { colors } from "@/theme/tokens/colors";
+import { textStyles } from "@/theme/text-styles";
+import { layerStyles } from "@/theme/layer-styles";
+import { keyframes } from "@/theme/keyframes";
+import { globalCss } from "@/theme/global-css";
+import { conditions } from "@/theme/conditions";
+import { slotRecipes, recipes } from "@/theme/recipes";
+import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  preflight: true,
+  include: ["./src/**/*.{js,jsx,ts,tsx}"],
+  jsxFramework: "react",
+  outdir: "styled-system",
+
+  theme: {
+    extend: {
+      animationStyles: animationStyles,
+      recipes: recipes,
+      slotRecipes: slotRecipes,
+      keyframes: keyframes,
+      layerStyles: layerStyles,
+      textStyles: textStyles,
+
+      tokens: {
+        colors: colors,
+        durations: durations,
+        zIndex: zIndex
+      },
+
+      semanticTokens: {
+        colors: {
+          fg: {
+            default: {
+              value: {
+                _light: "{colors.gray.12}",
+                _dark: "{colors.gray.12}"
+              }
+            },
+
+            muted: {
+              value: {
+                _light: "{colors.gray.11}",
+                _dark: "{colors.gray.11}"
+              }
+            },
+
+            subtle: {
+              value: {
+                _light: "{colors.gray.10}",
+                _dark: "{colors.gray.10}"
+              }
+            }
+          },
+
+          border: {
+            value: {
+              _light: "{colors.gray.4}",
+              _dark: "{colors.gray.4}"
+            }
+          },
+
+          error: {
+            value: {
+              _light: "{colors.red.9}",
+              _dark: "{colors.red.9}"
+            }
+          },
+
+          gray: slate,
+          red: red,
+          green: green
+        },
+
+        shadows: shadows,
+
+        radii: {
+          l1: {
+            value: "{radii.xs}"
+          },
+
+          l2: {
+            value: "{radii.sm}"
+          },
+
+          l3: {
+            value: "{radii.md}"
+          }
+        }
+      }
+    },
+  },
+
+  globalCss: globalCss,
+  conditions: conditions
+});
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+</file>
+
 <file path="src/app/layout.tsx">
+import "../../styled-system/styles.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ClientConsoleBridge from "@/components/ClientConsoleBridge";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -167,18 +2921,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Create Next App",
-  description: "Generated by create next app",
+  title: "SAT",
+  description: "Constraint solving UI",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ClientConsoleBridge />
         {children}
       </body>
     </html>
@@ -187,70 +2942,38 @@ export default function RootLayout({
 </file>
 
 <file path="src/app/page.tsx">
-import Image from "next/image";
-import styles from "./page.module.css";
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <Box position="relative" h="100vh" w="100vw">
+      <GraphStage />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        style={{
+          padding: "20px",
+        }}
+        pointerEvents="none"
+      >
+        <Box
+          pointerEvents="auto"
+          style={{
+            width: "100%",
+            height: "72px",
+          }}
+        >
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
   );
 }
 </file>
@@ -303,66 +3026,24 @@ styled-system
 styled-system-studio
 </file>
 
-<file path="biome.json">
-{
-  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "files": {
-    "ignoreUnknown": true,
-    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    },
-    "domains": {
-      "next": "recommended",
-      "react": "recommended"
-    }
-  },
-  "assist": {
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
-}
-</file>
-
-<file path="next.config.ts">
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
-</file>
-
 <file path="package.json">
 {
   "name": "sat",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "panda dev & next dev",
+    "build": "panda build && next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "test": "vitest"
   },
   "dependencies": {
+    "@ark-ui/react": "^5.34.1",
+    "@xyflow/react": "^12.10.1",
+    "framer-motion": "^12.35.0",
+    "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -370,10 +3051,15 @@ export default nextConfig;
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@pandacss/dev": "^1.8.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "happy-dom": "^20.8.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   },
   "ignoreScripts": [
     "sharp",
@@ -383,82 +3069,6 @@ export default nextConfig;
     "sharp",
     "unrs-resolver"
   ]
-}
-</file>
-
-<file path="README.md">
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
-  "exclude": ["node_modules"]
 }
 </file>
 

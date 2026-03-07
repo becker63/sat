@@ -7,9 +7,17 @@
     "build": "panda build && next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "test": "vitest"
   },
   "dependencies": {
+    "@ark-ui/react": "^5.34.1",
+    "@use-gesture/react": "^10.3.1",
+    "@xyflow/react": "^12.10.1",
+    "flatten-js": "^0.6.9",
+    "framer-motion": "^12.35.0",
+    "jotai": "^2.18.0",
+    "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
@@ -17,10 +25,15 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@pandacss/dev": "^1.8.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "happy-dom": "^20.8.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   },
   "ignoreScripts": [
     "sharp",

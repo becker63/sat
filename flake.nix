@@ -41,11 +41,16 @@
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.bun
+            pkgs.chromium
           ]
           ++ preCommit.enabledPackages;
 
           shellHook = ''
             ${preCommit.shellHook}
+
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            export PLAYWRIGHT_CHROMIUM_PATH=${pkgs.chromium}/bin/chromium
+            export PLAYWRIGHT_BROWSERS_PATH=0
           '';
         };
       }
