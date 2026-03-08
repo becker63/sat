@@ -21,7 +21,7 @@ const renderWithState = (
 
   const result = render(
     <Provider store={store}>
-      <div style={{ position: "relative", width: "320px", height: "100px" }}>
+      <div style={{ width: "320px", height: "100px" }}>
         <SearchScopeMenu outlineInset={outlineInset} />
       </div>
     </Provider>,
@@ -81,7 +81,7 @@ describe("SearchScopeMenu", () => {
   });
 
   it("does not show if the pointer is above the trigger line", () => {
-    renderWithState((store) =>
+    const { unmount } = renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
         [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
@@ -89,7 +89,10 @@ describe("SearchScopeMenu", () => {
       ]),
     );
 
-    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+    const menu = screen.getByTestId("searchscope-menu");
+    expect(menu).toBeInTheDocument();
+    expect(menu.style.opacity).toBe("0");
+    unmount();
   });
 
   it("shows across the entire bottom band under the segment", () => {

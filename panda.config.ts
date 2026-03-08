@@ -1,6 +1,7 @@
 import { green } from "@/theme/colors/green";
 import { red } from "@/theme/colors/red";
 import { slate } from "@/theme/colors/slate";
+import { vercel } from "@/theme/colors/vercel";
 import { animationStyles } from "@/theme/animation-styles";
 import { zIndex } from "@/theme/tokens/z-index";
 import { shadows } from "@/theme/tokens/shadows";
@@ -76,7 +77,8 @@ export default defineConfig({
 
           gray: slate,
           red: red,
-          green: green
+          green: green,
+          vercel: vercel
         },
 
         shadows: shadows,

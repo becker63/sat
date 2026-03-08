@@ -1,3 +1,4 @@
+import { checkbox } from "./checkbox";
 import { field } from "./field";
 import { input } from "./input";
 import { spinner } from "./spinner";
@@ -10,6 +11,7 @@ export const recipes = {
   absoluteCenter,
   spinner,
   input,
-  field
+  field,
+  checkbox
 }
 export const slotRecipes = {}

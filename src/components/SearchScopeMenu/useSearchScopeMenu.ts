@@ -53,23 +53,8 @@ export function useSearchScopeMenu({
     Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
     contentWidth;
   const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
-  const pointerWithinBand =
-    pointer !== null &&
-    pointer.x >= anchorLocalX - horizontalBandHalf &&
-    pointer.x <= anchorLocalX + horizontalBandHalf;
-  const isDescending =
-    pointer !== null &&
-    lastPointerY.current !== null &&
-    pointer.y >= lastPointerY.current;
-
   const visible =
-    !flowDragging &&
-    hoverOffset !== null &&
-    (((pointer !== null &&
-      pointer.y >= triggerY &&
-      pointerWithinBand &&
-      isDescending) ||
-      menuHover));
+    !flowDragging && hoverOffset !== null && (pointer !== null || menuHover);
   const viewportWidth =
     typeof window !== "undefined" && window.innerWidth
       ? window.innerWidth

@@ -1,3 +1,5 @@
+import { reactFlowCssVars } from "./react-flow";
+
 export const globalCss = {
   extend: {
     '*': {
@@ -10,8 +12,9 @@ export const globalCss = {
       colorPalette: 'gray',
     },
     body: {
-      background: 'canvas',
-      color: 'fg.default',
+      background: "var(--colors-vercel-surface-overlay)",
+      color: "var(--colors-vercel-text-primary)",
     },
+    ".react-flow": reactFlowCssVars,
   },
 }

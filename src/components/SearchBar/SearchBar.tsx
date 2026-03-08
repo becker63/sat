@@ -2,14 +2,24 @@
 
 import { useHover } from "@use-gesture/react";
 import { motion } from "framer-motion";
-import { type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  type ComponentType,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { useAtomValue } from "jotai";
 import { HStack } from "../../../styled-system/jsx";
 import { Input, Button } from "@/components/ui";
 import { useSearchBar } from "./useSearchBar";
 import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
-import { SURFACE_STYLE } from "./surfaceStyle";
 import { flowDraggingAtom } from "@/state/searchbar";
+import {
+  outlineHoverClass,
+  searchBarHiddenClass,
+  searchBarShellClass,
+  searchBarSvgClass,
+  searchButtonClass,
+  searchInputClass,
+} from "@/components/ui";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -22,8 +32,8 @@ const MotionRect = motion.rect;
 
 const OUTLINE_INSET = 8;
 const OUTLINE_RADIUS = 24;
-/* shorter hover line */
-export const HOVER_SEGMENT_LENGTH = 240;
+/* hover segment length controls scope menu width */
+export const HOVER_SEGMENT_LENGTH = 400;
 export const OUTLINE_INSET_PX = OUTLINE_INSET;
 
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
@@ -72,12 +82,13 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       ref={containerRef}
       {...bindHover()}
       data-focused={focused}
-       data-hidden={hidden}
-      alignItems="center"
-      gap="12px"
-      w="100%"
-      h="100%"
-      boxSizing="border-box"
+      data-hidden={hidden}
+      data-testid="searchbar"
+      className={
+        hidden
+          ? [searchBarShellClass, searchBarHiddenClass].filter(Boolean).join(" ")
+          : searchBarShellClass
+      }
       onPointerMove={(event: ReactPointerEvent<HTMLDivElement>) =>
         handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
       }
@@ -85,27 +96,11 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
       }
       onPointerLeave={handlePointerLeave}
-      animate={{
-        boxShadow: SURFACE_STYLE.boxShadow,
-      }}
+      animate={{}}
       transition={{
         type: "spring",
         stiffness: 200,
         damping: 28,
-      }}
-      style={{
-        position: "relative",
-        display: "flex",
-        visibility: hidden ? "hidden" : "visible",
-        borderRadius: SURFACE_STYLE.borderRadius,
-        padding: "12px 28px",
-        background: SURFACE_STYLE.background,
-        backdropFilter: SURFACE_STYLE.backdropFilter,
-        WebkitBackdropFilter: SURFACE_STYLE.backdropFilter,
-        border: SURFACE_STYLE.border,
-        boxShadow: SURFACE_STYLE.boxShadow,
-        overflow: "visible",
-        pointerEvents: hidden ? "none" : "auto",
       }}
     >
       {svgWidth > 0 && svgHeight > 0 && (
@@ -113,13 +108,10 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
           width={svgWidth}
           height={svgHeight}
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          className={searchBarSvgClass}
           style={{
-            position: "absolute",
             top: -OUTLINE_INSET,
             left: -OUTLINE_INSET,
-            pointerEvents: "none",
-            overflow: "visible",
-            zIndex: 0,
           }}
         >
           <rect
@@ -147,7 +139,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.35)"
+              stroke="var(--colors-vercel-text-primary)"
               strokeWidth="1.5"
               strokeLinecap="round"
               initial={{ opacity: 0, strokeDashoffset: -hoverOffset }}
@@ -164,9 +156,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
                   damping: 30,
                 },
               }}
-              style={{
-                filter: "drop-shadow(0 0 3px rgba(255,255,255,0.12))",
-              }}
+              className={outlineHoverClass}
             />
           )}
 
@@ -182,7 +172,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.45)"
+              stroke="var(--colors-vercel-surface-outline)"
               strokeWidth="1.8"
               initial={{
                 pathLength: 0,
@@ -210,7 +200,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.45)"
+              stroke="var(--colors-vercel-surface-outline)"
               strokeWidth="1.8"
             />
           )}
@@ -220,7 +210,6 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       <SearchScopeMenu
         outlineInset={OUTLINE_INSET}
         segmentLength={HOVER_SEGMENT_LENGTH}
-        surfaceStyle={SURFACE_STYLE}
       />
 
       <Input
@@ -237,17 +226,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         onKeyDown={(e) => {
           if (e.key === "Enter") triggerReplay();
         }}
-        style={{
-          flex: "1 1 0",
-          minWidth: 0,
-          height: "48px",
-          background: "transparent",
-          border: "none",
-          outline: "none",
-          color: "#eee",
-          fontSize: "16px",
-          zIndex: 1,
-        }}
+        className={searchInputClass}
       />
 
       <MotionButton
@@ -262,16 +241,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
           stiffness: 300,
           damping: 25,
         }}
-        style={{
-          flex: "0 0 auto",
-          height: "48px",
-          padding: "0 24px",
-          borderRadius: "10px",
-          background: "rgba(70,70,70,0.28)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          color: "#eee",
-          zIndex: 1,
-        }}
+        className={searchButtonClass}
       >
         Replay
       </MotionButton>

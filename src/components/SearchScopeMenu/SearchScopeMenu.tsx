@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { VStack, HStack, HStack as Stack } from "../../../styled-system/jsx";
+import * as Checkbox from "@/components/ui/checkbox";
+import { VStack, HStack } from "../../../styled-system/jsx";
 import { useSearchScopeMenu } from "./useSearchScopeMenu";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
@@ -10,17 +11,20 @@ import {
   pointerPositionAtom,
   scopeMenuHoverAtom,
 } from "@/state/searchbar";
+import { useMemo } from "react";
+import {
+  menuContainerClass,
+  menuControlClass,
+  menuHeaderClass,
+  menuIndicatorClass,
+  menuItemClass,
+  menuLabelClass,
+  menuSubLabelClass,
+} from "@/components/ui";
 
 type Props = {
   outlineInset: number;
   segmentLength?: number;
-  surfaceStyle?: {
-    background: string;
-    border: string;
-    boxShadow: string;
-    borderRadius: string;
-    backdropFilter: string;
-  };
 };
 
 const MotionBox = motion.create(VStack);
@@ -28,13 +32,6 @@ const MotionBox = motion.create(VStack);
 export function SearchScopeMenu({
   outlineInset,
   segmentLength,
-  surfaceStyle = {
-    background: "rgba(0,0,0,0.16)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
-    borderRadius: "16px",
-    backdropFilter: "blur(10px)",
-  },
 }: Props) {
   const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
     outlineInset,
@@ -45,6 +42,14 @@ export function SearchScopeMenu({
   const setHover = useSetAtom(hoverOffsetAtom);
   const setAnchor = useSetAtom(hoverAnchorAtom);
   const setPointer = useSetAtom(pointerPositionAtom);
+  const items = useMemo(
+    () => [
+      { label: "TanStack Query", defaultChecked: true },
+      { label: "Redux Toolkit", defaultChecked: true },
+      { label: "Zustand", defaultChecked: false },
+    ],
+    [],
+  );
 
   const content = (
     <AnimatePresence>
@@ -58,56 +63,64 @@ export function SearchScopeMenu({
           top={`${offsetTop}px`}
           left={`${offsetLeft}px`}
           mt="0"
-          w={`${Math.max(0, width)}px`}
-          p="12px"
-          gap="10px"
-          borderRadius={surfaceStyle.borderRadius}
-          background={surfaceStyle.background}
-          border={surfaceStyle.border}
-          backdropFilter={surfaceStyle.backdropFilter}
-          boxShadow={surfaceStyle.boxShadow}
+          w={`${Math.max(0, Math.min(480, width))}px`}
+          px="18px"
+          py="16px"
+          gap="14px"
           data-testid="searchscope-menu"
           data-left={`${offsetLeft}`}
           data-top={`${offsetTop}`}
           data-width={`${Math.max(0, width)}`}
           zIndex={1}
+          className={menuContainerClass}
           style={{
-            width: `${Math.max(0, width)}px`,
+            width: `${Math.max(0, Math.min(480, width))}px`,
             left: `${offsetLeft}px`,
             top: `${offsetTop}px`,
-            position: "absolute",
-            backgroundColor: surfaceStyle.background,
-            boxShadow: surfaceStyle.boxShadow,
-            backdropFilter: surfaceStyle.backdropFilter,
-            WebkitBackdropFilter: surfaceStyle.backdropFilter,
-            borderRadius: surfaceStyle.borderRadius,
           }}
           onPointerEnter={() => setMenuHover(true)}
-          onPointerLeave={() => {
-            setMenuHover(false);
-            setHover(null);
+  onPointerLeave={() => {
+    setMenuHover(false);
+    setHover(null);
             setAnchor(null);
             setPointer(null);
           }}
         >
-          <HStack justify="space-between" fontSize="14px" color="#fff">
-            <span style={{ color: "#fff" }}>Corpus</span>
-          </HStack>
-          <VStack alignItems="flex-start" gap="8px">
-            {["TanStack Query", "Redux Toolkit", "Zustand"].map((label) => (
-              <Stack key={label} alignItems="center" gap="8px" color="#fff">
-                <input
-                  type="checkbox"
-                  defaultChecked={label === "TanStack Query"}
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    accentColor: "#9ad4ff",
-                  }}
-                />
-                <span style={{ fontSize: "13px", color: "#fff" }}>{label}</span>
-              </Stack>
-            ))}
+          <VStack gap="16px" alignItems="flex-start" width="100%">
+            <HStack
+              justify="space-between"
+              fontSize="14px"
+              w="100%"
+              className={menuHeaderClass}
+              lineHeight="1.3"
+              px="6px"
+            >
+              <span>Corpus</span>
+              <span className={menuSubLabelClass}>Scope</span>
+            </HStack>
+            <VStack alignItems="flex-start" gap="12px" w="100%">
+              {items.map((item) => (
+                <motion.div
+                  key={item.label}
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1, ease: "easeOut" }}
+                  style={{ width: "100%" }}
+                >
+                  <Checkbox.Root
+                    defaultChecked={item.defaultChecked}
+                    className={menuItemClass}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control className={menuControlClass}>
+                      <Checkbox.Indicator className={menuIndicatorClass} />
+                    </Checkbox.Control>
+                    <Checkbox.Label className={menuLabelClass}>
+                      {item.label}
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                </motion.div>
+              ))}
+            </VStack>
           </VStack>
         </MotionBox>
       )}

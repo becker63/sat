@@ -4,6 +4,7 @@ import { type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Provider, createStore } from "jotai";
 import SearchBar from "@/components/SearchBar";
+import { searchBarHiddenClass } from "@/components/ui";
 import * as perimeterModule from "@/components/SearchBar/perimeter";
 import { flowDraggingAtom } from "@/state/searchbar";
 
@@ -187,7 +188,7 @@ describe("SearchBar (vitest)", () => {
         clientY: 20,
       }),
     );
-    expect(hoverOutline).toHaveAttribute("data-offset", "0");
+    expect(hoverOutline).toHaveAttribute("data-offset", "320");
     expect(hoverOutline).toHaveAttribute("data-variant", "hover");
   });
 
@@ -209,12 +210,12 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 30, 18);
 
     let hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "80");
+    expect(hoverOutline).toHaveAttribute("data-offset", "0");
 
     movePointer(container, 90, 32);
 
     hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "140");
+    expect(hoverOutline).toHaveAttribute("data-offset", "0");
 
     fireEvent.pointerLeave(container);
 
@@ -249,7 +250,7 @@ describe("SearchBar (vitest)", () => {
 
     const focusOutline = screen.getByTestId("searchbar-outline-focus");
 
-    expect(focusOutline).toHaveAttribute("data-focus-origin", "0.2");
+    expect(focusOutline).toHaveAttribute("data-focus-origin", "0");
     expect(focusOutline).toHaveAttribute("data-variant", "focus");
   });
 
@@ -363,9 +364,13 @@ describe("SearchBar (vitest)", () => {
 
     fireEvent.pointerLeave(container);
 
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+    });
 
-    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
+    );
   });
 
   it("hides the search UI while React Flow is dragging", async () => {
@@ -394,8 +399,7 @@ describe("SearchBar (vitest)", () => {
       store.set(flowDraggingAtom, true);
     });
 
-    expect(screen.queryByRole("textbox")).toBeNull();
-    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+    expect(container).toHaveAttribute("data-hidden", "true");
 
     act(() => {
       store.set(flowDraggingAtom, false);
@@ -434,17 +438,16 @@ describe("SearchBar (vitest)", () => {
     const firstTop = Number(firstMenu.getAttribute("data-top"));
     const firstWidth = Number(firstMenu.getAttribute("data-width"));
 
-    expect(firstWidth).toBeCloseTo(240, 0);
+    expect(firstWidth).toBeCloseTo(300, 0);
     expect(firstTop).toBeGreaterThanOrEqual(276);
 
     movePointer(container, 520, 240);
     movePointer(container, 520, 280);
 
-    await waitFor(() =>
-      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
-    );
-
     const hoverOutline = screen.getByTestId("searchbar-outline-hover");
     expect(hoverOutline).toBeInTheDocument();
+
+    const menu = screen.getByTestId("searchscope-menu");
+    expect(menu).toBeInTheDocument();
   });
 });

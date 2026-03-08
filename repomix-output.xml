@@ -75,6 +75,8 @@ src/
       surfaceStyle.ts
       useSearchBar.ts
     SearchScopeMenu/
+      capture-menu.ts
+      searchscope-menu.png
       SearchScopeMenu.e2e.spec.ts
       SearchScopeMenu.spec.tsx
       SearchScopeMenu.tsx
@@ -82,6 +84,7 @@ src/
     ui/
       absolute-center.tsx
       button.tsx
+      checkbox.tsx
       field.tsx
       group.tsx
       index.ts
@@ -100,9 +103,11 @@ src/
       green.ts
       red.ts
       slate.ts
+      vercel.ts
     recipes/
       absolute-center.ts
       button.ts
+      checkbox.ts
       field.ts
       group.ts
       index.ts
@@ -118,6 +123,7 @@ src/
     global-css.ts
     keyframes.ts
     layer-styles.ts
+    react-flow.ts
     text-styles.ts
 test-results/
   .last-run.json
@@ -138,6 +144,328 @@ vitest.setup.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/components/SearchScopeMenu/capture-menu.ts">
+import { chromium } from "playwright";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+/**
+ * Quick helper to capture a screenshot of the search scope menu.
+ * Run `npm run dev` in another terminal, then execute:
+ *   npx tsx src/components/SearchScopeMenu/capture-menu.ts
+ * The image will be saved alongside this script.
+ */
+async function capture() {
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+  });
+  const page = await browser.newPage({
+    viewport: { width: 1400, height: 900 },
+  });
+
+  await page.goto(baseURL, { waitUntil: "domcontentloaded" });
+
+  const bar = page.locator("[data-focused]");
+  await bar.waitFor({ state: "visible", timeout: 10_000 });
+
+  const box = await bar.boundingBox();
+  if (!box) throw new Error("Search bar bounding box not found");
+
+  const centerX = box.x + box.width / 2;
+  const nearBottomY = box.y + box.height - 2;
+  const steps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
+  for (const y of steps) {
+    await page.mouse.move(centerX, y);
+  }
+  await page.waitForTimeout(200);
+  // also dispatch pointer events directly on the container to ensure hover state
+  const elementHandle = await bar.elementHandle();
+  if (elementHandle) {
+    const coords: Array<[number, number]> = steps.map((y) => [centerX, y]);
+    await page.evaluate(
+      ({ el, coords }) => {
+        coords.forEach(([x, y]) => {
+          const evt = new PointerEvent("pointermove", {
+            clientX: x,
+            clientY: y,
+            bubbles: true,
+          });
+          el.dispatchEvent(evt);
+        });
+      },
+      { el: elementHandle, coords },
+    );
+  }
+
+  const menu = page.getByTestId("searchscope-menu");
+  await menu.waitFor({ state: "visible", timeout: 10_000 });
+
+  const outDir = path.join(__dirname);
+  await fs.mkdir(outDir, { recursive: true });
+  const outFile = path.join(outDir, "searchscope-menu.png");
+
+  await menu.screenshot({ path: outFile });
+
+  // eslint-disable-next-line no-console
+  console.log(`Saved screenshot to ${outFile}`);
+
+  await browser.close();
+}
+
+capture().catch((error) => {
+  // eslint-disable-next-line no-console
+  console.error(error);
+  process.exitCode = 1;
+});
+</file>
+
+<file path="src/components/ui/checkbox.tsx">
+'use client'
+import { Checkbox, useCheckboxContext } from '@ark-ui/react/checkbox'
+import { type ComponentProps, forwardRef } from 'react'
+import { createStyleContext, styled } from 'styled-system/jsx'
+import { checkbox } from 'styled-system/recipes'
+import type { HTMLStyledProps } from 'styled-system/types'
+
+const { withProvider, withContext } = createStyleContext(checkbox)
+
+export type RootProps = ComponentProps<typeof Root>
+export type HiddenInputProps = ComponentProps<typeof HiddenInput>
+
+export const Root = withProvider(Checkbox.Root, 'root')
+export const RootProvider = withProvider(Checkbox.RootProvider, 'root')
+export const Control = withContext(Checkbox.Control, 'control')
+export const Group = withProvider(Checkbox.Group, 'group')
+export const Label = withContext(Checkbox.Label, 'label')
+export const HiddenInput = Checkbox.HiddenInput
+
+export {
+  type CheckboxCheckedState as CheckedState,
+  CheckboxGroupProvider as GroupProvider,
+} from '@ark-ui/react/checkbox'
+
+export const Indicator = forwardRef<SVGSVGElement, HTMLStyledProps<'svg'>>(
+  function Indicator(props, ref) {
+    const { indeterminate, checked } = useCheckboxContext()
+
+    return (
+      <Checkbox.Indicator indeterminate={indeterminate} asChild>
+        <styled.svg
+          ref={ref}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3px"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          {...props}
+        >
+          <title>Checkmark</title>
+          {indeterminate ? <path d="M5 12h14" /> : checked ? <path d="M20 6 9 17l-5-5" /> : null}
+        </styled.svg>
+      </Checkbox.Indicator>
+    )
+  },
+)
+</file>
+
+<file path="src/theme/colors/vercel.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+
+export const vercel = defineSemanticTokens.colors({
+  brand: {
+    9: { value: { _light: '#3291ff', _dark: '#3291ff' } },
+    10: { value: { _light: '#4d9dff', _dark: '#4d9dff' } },
+    glow: { value: { _light: 'rgba(50, 145, 255, 0.28)', _dark: 'rgba(50, 145, 255, 0.28)' } },
+  },
+  text: {
+    primary: { value: { _light: '#eaeaea', _dark: '#eaeaea' } },
+    muted: { value: { _light: '#b4bbc7', _dark: '#b4bbc7' } },
+    subtle: { value: { _light: '#8b92a3', _dark: '#8b92a3' } },
+  },
+  surface: {
+    overlay: { value: { _light: 'rgba(12, 12, 12, 0.9)', _dark: 'rgba(12, 12, 12, 0.9)' } },
+    raised: { value: { _light: 'rgba(18, 18, 18, 0.92)', _dark: 'rgba(18, 18, 18, 0.92)' } },
+    muted: { value: { _light: 'rgba(255, 255, 255, 0.04)', _dark: 'rgba(255, 255, 255, 0.04)' } },
+    border: { value: { _light: 'rgba(255, 255, 255, 0.08)', _dark: 'rgba(255, 255, 255, 0.08)' } },
+    borderStrong: { value: { _light: 'rgba(255, 255, 255, 0.14)', _dark: 'rgba(255, 255, 255, 0.14)' } },
+    outline: { value: { _light: 'rgba(255, 255, 255, 0.28)', _dark: 'rgba(255, 255, 255, 0.28)' } },
+    outlineMuted: { value: { _light: 'rgba(255, 255, 255, 0.2)', _dark: 'rgba(255, 255, 255, 0.2)' } },
+    highlight: { value: { _light: 'rgba(50, 145, 255, 0.2)', _dark: 'rgba(50, 145, 255, 0.2)' } },
+  },
+  graph: {
+    grid: { value: { _light: '#2f2f2f', _dark: '#2f2f2f' } },
+  },
+})
+</file>
+
+<file path="src/theme/recipes/checkbox.ts">
+import { checkboxAnatomy } from '@ark-ui/react/anatomy'
+import { defineSlotRecipe } from '@pandacss/dev'
+
+export const checkbox = defineSlotRecipe({
+  slots: checkboxAnatomy.keys(),
+  className: 'checkbox',
+  base: {
+    root: {
+      display: 'inline-flex',
+      gap: '2',
+      alignItems: 'center',
+      verticalAlign: 'top',
+      position: 'relative',
+      _disabled: {
+        layerStyle: 'disabled',
+      },
+    },
+    control: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: '0',
+      borderWidth: '1px',
+      borderColor: 'transparent',
+      borderRadius: 'l1',
+      cursor: 'pointer',
+      focusVisibleRing: 'outside',
+
+      _icon: {
+        boxSize: 'full',
+      },
+    },
+    label: {
+      fontWeight: 'medium',
+      userSelect: 'none',
+    },
+  },
+
+  variants: {
+    size: {
+      sm: {
+        root: { gap: '2' },
+        label: { textStyle: 'sm' },
+        control: { boxSize: '4.5', _icon: { boxSize: '3' } },
+      },
+      md: {
+        root: { gap: '3' },
+        label: { textStyle: 'md' },
+        control: { boxSize: '5', _icon: { boxSize: '3.5' } },
+      },
+      lg: {
+        root: { gap: '3' },
+        label: { textStyle: 'lg' },
+        control: { boxSize: '5.5', _icon: { boxSize: '4' } },
+      },
+    },
+
+    variant: {
+      solid: {
+        control: {
+          control: {
+            borderColor: 'border',
+            _checked: {
+              bg: 'colorPalette.solid.bg',
+              borderColor: 'colorPalette.solid.bg',
+              color: 'colorPalette.solid.fg',
+            },
+            _invalid: {
+              background: 'error',
+            },
+          },
+        },
+      },
+      surface: {
+        control: {
+          bg: 'colorPalette.surface.bg',
+          borderWidth: '1px',
+          borderColor: 'colorPalette.surface.border',
+          color: 'colorPalette.surface.fg',
+        },
+      },
+      subtle: {
+        control: {
+          bg: 'colorPalette.subtle.bg',
+          color: 'colorPalette.subtle.fg',
+        },
+      },
+      outline: {
+        control: {
+          borderWidth: '1px',
+          borderColor: 'colorPalette.outline.border',
+          color: 'colorPalette.outline.fg',
+          _checked: {
+            borderColor: 'colorPalette.solid.bg',
+          },
+        },
+      },
+      plain: {
+        control: {
+          color: 'colorPalette.plain.fg',
+        },
+      },
+    },
+  },
+
+  defaultVariants: {
+    variant: 'solid',
+    size: 'md',
+  },
+})
+</file>
+
+<file path="src/theme/react-flow.ts">
+export const reactFlowTheme = {
+  canvas: {
+    background: "#0c0c0c",
+  },
+  grid: {
+    color: "rgba(255, 255, 255, 0.2)",
+  },
+  node: {
+    background: "#0c0c0c",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    color: "#eaeaea",
+    shadow: "0 24px 80px rgba(0, 0, 0, 0.45)",
+  },
+  edge: {
+    stroke: "rgba(255, 255, 255, 0.2)",
+    selectedStroke: "#3291ff",
+    hoverStroke: "rgba(255, 255, 255, 0.28)",
+  },
+};
+
+export const reactFlowCssVars = {
+  "--xy-edge-stroke-default": "var(--colors-vercel-surface-outlineMuted, rgba(255, 255, 255, 0.2))",
+  "--xy-edge-stroke-width-default": "1.25",
+  "--xy-edge-stroke-selected-default": "var(--colors-vercel-brand-9, #3291ff)",
+  "--xy-connectionline-stroke-default": "var(--colors-vercel-surface-outline, rgba(255, 255, 255, 0.28))",
+  "--xy-connectionline-stroke-width-default": "1.25",
+  "--xy-attribution-background-color-default": "transparent",
+  "--xy-minimap-background-color-default": "var(--colors-vercel-surface-overlay, rgba(12, 12, 12, 0.9))",
+  "--xy-background-pattern-dots-color-default": "var(--colors-vercel-surface-outlineMuted, rgba(255, 255, 255, 0.2))",
+  "--xy-background-pattern-line-color-default": "var(--colors-vercel-graph-grid, #2f2f2f)",
+  "--xy-background-pattern-cross-color-default": "var(--colors-vercel-graph-grid, #2f2f2f)",
+  "--xy-node-color-default": "var(--colors-vercel-text-primary, #eaeaea)",
+  "--xy-node-border-default": "1px solid var(--colors-vercel-surface-border, rgba(255, 255, 255, 0.08))",
+  "--xy-node-background-color-default": "var(--colors-vercel-surface-overlay, rgba(12, 12, 12, 0.9))",
+  "--xy-node-group-background-color-default": "var(--colors-vercel-surface-muted, rgba(255, 255, 255, 0.04))",
+  "--xy-node-boxshadow-hover-default": "0 0 0 1px var(--colors-vercel-surface-outline, rgba(255, 255, 255, 0.28)), 0 12px 48px rgba(0,0,0,0.35)",
+  "--xy-node-boxshadow-selected-default": "0 0 0 1.5px var(--colors-vercel-brand-9, #3291ff), 0 12px 48px rgba(0,0,0,0.4)",
+  "--xy-handle-background-color-default": "var(--colors-vercel-brand-9, #3291ff)",
+  "--xy-handle-border-color-default": "var(--colors-vercel-surface-overlay, rgba(12, 12, 12, 0.9))",
+  "--xy-selection-background-color-default": "var(--colors-vercel-surface-highlight, rgba(50, 145, 255, 0.2))",
+  "--xy-selection-border-default": "1px solid var(--colors-vercel-brand-9, #3291ff)",
+  "--xy-controls-button-background-color-default": "var(--colors-vercel-surface-overlay, rgba(12, 12, 12, 0.9))",
+  "--xy-controls-button-background-color-hover-default": "var(--colors-vercel-surface-muted, rgba(255, 255, 255, 0.04))",
+  "--xy-controls-button-color-default": "var(--colors-vercel-text-primary, #eaeaea)",
+  "--xy-controls-button-color-hover-default": "var(--colors-vercel-text-primary, #eaeaea)",
+  "--xy-controls-button-border-color-default": "var(--colors-vercel-surface-border, rgba(255, 255, 255, 0.08))",
+  "--xy-controls-box-shadow-default": "0 16px 60px rgba(0,0,0,0.3)",
+  "--xy-resize-background-color-default": "var(--colors-vercel-brand-9, #3291ff)",
+};
+</file>
 
 <file path="playwright/.cache/assets/index-l0sNRNKZ.js.map">
 {"version":3,"file":"index-l0sNRNKZ.js","sources":[],"sourcesContent":[],"names":[],"mappings":""}
@@ -447,111 +775,18 @@ export { default } from "./SearchBar";
 
 <file path="src/components/SearchBar/surfaceStyle.ts">
 export const SURFACE_STYLE = {
-  background: "rgba(0,0,0,0.16)",
-  border: "1px solid rgba(255,255,255,0.06)",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
+  background: "#0c0c0c",
+  border: "1px solid rgba(255, 255, 255, 0.08)",
+  boxShadow: "0 24px 80px rgba(0, 0, 0, 0.45)",
   borderRadius: "24px",
-  backdropFilter: "blur(10px)",
+  backdropFilter: "blur(14px)",
+  outlineMuted: "rgba(255, 255, 255, 0.2)",
+  outlineStrong: "rgba(255, 255, 255, 0.28)",
+  text: "#eaeaea",
+  mutedText: "#b4bbc7",
+  accent: "#3291ff",
+  accentGlow: "rgba(50, 145, 255, 0.28)",
 };
-</file>
-
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test.describe("SearchScopeMenu (playwright)", () => {
-  test("appears under the hover segment, matches its width, and follows movement", async ({
-    page,
-  }) => {
-    const logRects = async (label: string) => {
-      const bar = page.locator("[data-focused]");
-      const menu = page.getByTestId("searchscope-menu");
-      const [barBox, menuBox] = await Promise.all([bar.boundingBox(), menu.boundingBox()]);
-      // eslint-disable-next-line no-console
-      console.log(label, { barBox, menuBox });
-    };
-
-    await page.goto("/");
-
-    const bar = page.locator("[data-focused]");
-    await bar.waitFor();
-
-    const box = await bar.boundingBox();
-    if (!box) throw new Error("Search bar bounding box not found");
-
-    const centerX = box.x + box.width / 2;
-    const nearBottomY = box.y + box.height - 2;
-
-    const steps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
-    for (const y of steps) {
-      await page.mouse.move(centerX, y);
-    }
-
-    await expect(page.getByTestId("searchbar-outline-hover")).toBeVisible();
-
-    const menu = page.getByTestId("searchscope-menu");
-    await expect(menu).toBeVisible();
-    await logRects("after-center");
-
-    const barStyles = await bar.evaluate((el) => {
-      const s = getComputedStyle(el as HTMLElement);
-      return {
-        backgroundColor: s.backgroundColor,
-        boxShadow: s.boxShadow,
-        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
-      };
-    });
-    const menuStyles = await menu.evaluate((el) => {
-      const s = getComputedStyle(el as HTMLElement);
-      return {
-        backgroundColor: s.backgroundColor,
-        boxShadow: s.boxShadow,
-        backdropFilter: s.backdropFilter || s.webkitBackdropFilter,
-      };
-    });
-    const corpusColor = await menu
-      .locator("text=Corpus")
-      .evaluate((el) => getComputedStyle(el as HTMLElement).color);
-
-    const expectedShadow = "rgba(0, 0, 0, 0.55) 0px 10px 30px 0px";
-    const expectedBg = "rgba(0, 0, 0, 0.16)";
-    const expectedBlur = "blur(10px)";
-
-    expect(barStyles.backgroundColor).toBe(expectedBg);
-    expect(menuStyles.backgroundColor).toBe(expectedBg);
-    expect(barStyles.boxShadow).toBe(expectedShadow);
-    expect(menuStyles.boxShadow).toBe(expectedShadow);
-    expect(barStyles.backdropFilter).toBe(expectedBlur);
-    expect(menuStyles.backdropFilter).toBe(expectedBlur);
-    expect(corpusColor).toBe("rgb(255, 255, 255)");
-
-    const menuBox = await menu.boundingBox();
-    if (!menuBox) throw new Error("Menu bounding box not found");
-
-    const expectedWidth = 240;
-    const widthTolerance = Math.max(6, expectedWidth * 0.1);
-
-    expect(menuBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
-    expect(menuBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
-    expect(menuBox.y).toBeGreaterThanOrEqual(box.y + box.height - 2);
-
-    const outsideX = box.x + box.width + 50;
-    await page.mouse.move(outsideX, nearBottomY);
-    await page.mouse.move(outsideX, box.y - 20);
-    await page.evaluate(
-      ({ x, y }) =>
-        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
-      { x: outsideX, y: box.y - 20 },
-    );
-    await expect(menu).toBeHidden();
-
-    const returnSteps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
-    for (const y of returnSteps) {
-      await page.mouse.move(centerX, y);
-    }
-    await expect(menu).toBeVisible();
-    await logRects("after-center-return");
-  });
-});
 </file>
 
 <file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
@@ -721,227 +956,6 @@ describe("SearchScopeMenu", () => {
 });
 </file>
 
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
-import { AnimatePresence, motion } from "framer-motion";
-import { createPortal } from "react-dom";
-import { VStack, HStack, HStack as Stack } from "../../../styled-system/jsx";
-import { useSearchScopeMenu } from "./useSearchScopeMenu";
-import { useSetAtom } from "jotai";
-import {
-  hoverAnchorAtom,
-  hoverOffsetAtom,
-  pointerPositionAtom,
-  scopeMenuHoverAtom,
-} from "@/state/searchbar";
-
-type Props = {
-  outlineInset: number;
-  segmentLength?: number;
-  surfaceStyle?: {
-    background: string;
-    border: string;
-    boxShadow: string;
-    borderRadius: string;
-    backdropFilter: string;
-  };
-};
-
-const MotionBox = motion.create(VStack);
-
-export function SearchScopeMenu({
-  outlineInset,
-  segmentLength,
-  surfaceStyle = {
-    background: "rgba(0,0,0,0.16)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.55)",
-    borderRadius: "16px",
-    backdropFilter: "blur(10px)",
-  },
-}: Props) {
-  const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
-    outlineInset,
-    segmentLength,
-  });
-  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
-  const setHover = useSetAtom(hoverOffsetAtom);
-  const setAnchor = useSetAtom(hoverAnchorAtom);
-  const setPointer = useSetAtom(pointerPositionAtom);
-
-  const content = (
-    <AnimatePresence>
-      {visible && (
-        <MotionBox
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.14, ease: "easeOut" }}
-          position="absolute"
-          top={`${offsetTop}px`}
-          left={`${offsetLeft}px`}
-          mt="0"
-          w={`${Math.max(0, width)}px`}
-          p="12px"
-          gap="10px"
-          borderRadius={surfaceStyle.borderRadius}
-          background={surfaceStyle.background}
-          border={surfaceStyle.border}
-          backdropFilter={surfaceStyle.backdropFilter}
-          boxShadow={surfaceStyle.boxShadow}
-          data-testid="searchscope-menu"
-          data-left={`${offsetLeft}`}
-          data-top={`${offsetTop}`}
-          data-width={`${Math.max(0, width)}`}
-          zIndex={1}
-          style={{
-            width: `${Math.max(0, width)}px`,
-            left: `${offsetLeft}px`,
-            top: `${offsetTop}px`,
-            position: "absolute",
-            backgroundColor: surfaceStyle.background,
-            boxShadow: surfaceStyle.boxShadow,
-            backdropFilter: surfaceStyle.backdropFilter,
-            WebkitBackdropFilter: surfaceStyle.backdropFilter,
-            borderRadius: surfaceStyle.borderRadius,
-          }}
-          onPointerEnter={() => setMenuHover(true)}
-          onPointerLeave={() => {
-            setMenuHover(false);
-            setHover(null);
-            setAnchor(null);
-            setPointer(null);
-          }}
-        >
-          <HStack justify="space-between" fontSize="14px" color="#fff">
-            <span style={{ color: "#fff" }}>Corpus</span>
-          </HStack>
-          <VStack alignItems="flex-start" gap="8px">
-            {["TanStack Query", "Redux Toolkit", "Zustand"].map((label) => (
-              <Stack key={label} alignItems="center" gap="8px" color="#fff">
-                <input
-                  type="checkbox"
-                  defaultChecked={label === "TanStack Query"}
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    accentColor: "#9ad4ff",
-                  }}
-                />
-                <span style={{ fontSize: "13px", color: "#fff" }}>{label}</span>
-              </Stack>
-            ))}
-          </VStack>
-        </MotionBox>
-      )}
-    </AnimatePresence>
-  );
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(content, document.body);
-}
-</file>
-
-<file path="src/components/SearchScopeMenu/useSearchScopeMenu.ts">
-import { useAtom, useAtomValue } from "jotai";
-import { useEffect, useRef } from "react";
-
-import {
-  hoverOffsetAtom,
-  hoverAnchorAtom,
-  pointerPositionAtom,
-  searchBarSizeAtom,
-  searchBarPositionAtom,
-  scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-} from "@/state/searchbar";
-
-const TRIGGER_MARGIN = 6;
-const HORIZONTAL_MARGIN = 12;
-
-type Options = {
-  outlineInset: number;
-  segmentLength?: number;
-};
-
-export function useSearchScopeMenu({
-  outlineInset,
-  segmentLength,
-}: Options) {
-  const hoverOffset = useAtomValue(hoverOffsetAtom);
-  const pointer = useAtomValue(pointerPositionAtom);
-  const size = useAtomValue(searchBarSizeAtom);
-  const anchor = useAtomValue(hoverAnchorAtom);
-  const menuHover = useAtomValue(scopeMenuHoverAtom);
-  const position = useAtomValue(searchBarPositionAtom);
-  const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
-  const lastPointerY = useRef<number | null>(null);
-
-  const contentHeight = Math.max(0, size.height - outlineInset * 2);
-  const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
-  const triggerY = Math.max(
-    0,
-    Math.min(contentHeight - 2, triggerCandidate),
-  );
-  const contentWidth = Math.max(0, size.width - outlineInset * 2);
-
-  const anchorAbsX =
-    anchor?.x ??
-    (pointer
-      ? position.left + pointer.x
-      : position.left + contentWidth / 2);
-  const anchorLocalX = anchorAbsX - position.left;
-
-  const menuWidth =
-    Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
-    contentWidth;
-  const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
-  const pointerWithinBand =
-    pointer !== null &&
-    pointer.x >= anchorLocalX - horizontalBandHalf &&
-    pointer.x <= anchorLocalX + horizontalBandHalf;
-  const isDescending =
-    pointer !== null &&
-    lastPointerY.current !== null &&
-    pointer.y >= lastPointerY.current;
-
-  const visible =
-    hoverOffset !== null &&
-    (((pointer !== null &&
-      pointer.y >= triggerY &&
-      pointerWithinBand &&
-      isDescending) ||
-      menuHover));
-  const viewportWidth =
-    typeof window !== "undefined" && window.innerWidth
-      ? window.innerWidth
-      : size.width;
-  const desiredLeft = anchorAbsX - menuWidth / 2;
-  const clampedLeft = Math.max(
-    0,
-    Math.min(desiredLeft, viewportWidth - menuWidth),
-  );
-  const top = position.top + size.height - outlineInset + 8;
-
-  useEffect(() => {
-    if (menuVisible !== visible) {
-      setMenuVisible(visible);
-    }
-  }, [menuVisible, setMenuVisible, visible]);
-
-  useEffect(() => {
-    lastPointerY.current = pointer?.y ?? null;
-  }, [pointer?.y]);
-
-  return {
-    visible,
-    width: menuWidth,
-    offsetLeft: clampedLeft,
-    offsetTop: top,
-  };
-}
-</file>
-
 <file path="src/components/ui/absolute-center.tsx">
 import { ark } from '@ark-ui/react/factory'
 import type { ComponentProps } from 'react'
@@ -1069,6 +1083,7 @@ export const Group = styled(ark.div, group)
 <file path="src/components/ui/index.ts">
 export { AbsoluteCenter, type AbsoluteCenterProps } from "./absolute-center";
 export { Button, ButtonGroup, type ButtonGroupProps, type ButtonProps } from "./button";
+export * as Checkbox from "./checkbox";
 export * as Field from "./field";
 export { Group, type GroupProps } from "./group";
 export { Input, type InputProps } from "./input";
@@ -1186,73 +1201,6 @@ mirrorConsole();
 
 export default function ClientConsoleBridge() {
   return null;
-}
-</file>
-
-<file path="src/components/GraphStage.tsx">
-"use client";
-
-import {
-  ReactFlow,
-  Background,
-  BackgroundVariant,
-  type Node,
-  type Edge,
-} from "@xyflow/react";
-
-import "@xyflow/react/dist/style.css";
-
-const nodeTypes = {};
-const edgeTypes = {};
-
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    position: { x: 0, y: 0 },
-    data: { label: "Anchor: useQuery" },
-  },
-  {
-    id: "2",
-    position: { x: 200, y: 120 },
-    data: { label: "focusManager" },
-  },
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-  },
-];
-
-export default function GraphStage() {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 0,
-      }}
-    >
-      <ReactFlow
-        nodes={initialNodes}
-        edges={initialEdges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView
-        colorMode="dark"
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background
-          variant={BackgroundVariant.Cross}
-          gap={32}
-          size={1}
-          color="#3a3a3a"
-        />
-      </ReactFlow>
-    </div>
-  );
 }
 </file>
 
@@ -1815,6 +1763,7 @@ export const group = defineRecipe({
 </file>
 
 <file path="src/theme/recipes/index.ts">
+import { checkbox } from "./checkbox";
 import { field } from "./field";
 import { input } from "./input";
 import { spinner } from "./spinner";
@@ -1827,7 +1776,8 @@ export const recipes = {
   absoluteCenter,
   spinner,
   input,
-  field
+  field,
+  checkbox
 }
 export const slotRecipes = {}
 </file>
@@ -2052,6 +2002,18 @@ export const shadows = defineSemanticTokens.shadows({
       _dark: '0px 24px 40px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
     },
   },
+  panel: {
+    value: {
+      _light: '0px 24px 80px rgba(0, 0, 0, 0.28), 0px 0px 1px rgba(0, 0, 0, 0.16)',
+      _dark: '0px 24px 80px rgba(0, 0, 0, 0.45), 0px 0px 1px rgba(0, 0, 0, 0.26)',
+    },
+  },
+  glow: {
+    value: {
+      _light: '0 0 0 1px {colors.vercel.surface.border}, 0 12px 60px rgba(0, 0, 0, 0.22)',
+      _dark: '0 0 0 1px {colors.vercel.surface.border}, 0 16px 70px rgba(0, 0, 0, 0.4)',
+    },
+  },
   inset: {
     value: {
       _light: 'inset 8px 0 12px -8px {colors.gray.a4}',
@@ -2185,8 +2147,37 @@ export const globalCss = {
       colorPalette: 'gray',
     },
     body: {
-      background: 'canvas',
-      color: 'fg.default',
+      background: 'var(--colors-vercel-surface-overlay, #0c0c0c)',
+      color: 'var(--colors-vercel-text-primary, #eaeaea)',
+    },
+    '.react-flow': {
+      "--xy-edge-stroke-default": "rgba(255, 255, 255, 0.2)",
+      "--xy-edge-stroke-width-default": "1.25",
+      "--xy-edge-stroke-selected-default": "#3291ff",
+      "--xy-connectionline-stroke-default": "rgba(255, 255, 255, 0.28)",
+      "--xy-connectionline-stroke-width-default": "1.25",
+      "--xy-attribution-background-color-default": "transparent",
+      "--xy-minimap-background-color-default": "#0c0c0c",
+      "--xy-background-pattern-dots-color-default": "rgba(255, 255, 255, 0.2)",
+      "--xy-background-pattern-line-color-default": "rgba(255, 255, 255, 0.2)",
+      "--xy-background-pattern-cross-color-default": "rgba(255, 255, 255, 0.2)",
+      "--xy-node-color-default": "#eaeaea",
+      "--xy-node-border-default": "1px solid rgba(255, 255, 255, 0.08)",
+      "--xy-node-background-color-default": "#0c0c0c",
+      "--xy-node-group-background-color-default": "rgba(255, 255, 255, 0.04)",
+      "--xy-node-boxshadow-hover-default": "0 0 0 1px rgba(255, 255, 255, 0.28), 0 12px 48px rgba(0,0,0,0.35)",
+      "--xy-node-boxshadow-selected-default": "0 0 0 1.5px #3291ff, 0 12px 48px rgba(0,0,0,0.4)",
+      "--xy-handle-background-color-default": "#3291ff",
+      "--xy-handle-border-color-default": "#0c0c0c",
+      "--xy-selection-background-color-default": "rgba(50, 145, 255, 0.2)",
+      "--xy-selection-border-default": "1px solid #3291ff",
+      "--xy-controls-button-background-color-default": "#0c0c0c",
+      "--xy-controls-button-background-color-hover-default": "rgba(255, 255, 255, 0.04)",
+      "--xy-controls-button-color-default": "#eaeaea",
+      "--xy-controls-button-color-hover-default": "#eaeaea",
+      "--xy-controls-button-border-color-default": "rgba(255, 255, 255, 0.08)",
+      "--xy-controls-box-shadow-default": "0 16px 60px rgba(0,0,0,0.3)",
+      "--xy-resize-background-color-default": "#3291ff",
     },
   },
 }
@@ -2635,6 +2626,7 @@ export default defineConfig({
     setupFiles: "./vitest.setup.ts",
     css: true,
     include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+    exclude: ["**/*.e2e.*"],
 
     alias: {
       "@": srcDir,
@@ -2772,6 +2764,903 @@ export function findClosestPerimeterLength({
 }
 </file>
 
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts">
+import { expect, test } from "@playwright/test";
+
+test.describe("SearchScopeMenu (playwright)", () => {
+  test("appears under the hover segment, matches its width, and follows movement", async ({
+    page,
+  }) => {
+    const logRects = async (label: string) => {
+      const bar = page.locator("[data-focused]");
+      const menu = page.getByTestId("searchscope-menu");
+      const [barBox, menuBox] = await Promise.all([bar.boundingBox(), menu.boundingBox()]);
+      // eslint-disable-next-line no-console
+      console.log(label, { barBox, menuBox });
+    };
+
+    await page.goto("/");
+
+    const bar = page.locator("[data-focused]");
+    await bar.waitFor();
+
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("Search bar bounding box not found");
+
+    const centerX = box.x + box.width / 2;
+    const nearBottomY = box.y + box.height - 2;
+
+    const steps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
+    for (const y of steps) {
+      await page.mouse.move(centerX, y);
+    }
+
+    await expect(page.getByTestId("searchbar-outline-hover")).toBeVisible();
+
+    const menu = page.getByTestId("searchscope-menu");
+    await expect(menu).toBeVisible();
+    await logRects("after-center");
+
+    const barStyles = await bar.evaluate((el) => {
+      const s = getComputedStyle(el as HTMLElement);
+      return {
+        backgroundColor: s.backgroundColor,
+        boxShadow: s.boxShadow,
+        backdropFilter:
+          s.backdropFilter ||
+          (s as CSSStyleDeclaration & { webkitBackdropFilter?: string })
+            .webkitBackdropFilter ||
+          "",
+      };
+    });
+    const menuStyles = await menu.evaluate((el) => {
+      const s = getComputedStyle(el as HTMLElement);
+      return {
+        backgroundColor: s.backgroundColor,
+        boxShadow: s.boxShadow,
+        backdropFilter:
+          s.backdropFilter ||
+          (s as CSSStyleDeclaration & { webkitBackdropFilter?: string })
+            .webkitBackdropFilter ||
+          "",
+      };
+    });
+    const corpusColor = await menu
+      .locator("text=Corpus")
+      .evaluate((el) => getComputedStyle(el as HTMLElement).color);
+
+    const expectedShadow = "rgba(0, 0, 0, 0.45) 0px 24px 80px 0px";
+    const expectedBg = "rgba(12, 12, 12, 0.9)";
+    const expectedBlur = "blur(14px)";
+
+    expect(barStyles.backgroundColor).toBe(expectedBg);
+    expect(menuStyles.backgroundColor).toBe(expectedBg);
+    expect(barStyles.boxShadow).toBe(expectedShadow);
+    expect(menuStyles.boxShadow).toBe(expectedShadow);
+    expect(barStyles.backdropFilter).toBe(expectedBlur);
+    expect(menuStyles.backdropFilter).toBe(expectedBlur);
+    expect(corpusColor).toBe("rgb(255, 255, 255)");
+
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("Menu bounding box not found");
+
+    const expectedWidth = 400;
+    const widthTolerance = Math.max(10, expectedWidth * 0.1);
+
+    expect(menuBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
+    expect(menuBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
+    expect(menuBox.y).toBeGreaterThanOrEqual(box.y + box.height - 2);
+
+    const outsideX = box.x + box.width + 50;
+    await page.mouse.move(outsideX, nearBottomY);
+    await page.mouse.move(outsideX, box.y - 20);
+    await page.evaluate(
+      ({ x, y }) =>
+        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+      { x: outsideX, y: box.y - 20 },
+    );
+    await expect(menu).toBeHidden();
+
+    const returnSteps = [box.y + 8, box.y + 16, box.y + 24, box.y + 32, nearBottomY];
+    for (const y of returnSteps) {
+      await page.mouse.move(centerX, y);
+    }
+    await expect(menu).toBeVisible();
+    await logRects("after-center-return");
+  });
+});
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
+import * as Checkbox from "@/components/ui/checkbox";
+import { css } from "../../../styled-system/css";
+import { VStack, HStack } from "../../../styled-system/jsx";
+import { useSearchScopeMenu } from "./useSearchScopeMenu";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  hoverAnchorAtom,
+  hoverOffsetAtom,
+  flowDraggingAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+} from "@/state/searchbar";
+import { SURFACE_STYLE } from "../SearchBar/surfaceStyle";
+import { useMemo } from "react";
+
+type Props = {
+  outlineInset: number;
+  segmentLength?: number;
+  surfaceStyle?: {
+    background: string;
+    border: string;
+    boxShadow: string;
+    borderRadius: string;
+    backdropFilter: string;
+  };
+};
+
+const MotionBox = motion.create(VStack);
+
+export function SearchScopeMenu({
+  outlineInset,
+  segmentLength,
+  surfaceStyle = {
+    background: SURFACE_STYLE.background,
+    border: "1px solid rgba(255, 255, 255, 0.14)",
+    boxShadow: SURFACE_STYLE.boxShadow,
+    borderRadius: "18px",
+    backdropFilter: SURFACE_STYLE.backdropFilter,
+  },
+}: Props) {
+  const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
+    outlineInset,
+    segmentLength,
+  });
+  const flowDragging = useAtomValue(flowDraggingAtom);
+  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
+  const setHover = useSetAtom(hoverOffsetAtom);
+  const setAnchor = useSetAtom(hoverAnchorAtom);
+  const setPointer = useSetAtom(pointerPositionAtom);
+  const items = useMemo(
+    () => [
+      { label: "TanStack Query", defaultChecked: true },
+      { label: "Redux Toolkit", defaultChecked: true },
+      { label: "Zustand", defaultChecked: false },
+    ],
+    [],
+  );
+  const headerClass = css({
+    width: "100%",
+    paddingBottom: "10px",
+    marginBottom: "4px",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    fontSize: "13px",
+    letterSpacing: "0.02em",
+    fontWeight: 600,
+  });
+  const itemClass = css({
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "8px 6px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    transition: "background 0.12s ease",
+    "&:hover": {
+      background: "rgba(255, 255, 255, 0.06)",
+    },
+  });
+  const controlClass = css({
+    width: "16px",
+    height: "16px",
+    borderRadius: "4px",
+    border: "1px solid rgba(255, 255, 255, 0.35)",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "all 0.12s ease-out",
+    "&[data-state=checked]": {
+      backgroundColor: SURFACE_STYLE.accent,
+      borderColor: SURFACE_STYLE.accent,
+    },
+    "&:focus-visible": {
+      outline: "none",
+      boxShadow: `0 0 0 2px ${SURFACE_STYLE.accentGlow}`,
+    },
+  });
+  const indicatorClass = css({
+    color: "white",
+    fontSize: "12px",
+  });
+  const labelStyle = {
+    fontSize: "14px",
+    color: "rgba(255,255,255,0.9)",
+    lineHeight: "1.5",
+    fontWeight: 500,
+    display: "inline-flex",
+    alignItems: "center",
+  } as const;
+
+  const content = (
+    <AnimatePresence>
+      {visible && (
+        <MotionBox
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
+          position="absolute"
+          top={`${offsetTop}px`}
+          left={`${offsetLeft}px`}
+          mt="0"
+          w={`${Math.max(0, Math.min(480, width))}px`}
+          px="18px"
+          py="16px"
+          gap="14px"
+          borderRadius={surfaceStyle.borderRadius}
+          background={surfaceStyle.background}
+          border={surfaceStyle.border}
+          backdropFilter={surfaceStyle.backdropFilter}
+          boxShadow={surfaceStyle.boxShadow}
+          data-testid="searchscope-menu"
+          data-left={`${offsetLeft}`}
+          data-top={`${offsetTop}`}
+          data-width={`${Math.max(0, width)}`}
+          zIndex={1}
+          style={{
+            width: `${Math.max(0, Math.min(480, width))}px`,
+            left: `${offsetLeft}px`,
+            top: `${offsetTop}px`,
+            position: "absolute",
+            backgroundColor: surfaceStyle.background,
+            boxShadow: surfaceStyle.boxShadow,
+    backdropFilter: surfaceStyle.backdropFilter,
+    WebkitBackdropFilter: surfaceStyle.backdropFilter,
+            borderRadius: surfaceStyle.borderRadius,
+            border: surfaceStyle.border,
+            overflow: "hidden",
+            minHeight: "200px",
+            minWidth: "380px",
+          }}
+          onPointerEnter={() => setMenuHover(true)}
+  onPointerLeave={() => {
+    setMenuHover(false);
+    setHover(null);
+            setAnchor(null);
+            setPointer(null);
+          }}
+        >
+          <VStack gap="16px" alignItems="flex-start" width="100%">
+            <HStack
+              justify="space-between"
+              fontSize="14px"
+              color={SURFACE_STYLE.text}
+              w="100%"
+              className={headerClass}
+              lineHeight="1.3"
+              px="6px"
+            >
+              <span style={{ color: SURFACE_STYLE.text, fontWeight: 600 }}>
+                Corpus
+              </span>
+              <span
+                style={{
+                  color: "#c8ced6",
+                  fontSize: "12px",
+                  letterSpacing: "0.04em",
+                  paddingLeft: "6px",
+                }}
+              >
+                Scope
+              </span>
+            </HStack>
+            <VStack alignItems="flex-start" gap="12px" w="100%">
+              {items.map((item) => (
+                <motion.div
+                  key={item.label}
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1, ease: "easeOut" }}
+                  style={{ width: "100%" }}
+                >
+                  <Checkbox.Root
+                    defaultChecked={item.defaultChecked}
+                    className={itemClass}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control className={controlClass}>
+                      <Checkbox.Indicator className={indicatorClass} />
+                    </Checkbox.Control>
+                    <Checkbox.Label style={labelStyle}>
+                      {item.label}
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                </motion.div>
+              ))}
+            </VStack>
+          </VStack>
+        </MotionBox>
+      )}
+    </AnimatePresence>
+  );
+
+  if (flowDragging) return null;
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(content, document.body);
+}
+</file>
+
+<file path="src/components/SearchScopeMenu/useSearchScopeMenu.ts">
+import { useAtom, useAtomValue } from "jotai";
+import { useEffect, useRef } from "react";
+
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+  flowDraggingAtom,
+} from "@/state/searchbar";
+
+const TRIGGER_MARGIN = 6;
+const HORIZONTAL_MARGIN = 12;
+
+type Options = {
+  outlineInset: number;
+  segmentLength?: number;
+};
+
+export function useSearchScopeMenu({
+  outlineInset,
+  segmentLength,
+}: Options) {
+  const hoverOffset = useAtomValue(hoverOffsetAtom);
+  const pointer = useAtomValue(pointerPositionAtom);
+  const size = useAtomValue(searchBarSizeAtom);
+  const anchor = useAtomValue(hoverAnchorAtom);
+  const menuHover = useAtomValue(scopeMenuHoverAtom);
+  const position = useAtomValue(searchBarPositionAtom);
+  const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
+  const lastPointerY = useRef<number | null>(null);
+
+  const contentHeight = Math.max(0, size.height - outlineInset * 2);
+  const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
+  const triggerY = Math.max(
+    0,
+    Math.min(contentHeight - 2, triggerCandidate),
+  );
+  const contentWidth = Math.max(0, size.width - outlineInset * 2);
+
+  const anchorAbsX =
+    anchor?.x ??
+    (pointer
+      ? position.left + pointer.x
+      : position.left + contentWidth / 2);
+  const anchorLocalX = anchorAbsX - position.left;
+
+  const menuWidth =
+    Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
+    contentWidth;
+  const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
+  const pointerWithinBand =
+    pointer !== null &&
+    pointer.x >= anchorLocalX - horizontalBandHalf &&
+    pointer.x <= anchorLocalX + horizontalBandHalf;
+  const isDescending =
+    pointer !== null &&
+    lastPointerY.current !== null &&
+    pointer.y >= lastPointerY.current;
+
+  const visible =
+    !flowDragging &&
+    hoverOffset !== null &&
+    (((pointer !== null &&
+      pointer.y >= triggerY &&
+      pointerWithinBand &&
+      isDescending) ||
+      menuHover));
+  const viewportWidth =
+    typeof window !== "undefined" && window.innerWidth
+      ? window.innerWidth
+      : size.width;
+  const desiredLeft = anchorAbsX - menuWidth / 2;
+  const clampedLeft = Math.max(
+    0,
+    Math.min(desiredLeft, viewportWidth - menuWidth),
+  );
+  const top = position.top + size.height - outlineInset + 8;
+
+  useEffect(() => {
+    if (menuVisible !== visible) {
+      setMenuVisible(visible);
+    }
+  }, [menuVisible, setMenuVisible, visible]);
+
+  useEffect(() => {
+    lastPointerY.current = pointer?.y ?? null;
+  }, [pointer?.y]);
+
+  return {
+    visible,
+    width: menuWidth,
+    offsetLeft: clampedLeft,
+    offsetTop: top,
+  };
+}
+</file>
+
+<file path="src/components/GraphStage.tsx">
+"use client";
+
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  type Node,
+  type Edge,
+} from "@xyflow/react";
+import { useCallback, useEffect } from "react";
+import { useSetAtom } from "jotai";
+
+import "@xyflow/react/dist/style.css";
+import { flowDraggingAtom } from "@/state/searchbar";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { SURFACE_STYLE } from "./SearchBar/surfaceStyle";
+
+const nodeTypes = {};
+const edgeTypes = {};
+
+const initialNodes: Node[] = [
+  {
+    id: "1",
+    position: { x: 0, y: 0 },
+    data: { label: "Anchor: useQuery" },
+    style: {
+      background: reactFlowTheme.node.background,
+      border: reactFlowTheme.node.border,
+      color: reactFlowTheme.node.color,
+      boxShadow: reactFlowTheme.node.shadow,
+      borderRadius: 12,
+      padding: 12,
+    },
+  },
+  {
+    id: "2",
+    position: { x: 200, y: 120 },
+    data: { label: "focusManager" },
+    style: {
+      background: reactFlowTheme.node.background,
+      border: reactFlowTheme.node.border,
+      color: reactFlowTheme.node.color,
+      boxShadow: reactFlowTheme.node.shadow,
+      borderRadius: 12,
+      padding: 12,
+    },
+  },
+];
+
+const initialEdges: Edge[] = [
+  {
+    id: "e1-2",
+    source: "1",
+    target: "2",
+  },
+];
+
+export default function GraphStage() {
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 0,
+        background: SURFACE_STYLE.background,
+      }}
+    >
+      <ReactFlow
+        nodes={initialNodes}
+        edges={initialEdges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+        onMoveStart={handleDragStart}
+        onMoveEnd={handleDragEnd}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
+        defaultEdgeOptions={{
+          style: {
+            stroke: reactFlowTheme.edge.stroke,
+          },
+          markerEnd: {
+            type: "arrowclosed",
+            color: reactFlowTheme.edge.stroke,
+          },
+        }}
+        style={{ background: reactFlowTheme.canvas.background }}
+      >
+        <Background
+          variant={BackgroundVariant.Cross}
+          gap={32}
+          size={1}
+          color={reactFlowTheme.grid.color}
+          bgColor={reactFlowTheme.canvas.background}
+        />
+      </ReactFlow>
+    </div>
+  );
+}
+</file>
+
+<file path="test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+## Panda
+styled-system
+styled-system-studio
+</file>
+
+<file path="flake.nix">
+{
+  description = "Bun + Vite + Playwright + Pre-commit multi-platform dev shell";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+  };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      git-hooks,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+
+        preCommit = git-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            # Secret scanning
+            trufflehog.enable = true;
+            ripsecrets.enable = true;
+
+            # Hygiene
+            nixfmt.enable = true;
+            end-of-file-fixer.enable = true;
+            trim-trailing-whitespace.enable = true;
+          };
+        };
+      in
+      {
+        checks.pre-commit-check = preCommit;
+
+        devShells.default = pkgs.mkShell {
+          packages = [
+            pkgs.bun
+            pkgs.chromium
+          ]
+          ++ preCommit.enabledPackages;
+
+          shellHook = ''
+            ${preCommit.shellHook}
+
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            export PLAYWRIGHT_CHROMIUM_PATH=${pkgs.chromium}/bin/chromium
+            export PLAYWRIGHT_BROWSERS_PATH=0
+          '';
+        };
+      }
+    );
+}
+</file>
+
+<file path="panda.config.ts">
+import { green } from "@/theme/colors/green";
+import { red } from "@/theme/colors/red";
+import { slate } from "@/theme/colors/slate";
+import { vercel } from "@/theme/colors/vercel";
+import { animationStyles } from "@/theme/animation-styles";
+import { zIndex } from "@/theme/tokens/z-index";
+import { shadows } from "@/theme/tokens/shadows";
+import { durations } from "@/theme/tokens/durations";
+import { colors } from "@/theme/tokens/colors";
+import { textStyles } from "@/theme/text-styles";
+import { layerStyles } from "@/theme/layer-styles";
+import { keyframes } from "@/theme/keyframes";
+import { globalCss } from "@/theme/global-css";
+import { conditions } from "@/theme/conditions";
+import { slotRecipes, recipes } from "@/theme/recipes";
+import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  preflight: true,
+  include: ["./src/**/*.{js,jsx,ts,tsx}"],
+  jsxFramework: "react",
+  outdir: "styled-system",
+
+  theme: {
+    extend: {
+      animationStyles: animationStyles,
+      recipes: recipes,
+      slotRecipes: slotRecipes,
+      keyframes: keyframes,
+      layerStyles: layerStyles,
+      textStyles: textStyles,
+
+      tokens: {
+        colors: colors,
+        durations: durations,
+        zIndex: zIndex
+      },
+
+      semanticTokens: {
+        colors: {
+          fg: {
+            default: {
+              value: {
+                _light: "{colors.gray.12}",
+                _dark: "{colors.gray.12}"
+              }
+            },
+
+            muted: {
+              value: {
+                _light: "{colors.gray.11}",
+                _dark: "{colors.gray.11}"
+              }
+            },
+
+            subtle: {
+              value: {
+                _light: "{colors.gray.10}",
+                _dark: "{colors.gray.10}"
+              }
+            }
+          },
+
+          border: {
+            value: {
+              _light: "{colors.gray.4}",
+              _dark: "{colors.gray.4}"
+            }
+          },
+
+          error: {
+            value: {
+              _light: "{colors.red.9}",
+              _dark: "{colors.red.9}"
+            }
+          },
+
+          gray: slate,
+          red: red,
+          green: green,
+          vercel: vercel
+        },
+
+        shadows: shadows,
+
+        radii: {
+          l1: {
+            value: "{radii.xs}"
+          },
+
+          l2: {
+            value: "{radii.sm}"
+          },
+
+          l3: {
+            value: "{radii.md}"
+          }
+        }
+      }
+    },
+  },
+
+  globalCss: globalCss,
+  conditions: conditions
+});
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import "../../styled-system/styles.css";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import ClientConsoleBridge from "@/components/ClientConsoleBridge";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "SAT",
+  description: "Constraint solving UI",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ClientConsoleBridge />
+        {children}
+      </body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/app/page.tsx">
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
+
+export default function Home() {
+  return (
+    <Box position="relative" h="100vh" w="100vw">
+      <GraphStage />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        style={{
+          padding: "20px",
+        }}
+        pointerEvents="none"
+      >
+        <Box
+          pointerEvents="auto"
+          style={{
+            width: "100%",
+            height: "72px",
+          }}
+        >
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+</file>
+
 <file path="src/components/SearchBar/SearchBar.spec.tsx">
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -2780,6 +3669,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { Provider, createStore } from "jotai";
 import SearchBar from "@/components/SearchBar";
 import * as perimeterModule from "@/components/SearchBar/perimeter";
+import { flowDraggingAtom } from "@/state/searchbar";
 
 const movePointer = (element: HTMLElement, x: number, y: number) => {
   fireEvent.pointerMove(element, { clientX: x, clientY: y });
@@ -2791,11 +3681,14 @@ const getContainer = () =>
 const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) => {
   const store = createStore();
 
-  return render(
-    <Provider store={store}>
-      <SearchBar {...props} />
-    </Provider>,
-  );
+  return {
+    store,
+    ...render(
+      <Provider store={store}>
+        <SearchBar {...props} />
+      </Provider>,
+    ),
+  };
 };
 
 const mockRect = (width = 320, height = 64, left = 0, top = 0) => {
@@ -2958,7 +3851,7 @@ describe("SearchBar (vitest)", () => {
         clientY: 20,
       }),
     );
-    expect(hoverOutline).toHaveAttribute("data-offset", "0");
+    expect(hoverOutline).toHaveAttribute("data-offset", "320");
     expect(hoverOutline).toHaveAttribute("data-variant", "hover");
   });
 
@@ -2980,12 +3873,12 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 30, 18);
 
     let hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "80");
+    expect(hoverOutline).toHaveAttribute("data-offset", "0");
 
     movePointer(container, 90, 32);
 
     hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "140");
+    expect(hoverOutline).toHaveAttribute("data-offset", "60");
 
     fireEvent.pointerLeave(container);
 
@@ -3020,7 +3913,7 @@ describe("SearchBar (vitest)", () => {
 
     const focusOutline = screen.getByTestId("searchbar-outline-focus");
 
-    expect(focusOutline).toHaveAttribute("data-focus-origin", "0.2");
+    expect(focusOutline).toHaveAttribute("data-focus-origin", "0");
     expect(focusOutline).toHaveAttribute("data-variant", "focus");
   });
 
@@ -3139,6 +4032,42 @@ describe("SearchBar (vitest)", () => {
     expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
   });
 
+  it("hides the search UI while React Flow is dragging", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
+      mockRect(320, 64) as DOMRect,
+    );
+    vi.spyOn(SVGGeometryElement.prototype, "getTotalLength").mockReturnValue(
+      400,
+    );
+    vi.spyOn(perimeterModule, "findClosestPerimeterLength").mockReturnValue({
+      bestLength: 200,
+      total: 400,
+      point: { x: 160, y: 64 },
+    });
+
+    const { store } = renderSearchBar();
+
+    const container = getContainer();
+
+    movePointer(container, 160, 40);
+    movePointer(container, 160, 76);
+
+    await screen.findByTestId("searchscope-menu");
+
+    act(() => {
+      store.set(flowDraggingAtom, true);
+    });
+
+    expect(screen.queryByRole("textbox")).toBeNull();
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+
+    act(() => {
+      store.set(flowDraggingAtom, false);
+    });
+
+    expect(await screen.findByRole("textbox")).toBeInTheDocument();
+  });
+
   it("positions the scope menu under the segment and follows its movement", async () => {
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
       mockRect(300, 60, 100, 200) as DOMRect,
@@ -3169,7 +4098,7 @@ describe("SearchBar (vitest)", () => {
     const firstTop = Number(firstMenu.getAttribute("data-top"));
     const firstWidth = Number(firstMenu.getAttribute("data-width"));
 
-    expect(firstWidth).toBeCloseTo(240, 0);
+    expect(firstWidth).toBeCloseTo(300, 0);
     expect(firstTop).toBeGreaterThanOrEqual(276);
 
     movePointer(container, 520, 240);
@@ -3190,12 +4119,17 @@ describe("SearchBar (vitest)", () => {
 
 import { useHover } from "@use-gesture/react";
 import { motion } from "framer-motion";
-import { type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  type ComponentType,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { useAtomValue } from "jotai";
 import { HStack } from "../../../styled-system/jsx";
 import { Input, Button } from "@/components/ui";
 import { useSearchBar } from "./useSearchBar";
 import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
 import { SURFACE_STYLE } from "./surfaceStyle";
+import { flowDraggingAtom } from "@/state/searchbar";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -3208,11 +4142,12 @@ const MotionRect = motion.rect;
 
 const OUTLINE_INSET = 8;
 const OUTLINE_RADIUS = 24;
-/* shorter hover line */
-export const HOVER_SEGMENT_LENGTH = 240;
+/* hover segment length controls scope menu width */
+export const HOVER_SEGMENT_LENGTH = 400;
 export const OUTLINE_INSET_PX = OUTLINE_INSET;
 
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
+  const flowDragging = useAtomValue(flowDraggingAtom);
   const {
     containerRef,
     focusOrigin,
@@ -3236,6 +4171,8 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
     onReplay,
   });
 
+  const hidden = flowDragging;
+
   const svgWidth = size.width;
   const svgHeight = size.height;
 
@@ -3255,6 +4192,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       ref={containerRef}
       {...bindHover()}
       data-focused={focused}
+      data-hidden={hidden}
       alignItems="center"
       gap="12px"
       w="100%"
@@ -3278,6 +4216,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       style={{
         position: "relative",
         display: "flex",
+        visibility: hidden ? "hidden" : "visible",
         borderRadius: SURFACE_STYLE.borderRadius,
         padding: "12px 28px",
         background: SURFACE_STYLE.background,
@@ -3286,6 +4225,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         border: SURFACE_STYLE.border,
         boxShadow: SURFACE_STYLE.boxShadow,
         overflow: "visible",
+        pointerEvents: hidden ? "none" : "auto",
       }}
     >
       {svgWidth > 0 && svgHeight > 0 && (
@@ -3327,7 +4267,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.35)"
+              stroke={SURFACE_STYLE.outlineMuted}
               strokeWidth="1.5"
               strokeLinecap="round"
               initial={{ opacity: 0, strokeDashoffset: -hoverOffset }}
@@ -3345,7 +4285,8 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
                 },
               }}
               style={{
-                filter: "drop-shadow(0 0 3px rgba(255,255,255,0.12))",
+                filter:
+                  "drop-shadow(0 0 6px var(--colors-vercel-surface-highlight, rgba(50,145,255,0.2)))",
               }}
             />
           )}
@@ -3362,7 +4303,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.45)"
+              stroke={SURFACE_STYLE.outlineStrong}
               strokeWidth="1.8"
               initial={{
                 pathLength: 0,
@@ -3390,7 +4331,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.45)"
+              stroke={SURFACE_STYLE.outlineStrong}
               strokeWidth="1.8"
             />
           )}
@@ -3424,7 +4365,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
           background: "transparent",
           border: "none",
           outline: "none",
-          color: "#eee",
+          color: SURFACE_STYLE.text,
           fontSize: "16px",
           zIndex: 1,
         }}
@@ -3447,9 +4388,11 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
           height: "48px",
           padding: "0 24px",
           borderRadius: "10px",
-          background: "rgba(70,70,70,0.28)",
-          border: "1px solid rgba(255,255,255,0.06)",
-          color: "#eee",
+          background:
+            "var(--colors-vercel-surface-muted, rgba(255,255,255,0.04))",
+          border:
+            "1px solid var(--colors-vercel-surface-border, rgba(255,255,255,0.08))",
+          color: SURFACE_STYLE.text,
           zIndex: 1,
         }}
       >
@@ -3462,7 +4405,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
 
 <file path="src/components/SearchBar/useSearchBar.ts">
 import { useEffect, useRef, type PointerEvent } from "react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 
 import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
 import {
@@ -3478,6 +4421,7 @@ import {
   searchFocusedAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
+  flowDraggingAtom,
 } from "@/state/searchbar";
 
 const MENU_HOLD_MARGIN = 24;
@@ -3508,6 +4452,7 @@ export function useSearchBar({
   const [pointerPosition, setPointerPosition] = useAtom(pointerPositionAtom);
   const [menuHover, setMenuHover] = useAtom(scopeMenuHoverAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -3567,7 +4512,7 @@ export function useSearchBar({
     clientX: number;
     clientY: number;
   }) => {
-    if (focused) return;
+    if (focused || flowDragging) return;
 
     const container = containerRef.current;
     const path = hoverPathRef.current;
@@ -3630,6 +4575,8 @@ export function useSearchBar({
   };
 
   const handlePointerLeave = () => {
+    if (flowDragging) return;
+
     const container = containerRef.current;
     const containerRect = container?.getBoundingClientRect();
 
@@ -3670,6 +4617,8 @@ export function useSearchBar({
   };
 
   const handleFocus = () => {
+    if (flowDragging) return;
+
     setFocused(true);
     setOutlineLocked(false);
     setMenuHover(false);
@@ -3766,6 +4715,28 @@ export function useSearchBar({
     size.width,
   ]);
 
+  useEffect(() => {
+    if (!flowDragging) return;
+
+    setFocused(false);
+    setOutlineLocked(false);
+    setHoverOffset(null);
+    setHoverAnchor(null);
+    setPointerPosition(null);
+    setMenuHover(false);
+    setMenuVisible(false);
+    inputRef.current?.blur();
+  }, [
+    flowDragging,
+    setFocused,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    setMenuVisible,
+    setOutlineLocked,
+    setPointerPosition,
+  ]);
+
   return {
     containerRef,
     focusOrigin,
@@ -3804,342 +4775,7 @@ export const perimeterAtom = atom(0);
 export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
 export const scopeMenuHoverAtom = atom(false);
 export const scopeMenuVisibleAtom = atom(false);
-</file>
-
-<file path="test-results/.last-run.json">
-{
-  "status": "passed",
-  "failedTests": []
-}
-</file>
-
-<file path=".gitignore">
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-## Panda
-styled-system
-styled-system-studio
-</file>
-
-<file path="flake.nix">
-{
-  description = "Bun + Vite + Playwright + Pre-commit multi-platform dev shell";
-
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
-    git-hooks.url = "github:cachix/git-hooks.nix";
-  };
-
-  outputs =
-    {
-      self,
-      nixpkgs,
-      flake-utils,
-      git-hooks,
-    }:
-    flake-utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
-
-        preCommit = git-hooks.lib.${system}.run {
-          src = ./.;
-          hooks = {
-            # Secret scanning
-            trufflehog.enable = true;
-            ripsecrets.enable = true;
-
-            # Hygiene
-            nixfmt.enable = true;
-            end-of-file-fixer.enable = true;
-            trim-trailing-whitespace.enable = true;
-          };
-        };
-      in
-      {
-        checks.pre-commit-check = preCommit;
-
-        devShells.default = pkgs.mkShell {
-          packages = [
-            pkgs.bun
-            pkgs.chromium
-          ]
-          ++ preCommit.enabledPackages;
-
-          shellHook = ''
-            ${preCommit.shellHook}
-
-            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-            export PLAYWRIGHT_CHROMIUM_PATH=${pkgs.chromium}/bin/chromium
-            export PLAYWRIGHT_BROWSERS_PATH=0
-          '';
-        };
-      }
-    );
-}
-</file>
-
-<file path="panda.config.ts">
-import { green } from "@/theme/colors/green";
-import { red } from "@/theme/colors/red";
-import { slate } from "@/theme/colors/slate";
-import { animationStyles } from "@/theme/animation-styles";
-import { zIndex } from "@/theme/tokens/z-index";
-import { shadows } from "@/theme/tokens/shadows";
-import { durations } from "@/theme/tokens/durations";
-import { colors } from "@/theme/tokens/colors";
-import { textStyles } from "@/theme/text-styles";
-import { layerStyles } from "@/theme/layer-styles";
-import { keyframes } from "@/theme/keyframes";
-import { globalCss } from "@/theme/global-css";
-import { conditions } from "@/theme/conditions";
-import { slotRecipes, recipes } from "@/theme/recipes";
-import { defineConfig } from "@pandacss/dev";
-
-export default defineConfig({
-  preflight: true,
-  include: ["./src/**/*.{js,jsx,ts,tsx}"],
-  jsxFramework: "react",
-  outdir: "styled-system",
-
-  theme: {
-    extend: {
-      animationStyles: animationStyles,
-      recipes: recipes,
-      slotRecipes: slotRecipes,
-      keyframes: keyframes,
-      layerStyles: layerStyles,
-      textStyles: textStyles,
-
-      tokens: {
-        colors: colors,
-        durations: durations,
-        zIndex: zIndex
-      },
-
-      semanticTokens: {
-        colors: {
-          fg: {
-            default: {
-              value: {
-                _light: "{colors.gray.12}",
-                _dark: "{colors.gray.12}"
-              }
-            },
-
-            muted: {
-              value: {
-                _light: "{colors.gray.11}",
-                _dark: "{colors.gray.11}"
-              }
-            },
-
-            subtle: {
-              value: {
-                _light: "{colors.gray.10}",
-                _dark: "{colors.gray.10}"
-              }
-            }
-          },
-
-          border: {
-            value: {
-              _light: "{colors.gray.4}",
-              _dark: "{colors.gray.4}"
-            }
-          },
-
-          error: {
-            value: {
-              _light: "{colors.red.9}",
-              _dark: "{colors.red.9}"
-            }
-          },
-
-          gray: slate,
-          red: red,
-          green: green
-        },
-
-        shadows: shadows,
-
-        radii: {
-          l1: {
-            value: "{radii.xs}"
-          },
-
-          l2: {
-            value: "{radii.sm}"
-          },
-
-          l3: {
-            value: "{radii.md}"
-          }
-        }
-      }
-    },
-  },
-
-  globalCss: globalCss,
-  conditions: conditions
-});
-</file>
-
-<file path="tsconfig.json">
-{
-  "compilerOptions": {
-    "baseUrl": ".",
-    "types": ["vitest/globals", "@testing-library/jest-dom"],
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
-    "**/*.mts"
-  ],
-  "exclude": ["node_modules"]
-}
-</file>
-
-<file path="src/app/layout.tsx">
-import "../../styled-system/styles.css";
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import ClientConsoleBridge from "@/components/ClientConsoleBridge";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "SAT",
-  description: "Constraint solving UI",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ClientConsoleBridge />
-        {children}
-      </body>
-    </html>
-  );
-}
-</file>
-
-<file path="src/app/page.tsx">
-import { Box } from "../../styled-system/jsx";
-import GraphStage from "@/components/GraphStage";
-import SearchBar from "@/components/SearchBar";
-
-export default function Home() {
-  return (
-    <Box position="relative" h="100vh" w="100vw">
-      <GraphStage />
-
-      <Box
-        position="absolute"
-        inset="0"
-        zIndex="10"
-        display="flex"
-        justifyContent="center"
-        alignItems="flex-start"
-        style={{
-          padding: "20px",
-        }}
-        pointerEvents="none"
-      >
-        <Box
-          pointerEvents="auto"
-          style={{
-            width: "100%",
-            height: "72px",
-          }}
-        >
-          <SearchBar />
-        </Box>
-      </Box>
-    </Box>
-  );
-}
+export const flowDraggingAtom = atom(false);
 </file>
 
 <file path="package.json">

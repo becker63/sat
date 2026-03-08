@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "panda dev & next dev",
-    "build": "panda build && next build",
+    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev",
+    "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
     "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write",
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:eslint": "eslint . --ext .ts,.tsx",
+    "format": "eslint . --ext .ts,.tsx --fix",
     "test": "vitest"
   },
   "dependencies": {
@@ -25,13 +26,19 @@
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
     "@pandacss/dev": "^1.8.2",
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
-    "happy-dom": "^20.8.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "happy-dom": "^20.8.3",
     "typescript": "^5",
     "vitest": "^4.0.18"
   },

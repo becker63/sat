@@ -37,6 +37,18 @@ export const shadows = defineSemanticTokens.shadows({
       _dark: '0px 24px 40px {colors.black.a8}, 0px 0px 1px inset {colors.gray.a8}',
     },
   },
+  panel: {
+    value: {
+      _light: '0px 24px 80px rgba(0, 0, 0, 0.28), 0px 0px 1px rgba(0, 0, 0, 0.16)',
+      _dark: '0px 24px 80px rgba(0, 0, 0, 0.45), 0px 0px 1px rgba(0, 0, 0, 0.26)',
+    },
+  },
+  glow: {
+    value: {
+      _light: '0 0 0 1px {colors.vercel.surface.border}, 0 12px 60px rgba(0, 0, 0, 0.22)',
+      _dark: '0 0 0 1px {colors.vercel.surface.border}, 0 16px 70px rgba(0, 0, 0, 0.4)',
+    },
+  },
   inset: {
     value: {
       _light: 'inset 8px 0 12px -8px {colors.gray.a4}',

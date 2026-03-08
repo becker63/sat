@@ -34,3 +34,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Linting and style guardrails
+
+Run `npm run lint` (ESLint only) to enforce the style firewall. The custom rules block raw colors/shadows/radii, restrict inline styles to geometry (or motion components), and keep styling confined to UI primitives/recipes so app components stay token-driven.
+
+Note: temporary lint exclusions for theme and test files are only to unblock the migration; remove them once styling is fully tokenized so the firewall applies everywhere.

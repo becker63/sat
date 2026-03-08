@@ -59,7 +59,7 @@ export const input = {
       flushed: {
         borderBottomWidth: '1px',
         borderBottomColor: 'gray.outline.border',
-        borderRadius: '0',
+        borderRadius: 'none',
         color: 'fg.default',
         px: '0',
         _invalid: {
@@ -68,7 +68,7 @@ export const input = {
         _focus: {
           borderColor: 'colorPalette.solid.bg',
           boxShadowColor: 'colorPalette.solid.bg',
-          boxShadow: '0 1px 0 0 var(--shadow-color)',
+          boxShadow: '{shadows.inset}',
           _invalid: {
             borderColor: 'error',
             boxShadowColor: 'error',

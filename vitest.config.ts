@@ -12,6 +12,7 @@ export default defineConfig({
     setupFiles: "./vitest.setup.ts",
     css: true,
     include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+    exclude: ["**/*.e2e.*"],
 
     alias: {
       "@": srcDir,

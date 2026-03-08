@@ -1,0 +1,151 @@
+import { css, cx } from "../../../styled-system/css";
+
+export const searchBarShellClass = css({
+  layerStyle: "panel",
+  background: "var(--colors-vercel-surface-overlay)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  boxShadow: "var(--shadows-panel)",
+  backdropFilter: "blur(14px)",
+  borderRadius: "var(--radii-l3)",
+  display: "flex",
+  alignItems: "center",
+  gap: "3",
+  width: "100%",
+  height: "72px",
+  boxSizing: "border-box",
+  position: "relative",
+  px: "7",
+  py: "3",
+  overflow: "hidden",
+});
+
+export const searchBarHiddenClass = css({
+  pointerEvents: "none",
+  visibility: "hidden",
+});
+
+export const graphStageBackgroundClass = css({
+  position: "absolute",
+  inset: 0,
+  zIndex: 0,
+  background: "var(--colors-vercel-surface-overlay)",
+});
+
+export const reactFlowCanvasClass = css({
+  background: "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
+});
+
+export const searchBarSvgClass = css({
+  position: "absolute",
+  pointerEvents: "none",
+  overflow: "hidden",
+  width: "100%",
+  height: "100%",
+  zIndex: 0,
+});
+
+export const outlineHoverClass = css({
+  filter: "drop-shadow(0 0 6px var(--colors-vercel-surface-highlight))",
+});
+
+export const searchInputClass = css({
+  flex: "1 1 0",
+  minWidth: 0,
+  height: "48px",
+  background: "transparent",
+  border: "none",
+  outline: "none",
+  color: "var(--colors-vercel-text-primary)",
+  fontSize: "16px",
+  zIndex: 1,
+});
+
+export const searchButtonClass = css({
+  flex: "0 0 auto",
+  height: "48px",
+  px: "6",
+  borderRadius: "var(--radii-l2)",
+  zIndex: 1,
+});
+
+export const menuContainerClass = css({
+  layerStyle: "panel",
+  background: "var(--colors-vercel-surface-overlay)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  boxShadow: "var(--shadows-panel)",
+  backdropFilter: "blur(14px)",
+  borderRadius: "var(--radii-l3)",
+  position: "absolute",
+  minHeight: "200px",
+  minWidth: "380px",
+  overflow: "hidden",
+});
+
+export const menuHeaderClass = css({
+  width: "100%",
+  paddingBottom: "10px",
+  marginBottom: "4px",
+  borderBottom: "1px solid var(--colors-vercel-surface-border)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  fontSize: "13px",
+  letterSpacing: "0.02em",
+  fontWeight: 600,
+});
+
+export const menuItemClass = css({
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  padding: "8px 6px",
+  borderRadius: "var(--radii-l2)",
+  cursor: "pointer",
+  transition: "background 0.12s ease",
+  "&:hover": {
+    background: "var(--colors-vercel-surface-muted)",
+  },
+});
+
+export const menuControlClass = css({
+  width: "16px",
+  height: "16px",
+  borderRadius: "var(--radii-l1)",
+  border: "1px solid var(--colors-vercel-surface-borderStrong)",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "all 0.12s ease-out",
+  "&[data-state=checked]": {
+    backgroundColor: "var(--colors-vercel-brand-9)",
+    borderColor: "var(--colors-vercel-brand-9)",
+  },
+  "&:focus-visible": {
+    outline: "none",
+    boxShadow: "var(--shadows-glow)",
+  },
+});
+
+export const menuIndicatorClass = css({
+  color: "var(--colors-vercel-text-primary)",
+  fontSize: "12px",
+});
+
+export const menuLabelClass = css({
+  fontSize: "14px",
+  color: "var(--colors-vercel-text-muted)",
+  lineHeight: "1.5",
+  fontWeight: 500,
+  display: "inline-flex",
+  alignItems: "center",
+});
+
+export const searchSurfaceClassName = cx(searchBarShellClass);
+
+export const menuSubLabelClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-subtle)",
+  letterSpacing: "0.04em",
+  paddingLeft: "6px",
+});

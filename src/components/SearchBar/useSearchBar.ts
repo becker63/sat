@@ -79,7 +79,7 @@ export function useSearchBar({
     ro.observe(node);
 
     return () => ro.disconnect();
-  }, [outlineInset, setSize]);
+  }, [outlineInset, setPosition, setSize]);
 
   useEffect(() => {
     const path = hoverPathRef.current;
@@ -259,7 +259,7 @@ export function useSearchBar({
     window.addEventListener("blur", handleWindowBlur);
 
     return () => window.removeEventListener("blur", handleWindowBlur);
-  }, [setFocused, setHoverOffset, setOutlineLocked]);
+  }, [setFocused, setHoverAnchor, setHoverOffset, setMenuHover, setOutlineLocked, setPointerPosition]);
 
   useEffect(() => {
     if (!menuVisible) return;

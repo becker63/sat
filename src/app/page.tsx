@@ -14,17 +14,13 @@ export default function Home() {
         display="flex"
         justifyContent="center"
         alignItems="flex-start"
-        style={{
-          padding: "20px",
-        }}
+        p="5"
         pointerEvents="none"
       >
         <Box
           pointerEvents="auto"
-          style={{
-            width: "100%",
-            height: "72px",
-          }}
+          w="100%"
+          h="72px"
         >
           <SearchBar />
         </Box>
