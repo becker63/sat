@@ -1,0 +1,1949 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+The content has been processed where content has been compressed (code blocks are separated by ⋮---- delimiter).
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: theme
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Content has been compressed - code blocks are separated by ⋮---- delimiter
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+eslint/
+  style-firewall.mjs
+public/
+  file.svg
+  globe.svg
+  next.svg
+  vercel.svg
+  window.svg
+src/
+  app/
+    api/
+      log/
+        route.ts
+    globals.css
+    layout.tsx
+    page.tsx
+  components/
+    GraphStage/
+      config.ts
+      forces.ts
+      GraphStage.tsx
+      index.ts
+      random.ts
+      types.ts
+      useForceLayout.ts
+    SearchBar/
+      idea.md
+      index.ts
+      perimeter.ts
+      SearchBar.e2e.spec.ts
+      SearchBar.spec.tsx
+      SearchBar.tsx
+      useSearchBar.ts
+    SearchScopeMenu/
+      SearchScopeMenu.e2e.spec.ts
+      SearchScopeMenu.spec.tsx
+      SearchScopeMenu.tsx
+      useSearchScopeMenu.ts
+    ui/
+      absolute-center.tsx
+      button.tsx
+      checkbox.tsx
+      field.tsx
+      graph-background.tsx
+      group.tsx
+      index.ts
+      input.tsx
+      loader.tsx
+      search-styles.ts
+      span.tsx
+      spinner.tsx
+      themed-react-flow.tsx
+    ClientConsoleBridge.tsx
+  lib/
+    clientLogger.ts
+  state/
+    graphStage.ts
+    searchbar.ts
+    searchScopeEngine.ts
+    searchScopeMachine.ts
+  theme/
+    colors/
+      green.ts
+      red.ts
+      slate.ts
+      vercel.ts
+    recipes/
+      absolute-center.ts
+      button.ts
+      checkbox.ts
+      field.ts
+      group.ts
+      index.ts
+      input.ts
+      spinner.ts
+    tokens/
+      colors.ts
+      durations.ts
+      shadows.ts
+      z-index.ts
+    animation-styles.ts
+    capture-react-flow.mjs
+    conditions.ts
+    global-css.ts
+    keyframes.ts
+    layer-styles.ts
+    react-flow.ts
+    text-styles.ts
+  types/
+    d3-quadtree.d.ts
+test-results/
+  src-theme-theme-screenshot-248b3-tures-current-graph-styling/
+    react-flow-theme.png
+  .last-run.json
+.gitignore
+components.json
+eslint.config.mjs
+flake.lock
+flake.nix
+next.config.ts
+package.json
+panda.config.ts
+playwright.config.ts
+README.md
+tsconfig.json
+vitest.config.ts
+vitest.setup.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="eslint/style-firewall.mjs">
+const GEOMETRY_KEYS = new Set(["left", "top", "transform", "width", "height"]);
+const COLOR_PROPS = new Set([
+⋮----
+const SURFACE_PROPS = new Set([
+⋮----
+const STYLING_PROPS = new Set([
+⋮----
+function normalizeFileName(filename) {
+⋮----
+return path.normalize(filename);
+⋮----
+function isInAllowedPath(filename, allowList) {
+const normalized = normalizeFileName(filename);
+return allowList.some((entry) => normalized.includes(path.normalize(entry)));
+⋮----
+function getAttrName(attribute) {
+⋮----
+function getPropertyName(property) {
+⋮----
+if (property.key.type === "Literal") return String(property.key.value);
+⋮----
+function getLiteralText(node) {
+⋮----
+return String(node.value);
+⋮----
+return node.quasis.map((q) => q.value.raw).join("");
+⋮----
+function isMotionElement(openingElement) {
+⋮----
+nameNode.name.startsWith("motion.") || nameNode.name.startsWith("Motion")
+⋮----
+function getElementName(attribute) {
+⋮----
+function isInsideTokenDefinition(context, node) {
+const ancestors = context.sourceCode.getAncestors(node);
+return ancestors.some((ancestor) => {
+⋮----
+].includes(ancestor.callee.name);
+⋮----
+["defineTokens", "defineSemanticTokens"].includes(
+⋮----
+["defineTokens", "defineSemanticTokens"].includes(calleeObject)
+⋮----
+create(context) {
+⋮----
+JSXAttribute(node) {
+const name = getAttrName(node);
+⋮----
+const motionElement = isMotionElement(node.parent);
+⋮----
+const keyName = getPropertyName(prop);
+if (keyName && !GEOMETRY_KEYS.has(keyName)) {
+invalidKeys.push(keyName);
+⋮----
+invalidKeys.push("spread");
+⋮----
+context.report({
+⋮----
+].join(", ")}); found ${invalidKeys.join(", ")}.`,
+⋮----
+function reportIfColor(valueNode) {
+if (isInsideTokenDefinition(context, valueNode)) return;
+const text = getLiteralText(valueNode);
+if (text && COLOR_PATTERN.test(text)) {
+⋮----
+if (!COLOR_PROPS.has(name)) return;
+⋮----
+reportIfColor(
+⋮----
+Property(node) {
+const keyName = getPropertyName(node);
+if (!keyName || !COLOR_PROPS.has(keyName)) return;
+reportIfColor(node.value);
+⋮----
+function reportIfShadow(valueNode) {
+⋮----
+if (text && BOX_SHADOW_PATTERN.test(text)) {
+⋮----
+reportIfShadow(
+⋮----
+reportIfShadow(node.value);
+⋮----
+function reportIfRadius(valueNode) {
+⋮----
+if (RADIUS_UNIT_PATTERN.test(text) || /^\d+(\.\d+)?$/.test(text)) {
+⋮----
+reportIfRadius(
+⋮----
+reportIfRadius(node.value);
+⋮----
+const filename = context.getFilename();
+if (isInAllowedPath(filename, allow)) {
+⋮----
+if (!name || !STYLING_PROPS.has(name)) return;
+⋮----
+if (isInsideTokenDefinition(context, node)) return;
+⋮----
+const hasNonGeometry = expression.properties.some((prop) => {
+⋮----
+return keyName && !GEOMETRY_KEYS.has(keyName);
+⋮----
+const elementName = getElementName(node);
+⋮----
+CallExpression(node) {
+⋮----
+if (!name || !SURFACE_PROPS.has(name)) return;
+⋮----
+if (!keyName || !SURFACE_PROPS.has(keyName)) return;
+⋮----
+if (typeof value.value === "string" && value.value.trim().length) {
+</file>
+
+<file path="public/file.svg">
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+</file>
+
+<file path="public/globe.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+</file>
+
+<file path="public/next.svg">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+</file>
+
+<file path="public/vercel.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+</file>
+
+<file path="public/window.svg">
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="src/app/api/log/route.ts">
+export async function POST(req: Request)
+⋮----
+// absolutely never throw here or the logger loops
+</file>
+
+<file path="src/components/GraphStage/config.ts">
+import { forceLink, forceManyBody, forceSimulation, forceX, forceY } from "d3-force";
+⋮----
+import { collide } from "./forces";
+import type { SimNode } from "./types";
+⋮----
+settleSpeed: 0.04, // lower = slower motion; adjust to taste
+⋮----
+export function createSimulation()
+</file>
+
+<file path="src/components/GraphStage/index.ts">
+
+</file>
+
+<file path="src/components/GraphStage/random.ts">
+export function createRng(seed: number)
+</file>
+
+<file path="src/components/GraphStage/types.ts">
+import type { Node } from "@xyflow/react";
+⋮----
+export type SimNode = Node & {
+  x: number;
+  y: number;
+  fx?: number;
+  fy?: number;
+  vx?: number;
+  vy?: number;
+  width?: number;
+  height?: number;
+  measured?: { width?: number; height?: number };
+};
+⋮----
+export type DragEvents = {
+  start: (event: any, node: Node) => void;
+  drag: (event: any, node: Node) => void;
+  stop: () => void;
+};
+</file>
+
+<file path="src/components/GraphStage/useForceLayout.ts">
+import { useEffect, useMemo } from "react";
+import { forceLink, type Simulation } from "d3-force";
+import { useNodesInitialized, useReactFlow } from "@xyflow/react";
+⋮----
+import { SIM_CONFIG } from "./config";
+import { createRng } from "./random";
+import type { DragEvents, SimNode } from "./types";
+⋮----
+export function useForceLayout(
+  sim: Simulation<SimNode, any>,
+  draggingNodeRef: React.MutableRefObject<SimNode | null>,
+): DragEvents
+⋮----
+const lerp = (a: number, b: number, t: number)
+⋮----
+const tick = (startTime: number) =>
+</file>
+
+<file path="src/components/SearchBar/idea.md">
+Got it — this is actually **even better** than the scroll idea because it keeps the interaction **spatially local** to the bar. Nothing depends on page movement; everything is **cursor proximity**. That makes it feel tighter and more intentional.
+
+Here’s the corrected overview.
+
+---
+
+# Demo Interaction Overview
+
+## Core Principle
+
+The UI is **stage-first**.
+
+Permanent elements:
+
+```text
+query input
+reasoning graph (React Flow)
+```
+
+Everything else appears **only when the user’s cursor indicates intent**.
+
+The graph remains the **visual center of the demo**.
+
+---
+
+# Interaction Flow
+
+## 1. Idle State
+
+The interface starts minimal.
+
+```
+[ Search symbol... ]  Replay
+```
+
+The graph canvas sits behind it as the main stage.
+
+No menus or controls are visible.
+
+---
+
+## 2. Hover State (Segment Activation)
+
+When the cursor enters the search bar area:
+
+```
+perimeter segment appears
+```
+
+A short animated line follows the cursor around the border.
+
+Purpose:
+
+* subtle affordance
+* indicates the bar is interactive
+* visually anchors attention without distracting from the graph
+
+The segment disappears when the cursor leaves the bar.
+
+---
+
+## 3. Cursor Moves Below the Bar (Corpus Selector Appears)
+
+When the segment is active **and the cursor moves downward past the bar**, a small menu **materializes geometrically below it**.
+
+Example:
+
+```
+Corpus
+
+TanStack Query
+Redux Toolkit
+Zustand
+React Router
+```
+
+Properties:
+
+* appears directly below the search bar
+* aligned with the bar’s width
+* fades in quickly
+* anchored visually to the bar
+
+No dropdown arrows or explicit buttons are required.
+
+The menu exists only while the cursor remains within the **interactive region around the bar**.
+
+---
+
+## 4. Cursor Leaves the Interaction Region
+
+When the cursor leaves the search bar area:
+
+```
+segment fades
+repo selector fades
+```
+
+Both disappear together with the same timing.
+
+The UI returns to the minimal state.
+
+---
+
+# Interaction Model
+
+The behavior follows **cursor proximity**, not clicks or scroll events.
+
+```
+cursor enters bar → segment appears
+cursor moves below → repo selector appears
+cursor leaves region → both fade out
+```
+
+This creates a single **coherent interaction zone**.
+
+---
+
+# Why This Works for the Demo
+
+### 1. The Graph Remains the Focus
+
+Only two persistent elements exist:
+
+```
+query
+graph
+```
+
+All controls are temporary.
+
+---
+
+### 2. The UI Feels Spatial
+
+The menu appears because the cursor moves **through space**, not because a button was pressed.
+
+That feels natural and exploratory.
+
+---
+
+### 3. The Interaction Matches the Concept
+
+The system flow is:
+
+```
+query
+↓
+select repository
+↓
+reason over minimal graph
+```
+
+The UI reveals these steps in the same order.
+
+---
+
+### 4. It Shows Frontend Discipline
+
+The design demonstrates:
+
+* progressive disclosure
+* minimal interface
+* animation tied to intent
+* no dashboard clutter
+
+The interaction feels **purposeful rather than decorative**.
+
+---
+
+# Final Result
+
+The interface becomes a **two-element stage**:
+
+```
+query interface
++
+graph reasoning visualization
+```
+
+All other controls appear **only when the user’s movement suggests they need them**.
+
+This keeps attention on the **graph-based reasoning system**, which is the real subject of the demo.
+
+Also: Make the repo selector width match the search bar exactly.
+</file>
+
+<file path="src/components/SearchBar/index.ts">
+
+</file>
+
+<file path="src/components/ui/absolute-center.tsx">
+import { ark } from '@ark-ui/react/factory'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { absoluteCenter } from 'styled-system/recipes'
+⋮----
+export type AbsoluteCenterProps = ComponentProps<typeof AbsoluteCenter>
+</file>
+
+<file path="src/components/ui/button.tsx">
+import { ark } from '@ark-ui/react/factory'
+import { createContext, mergeProps } from '@ark-ui/react/utils'
+import { type ComponentProps, forwardRef, useMemo } from 'react'
+import { styled } from 'styled-system/jsx'
+import { type ButtonVariantProps, button } from 'styled-system/recipes'
+import { Group, type GroupProps } from './group'
+import { Loader } from './loader'
+⋮----
+interface ButtonLoadingProps {
+  /**
+   * If `true`, the button will show a loading spinner.
+   * @default false
+   */
+  loading?: boolean | undefined
+  /**
+   * The text to show while loading.
+   */
+  loadingText?: React.ReactNode | undefined
+  /**
+   * The spinner to show while loading.
+   */
+  spinner?: React.ReactNode | undefined
+  /**
+   * The placement of the spinner
+   * @default "start"
+   */
+  spinnerPlacement?: 'start' | 'end' | undefined
+}
+⋮----
+/**
+   * If `true`, the button will show a loading spinner.
+   * @default false
+   */
+⋮----
+/**
+   * The text to show while loading.
+   */
+⋮----
+/**
+   * The spinner to show while loading.
+   */
+⋮----
+/**
+   * The placement of the spinner
+   * @default "start"
+   */
+⋮----
+type BaseButtonProps = ComponentProps<typeof BaseButton>
+⋮----
+export interface ButtonProps extends BaseButtonProps, ButtonLoadingProps {}
+⋮----
+export interface ButtonGroupProps extends GroupProps, ButtonVariantProps {}
+</file>
+
+<file path="src/components/ui/checkbox.tsx">
+import { Checkbox, useCheckboxContext } from '@ark-ui/react/checkbox'
+import { type ComponentProps, forwardRef } from 'react'
+import { createStyleContext, styled } from 'styled-system/jsx'
+import { checkbox } from 'styled-system/recipes'
+import type { HTMLStyledProps } from 'styled-system/types'
+⋮----
+export type RootProps = ComponentProps<typeof Root>
+export type HiddenInputProps = ComponentProps<typeof HiddenInput>
+</file>
+
+<file path="src/components/ui/field.tsx">
+import { Field } from '@ark-ui/react/field'
+import type { ComponentProps } from 'react'
+import { createStyleContext } from 'styled-system/jsx'
+import { field } from 'styled-system/recipes'
+⋮----
+export type RootProps = ComponentProps<typeof Root>
+</file>
+
+<file path="src/components/ui/graph-background.tsx">
+import { Background, type BackgroundProps } from "@xyflow/react";
+import { reactFlowTheme } from "@/theme/react-flow";
+⋮----
+type Props = Omit<BackgroundProps, "color" | "bgColor">;
+⋮----
+export function GraphBackground(props: Props)
+</file>
+
+<file path="src/components/ui/group.tsx">
+import { ark } from '@ark-ui/react'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { group } from 'styled-system/recipes'
+⋮----
+export type GroupProps = ComponentProps<typeof Group>
+</file>
+
+<file path="src/components/ui/input.tsx">
+import { Field } from '@ark-ui/react/field'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { input } from 'styled-system/recipes'
+⋮----
+export type InputProps = ComponentProps<typeof Input>
+</file>
+
+<file path="src/components/ui/loader.tsx">
+import { forwardRef } from 'react'
+import type { HTMLStyledProps } from 'styled-system/jsx'
+import { AbsoluteCenter } from './absolute-center'
+import { Span } from './span'
+import { Spinner } from './spinner'
+⋮----
+export interface LoaderProps extends HTMLStyledProps<'span'> {
+  /**
+   * Whether the loader is visible
+   * @default true
+   */
+  visible?: boolean | undefined
+  /**
+   * The spinner to display when loading
+   */
+  spinner?: React.ReactNode | undefined
+  /**
+   * The placement of the spinner
+   * @default "start"
+   */
+  spinnerPlacement?: 'start' | 'end' | undefined
+  /**
+   * The text to display when loading
+   */
+  text?: React.ReactNode | undefined
+
+  children?: React.ReactNode
+}
+⋮----
+/**
+   * Whether the loader is visible
+   * @default true
+   */
+⋮----
+/**
+   * The spinner to display when loading
+   */
+⋮----
+/**
+   * The placement of the spinner
+   * @default "start"
+   */
+⋮----
+/**
+   * The text to display when loading
+   */
+</file>
+
+<file path="src/components/ui/span.tsx">
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+⋮----
+export type SpanProps = ComponentProps<typeof Span>
+</file>
+
+<file path="src/components/ui/spinner.tsx">
+import { ark } from '@ark-ui/react/factory'
+import type { ComponentProps } from 'react'
+import { styled } from 'styled-system/jsx'
+import { spinner } from 'styled-system/recipes'
+⋮----
+export type SpinnerProps = ComponentProps<typeof Spinner>
+</file>
+
+<file path="src/components/ui/themed-react-flow.tsx">
+import { ReactFlow } from "@xyflow/react";
+import { cx } from "../../../styled-system/css";
+import {
+  reactFlowCanvasClass,
+  reactFlowHandleColorsClass,
+  reactFlowVarsClass,
+} from "./search-styles";
+⋮----
+type Props = React.ComponentProps<typeof ReactFlow>;
+</file>
+
+<file path="src/components/ClientConsoleBridge.tsx">
+import { mirrorConsole } from "@/lib/clientLogger";
+⋮----
+export default function ClientConsoleBridge()
+</file>
+
+<file path="src/lib/clientLogger.ts">
+export function mirrorConsole()
+⋮----
+if (installed) return; // prevent Fast Refresh duplication
+⋮----
+const send = (type: string, args: unknown[]) =>
+⋮----
+// never log logger errors
+</file>
+
+<file path="src/state/graphStage.ts">
+import { atom } from "jotai";
+import type { Edge, Node } from "@xyflow/react";
+⋮----
+import { reactFlowNodeStyle } from "@/theme/react-flow";
+</file>
+
+<file path="src/theme/colors/green.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/colors/red.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/colors/slate.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/colors/vercel.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/absolute-center.ts">
+import { defineRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/button.ts">
+import { defineRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/checkbox.ts">
+import { checkboxAnatomy } from '@ark-ui/react/anatomy'
+import { defineSlotRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/field.ts">
+import { fieldAnatomy } from '@ark-ui/react/anatomy'
+import { defineSlotRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/group.ts">
+import { defineRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/recipes/spinner.ts">
+import { defineRecipe } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/tokens/colors.ts">
+import { defineTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/tokens/durations.ts">
+import { defineTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/tokens/z-index.ts">
+import { defineTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/animation-styles.ts">
+import { defineAnimationStyles } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/capture-react-flow.mjs">
+/**
+ * Capture screenshots of the current React Flow view and its visible parents.
+ *
+ * Assumes the dev server is already running (default: http://127.0.0.1:5000).
+ * Usage: npm run shot:theme
+ *
+ * Outputs are written to src/theme/theme-shots/<timestamp>/.
+ */
+async function main() {
+⋮----
+await waitForServer(baseURL);
+⋮----
+const themeDir = path.dirname(new URL(import.meta.url).pathname);
+const outDir = path.join(themeDir, "theme-shots");
+const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+const outFile = path.join(outDir, `${timestamp}.json`);
+const screenshotFile = path.join(outDir, `${timestamp}.png`);
+await fs.mkdir(outDir, { recursive: true });
+const browser = await chromium.launch({
+⋮----
+const page = await browser.newPage({
+⋮----
+await page.goto(baseURL, { waitUntil: "domcontentloaded" });
+⋮----
+const flow = page.locator(".react-flow");
+await flow.waitFor({ state: "visible", timeout: 8_000 });
+await page.waitForTimeout(120);
+⋮----
+const snapshot = await page.evaluate(() => {
+const root = document.querySelector(".react-flow");
+const nodeEl = document.querySelector(".react-flow__node");
+const edgeEl = document.querySelector(".react-flow__edge-path");
+const handleEl = document.querySelector(".react-flow__handle");
+const background = document.querySelector(".react-flow__background");
+⋮----
+function readVars(el, names) {
+⋮----
+const style = getComputedStyle(el);
+⋮----
+const value = style.getPropertyValue(name).trim();
+if (value) entries.push([name, value]);
+⋮----
+return Object.fromEntries(entries);
+⋮----
+cssVars: readVars(root, [
+⋮----
+canvas: root ? getComputedStyle(root).backgroundColor : null,
+⋮----
+background: getComputedStyle(nodeEl).backgroundColor,
+borderColor: getComputedStyle(nodeEl).borderColor,
+color: getComputedStyle(nodeEl).color,
+boxShadow: getComputedStyle(nodeEl).boxShadow,
+⋮----
+stroke: getComputedStyle(edgeEl).stroke,
+strokeWidth: getComputedStyle(edgeEl).strokeWidth,
+⋮----
+? { background: getComputedStyle(handleEl).backgroundColor }
+⋮----
+stroke: getComputedStyle(background).stroke,
+fill: getComputedStyle(background).fill,
+⋮----
+await fs.writeFile(outFile, JSON.stringify(snapshot, null, 2), "utf-8");
+await page.screenshot({ path: screenshotFile, fullPage: true });
+⋮----
+await browser.close();
+console.log(`Saved theme snapshot for ${baseURL} -> ${outFile}`);
+console.log(`Saved full-page screenshot -> ${screenshotFile}`);
+⋮----
+async function waitForServer(url, timeoutMs = 5_000) {
+const deadline = Date.now() + timeoutMs;
+while (Date.now() < deadline) {
+⋮----
+const res = await fetch(url, { method: "HEAD" });
+⋮----
+// ignore and retry
+⋮----
+await new Promise((resolve) => setTimeout(resolve, 250));
+⋮----
+throw new Error(`Server not responding at ${url} within ${timeoutMs}ms`);
+⋮----
+main().catch((error) => {
+console.error(error);
+</file>
+
+<file path="src/theme/conditions.ts">
+
+</file>
+
+<file path="src/theme/keyframes.ts">
+import { defineKeyframes } from '@pandacss/dev'
+⋮----
+// collapse
+⋮----
+// fade
+⋮----
+// slide from (full)
+⋮----
+// slide to (full)
+⋮----
+// slide from
+⋮----
+// slide to
+⋮----
+// scale
+</file>
+
+<file path="src/theme/text-styles.ts">
+import { defineTextStyles } from '@pandacss/dev'
+</file>
+
+<file path="src/types/d3-quadtree.d.ts">
+export type QuadtreeNode<T> =
+    | { data: T; next?: QuadtreeNode<T>; length?: undefined }
+    | {
+        length: number;
+        0?: QuadtreeNode<T>;
+        1?: QuadtreeNode<T>;
+        2?: QuadtreeNode<T>;
+        3?: QuadtreeNode<T>;
+      };
+⋮----
+export interface Quadtree<T> {
+    visit(
+      callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
+    ): this;
+  }
+⋮----
+visit(
+      callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
+    ): this;
+⋮----
+export function quadtree<T>(
+    data?: T[],
+    x?: (d: T) => number,
+    y?: (d: T) => number,
+  ): Quadtree<T>;
+</file>
+
+<file path="components.json">
+{
+  "$schema": "https://park-ui.com/schema/components.json",
+  "framework": "react",
+  "panda": {
+    "config": "panda.config.ts"
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "recipes": "@/theme/recipes",
+    "theme": "@/theme",
+    "ui": "@/components/ui"
+  }
+}
+</file>
+
+<file path="eslint.config.mjs">
+
+</file>
+
+<file path="flake.lock">
+{
+  "nodes": {
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "git-hooks": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "gitignore": "gitignore",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1772665116,
+        "narHash": "sha256-XmjUDG/J8Z8lY5DVNVUf5aoZGc400FxcjsNCqHKiKtc=",
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "rev": "39f53203a8458c330f61cc0759fe243f0ac0d198",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "type": "github"
+      }
+    },
+    "gitignore": {
+      "inputs": {
+        "nixpkgs": [
+          "git-hooks",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1709087332,
+        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1770073757,
+        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1772624091,
+        "narHash": "sha256-QKyJ0QGWBn6r0invrMAK8dmJoBYWoOWy7lN+UHzW1jc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "80bdc1e5ce51f56b19791b52b2901187931f5353",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "git-hooks": "git-hooks",
+        "nixpkgs": "nixpkgs_2"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+⋮----
+/* config options here */
+</file>
+
+<file path="vitest.setup.ts">
+class ResizeObserver
+⋮----
+observe()
+unobserve()
+disconnect()
+⋮----
+// ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
+</file>
+
+<file path="src/components/GraphStage/forces.ts">
+import { quadtree } from "d3-quadtree";
+⋮----
+import type { SimNode } from "./types";
+⋮----
+export function collide()
+⋮----
+const force = (alpha: number) =>
+</file>
+
+<file path="src/components/GraphStage/GraphStage.tsx">
+import { useCallback, useEffect, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  BackgroundVariant,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
+⋮----
+import { GraphBackground, ThemedReactFlow, graphStageBackgroundClass } from "@/components/ui";
+import { flowDraggingAtom } from "@/state/searchbar";
+import { graphInitialEdgesAtom, graphInitialNodesAtom } from "@/state/graphStage";
+import { reactFlowTheme } from "@/theme/react-flow";
+⋮----
+import { createSimulation } from "./config";
+import { useForceLayout } from "./useForceLayout";
+import type { SimNode } from "./types";
+</file>
+
+<file path="src/components/SearchBar/perimeter.ts">
+type Point = { x: number; y: number };
+⋮----
+type Segment = { start: Point; end: Point; length: number };
+⋮----
+type ClosestLengthInput = {
+  container: HTMLElement | null;
+  path: SVGRectElement | null;
+  clientX: number;
+  clientY: number;
+  inset: number;
+};
+⋮----
+const toPoint = (x: number, y: number): Point => (
+⋮----
+const segmentLength = (segment: Segment)
+⋮----
+const makeSegments = (width: number, height: number): Segment[] =>
+⋮----
+const build = (start: Point, end: Point): Segment => (
+⋮----
+const closestOnSegment = (point: Point, segment: Segment) =>
+⋮----
+export function findClosestPerimeterLength({
+  container,
+  path,
+  clientX,
+  clientY,
+  inset,
+}: ClosestLengthInput)
+</file>
+
+<file path="src/state/searchScopeMachine.ts">
+import { assign, setup } from "xstate";
+⋮----
+type UpdateEvent = {
+  type: "UPDATE";
+  visible: boolean;
+  left: number;
+  top: number;
+  width: number;
+};
+⋮----
+type HideEvent = { type: "FORCE_HIDE" };
+⋮----
+type Events = UpdateEvent | HideEvent;
+⋮----
+type Context = {
+  visible: boolean;
+  latchedLeft: number | null;
+  lastLeft: number | null;
+  top: number;
+  width: number;
+};
+⋮----
+export const createSearchScopeMachine = ()
+</file>
+
+<file path="src/theme/recipes/index.ts">
+import { checkbox } from "./checkbox";
+import { field } from "./field";
+import { input } from "./input";
+import { spinner } from "./spinner";
+import { absoluteCenter } from "./absolute-center";
+import { group } from "./group";
+import { button } from "./button";
+</file>
+
+<file path="src/theme/recipes/input.ts">
+import type { RecipeConfig } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/tokens/shadows.ts">
+import { defineSemanticTokens } from '@pandacss/dev'
+</file>
+
+<file path="src/theme/global-css.ts">
+import { reactFlowCssVars } from "./react-flow";
+</file>
+
+<file path="src/theme/layer-styles.ts">
+import { defineLayerStyles } from "@pandacss/dev";
+</file>
+
+<file path="src/theme/react-flow.ts">
+const imp = (value: string) => `$
+</file>
+
+<file path=".gitignore">
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+## Panda
+styled-system
+styled-system-studio
+</file>
+
+<file path="flake.nix">
+{
+  description = "Bun + Vite + Playwright + Pre-commit multi-platform dev shell";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    git-hooks.url = "github:cachix/git-hooks.nix";
+  };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      git-hooks,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+        };
+
+        preCommit = git-hooks.lib.${system}.run {
+          src = ./.;
+          hooks = {
+            # Secret scanning
+            trufflehog.enable = true;
+            ripsecrets.enable = true;
+
+            # Hygiene
+            nixfmt.enable = true;
+            end-of-file-fixer.enable = true;
+            trim-trailing-whitespace.enable = true;
+          };
+        };
+      in
+      {
+        checks.pre-commit-check = preCommit;
+
+        devShells.default = pkgs.mkShell {
+          packages = [
+            pkgs.bun
+            pkgs.chromium
+          ]
+          ++ preCommit.enabledPackages;
+
+          shellHook = ''
+            ${preCommit.shellHook}
+
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            export PLAYWRIGHT_CHROMIUM_PATH=${pkgs.chromium}/bin/chromium
+            export PLAYWRIGHT_BROWSERS_PATH=0
+          '';
+        };
+      }
+    );
+}
+</file>
+
+<file path="README.md">
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Linting and style guardrails
+
+Run `npm run lint` (ESLint only) to enforce the style firewall. The custom rules block raw colors/shadows/radii, restrict inline styles to geometry (or motion components), and keep styling confined to UI primitives/recipes so app components stay token-driven.
+
+Note: temporary lint exclusions for theme and test files are only to unblock the migration; remove them once styling is fully tokenized so the firewall applies everywhere.
+</file>
+
+<file path="vitest.config.ts">
+import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+⋮----
+// ⭐ THIS FIXES YOUR ERROR
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { SearchScopeMenu } from "./SearchScopeMenu";
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+} from "@/state/searchbar";
+⋮----
+for (const [atom, value] of entries)
+store.set(atom, value);
+⋮----
+// nudge to trigger recalculation after the delay window
+</file>
+
+<file path="src/components/ui/index.ts">
+
+</file>
+
+<file path="src/components/ui/search-styles.ts">
+import { css, cx } from "../../../styled-system/css";
+import { reactFlowCssVars } from "@/theme/react-flow";
+import type { SystemStyleObject } from "../../../styled-system/types";
+</file>
+
+<file path="panda.config.ts">
+import { green } from "@/theme/colors/green";
+import { red } from "@/theme/colors/red";
+import { slate } from "@/theme/colors/slate";
+import { vercel } from "@/theme/colors/vercel";
+import { animationStyles } from "@/theme/animation-styles";
+import { zIndex } from "@/theme/tokens/z-index";
+import { shadows } from "@/theme/tokens/shadows";
+import { durations } from "@/theme/tokens/durations";
+import { colors } from "@/theme/tokens/colors";
+import { textStyles } from "@/theme/text-styles";
+import { layerStyles } from "@/theme/layer-styles";
+import { keyframes } from "@/theme/keyframes";
+import { globalCss } from "@/theme/global-css";
+import { conditions } from "@/theme/conditions";
+import { slotRecipes, recipes } from "@/theme/recipes";
+import { defineConfig } from "@pandacss/dev";
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": ["vitest/globals", "@testing-library/jest-dom"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules", "**/*.spec.ts", "**/*.spec.tsx"]
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+⋮----
+import ClientConsoleBridge from "@/components/ClientConsoleBridge";
+⋮----
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+})
+</file>
+
+<file path="src/app/page.tsx">
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
+⋮----
+export default function Home()
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
+⋮----
+import { VStack, HStack } from "../../../styled-system/jsx";
+import { useSearchScopeMenu } from "./useSearchScopeMenu";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  hoverAnchorAtom,
+  hoverOffsetAtom,
+  flowDraggingAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+} from "@/state/searchbar";
+import { useMemo } from "react";
+import {
+  menuContainerClass,
+  menuControlClass,
+  menuHeaderClass,
+  menuIndicatorClass,
+  menuItemClass,
+  menuLabelClass,
+  menuSubLabelClass,
+} from "@/components/ui";
+⋮----
+type Props = {
+  outlineInset: number;
+  segmentLength?: number;
+};
+</file>
+
+<file path="src/components/SearchBar/SearchBar.spec.tsx">
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { type ComponentProps } from "react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { Provider, createStore } from "jotai";
+import SearchBar from "@/components/SearchBar";
+⋮----
+import { flowDraggingAtom } from "@/state/searchbar";
+⋮----
+const movePointer = (element: HTMLElement, x: number, y: number) =>
+⋮----
+const getContainer = ()
+⋮----
+const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) =>
+⋮----
+const mockRect = (width = 320, height = 64, left = 0, top = 0) =>
+</file>
+
+<file path="src/state/searchbar.ts">
+import { atom } from "jotai";
+⋮----
+export type SearchBarSize = { width: number; height: number };
+export type SearchBarPosition = { left: number; top: number };
+</file>
+
+<file path="playwright.config.ts">
+import { defineConfig } from "@playwright/test";
+</file>
+
+<file path="src/components/SearchBar/SearchBar.e2e.spec.ts">
+import { expect, test } from "@playwright/test";
+import { reactFlowTheme } from "@/theme/react-flow";
+⋮----
+const sample = () =>
+⋮----
+// Failing guard: segment should stay in one place; any horizontal drift signals jitter.
+⋮----
+// Drag downward past the bar to trigger the menu.
+⋮----
+// Ensure there is a visible gap between the outline and the input content box using the full outline box.
+⋮----
+// Ensure the stroke draws a segment (non-empty dash length).
+⋮----
+// The rendered svg box should wrap the bar with the inset applied.
+⋮----
+const readSegmentX = async ()
+</file>
+
+<file path="src/components/SearchBar/SearchBar.tsx">
+import { useHover } from "@use-gesture/react";
+import { motion } from "framer-motion";
+import {
+  type ComponentType,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { useAtomValue } from "jotai";
+import { HStack } from "../../../styled-system/jsx";
+import { Input, Button } from "@/components/ui";
+import { useSearchBar } from "./useSearchBar";
+import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
+import { flowDraggingAtom } from "@/state/searchbar";
+import { reactFlowTheme } from "@/theme/react-flow";
+import {
+  outlineHoverClass,
+  searchBarHiddenClass,
+  searchBarShellClass,
+  searchBarSvgClass,
+  searchButtonClass,
+  searchInputClass,
+} from "@/components/ui";
+⋮----
+type Props = {
+  onReplay?: (query?: string) => void;
+  outlineLockDelayMs?: number;
+};
+⋮----
+// Match the SearchBar shell radius (var(--radii-l3) = 6px)
+⋮----
+/* hover segment length controls scope menu width */
+</file>
+
+<file path="package.json">
+{
+  "name": "sat",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev -p 5000 -H 0.0.0.0",
+    "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
+    "start": "next start -p 5000 -H 0.0.0.0",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "eslint . --ext .ts,.tsx --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
+    "playwright:install": "playwright install",
+    "shot:theme": "node src/theme/capture-react-flow.mjs"
+  },
+  "dependencies": {
+    "@ark-ui/react": "^5.34.1",
+    "@use-gesture/react": "^10.3.1",
+    "@xyflow/react": "^12.10.1",
+    "d3-force": "^3.0.0",
+    "dagre": "^0.8.5",
+    "flatten-js": "^0.6.9",
+    "framer-motion": "^12.35.0",
+    "jotai": "^2.18.0",
+    "lucide-react": "^0.577.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "xstate": "^5.28.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@pandacss/dev": "^1.8.2",
+    "@playwright/test": "^1.58.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/d3-force": "^3.0.10",
+    "@types/dagre": "^0.7.54",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "happy-dom": "^20.8.3",
+    "typescript": "^5",
+    "vitest": "^4.0.18"
+  },
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
+}
+</file>
+
+<file path="src/components/SearchBar/useSearchBar.ts">
+import { useEffect, useRef, type PointerEvent } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+⋮----
+import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
+import {
+  focusOriginAtom,
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  outlineLockedAtom,
+  perimeterAtom,
+  pointerPositionAtom,
+  queryAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+  searchFocusedAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+  scopeDwellingAtom,
+  flowDraggingAtom,
+  searchBarContainerAtom,
+  searchBarPathAtom,
+} from "@/state/searchbar";
+⋮----
+type UseSearchBarOptions = {
+  outlineInset: number;
+  hoverSegmentLength: number;
+  outlineLockDelay?: number;
+  onReplay?: (query?: string) => void;
+};
+⋮----
+export function useSearchBar({
+  outlineInset,
+  hoverSegmentLength,
+  outlineLockDelay = 300,
+  onReplay,
+}: UseSearchBarOptions)
+⋮----
+const update = () =>
+⋮----
+const triggerReplay = () =>
+⋮----
+const processPointerMove = ({
+    clientX,
+    clientY,
+  }: {
+    clientX: number;
+    clientY: number;
+}) =>
+⋮----
+// While the menu is owning the interaction, keep the segment fixed and only
+// update the pointer projection for the engine.
+⋮----
+const handlePointerMove = ({
+    clientX,
+    clientY,
+  }: {
+    clientX: number;
+    clientY: number;
+}) =>
+⋮----
+const handlePointerLeave = () =>
+⋮----
+// Always clear the projected pointer when leaving the bar so the engine
+// can fall back to global pointer coordinates.
+⋮----
+const handleFocus = () =>
+⋮----
+const handleBlur = () =>
+⋮----
+const handleWindowBlur = () =>
+⋮----
+const onPointerMove = (event: PointerEvent | MouseEvent) =>
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts">
+import { expect, test, type Page } from "@playwright/test";
+⋮----
+const installMachineObserver = async (page: Page) =>
+⋮----
+const observer = (payload: unknown) =>
+⋮----
+const gotoAndInstall = async (page: Page) =>
+⋮----
+const descendIntoBand = async (
+    page: Page,
+    x: number,
+    startY: number,
+    endY: number,
+    durationMs = 320,
+) =>
+⋮----
+const logRects = async (label: string) =>
+⋮----
+const record = (menu: HTMLElement) =>
+⋮----
+const sample = () =>
+⋮----
+// Allow the initial mount but no remounts/unmounts once visible.
+⋮----
+// Pseudo-random but deterministic jitter to vary arcs mid-flight.
+⋮----
+const rand = () =>
+⋮----
+// Finish with a clean downward pass through the center of the segment.
+⋮----
+type Scenario = {
+      label: string;
+      fn: (t: number) => { x: number; y: number };
+      steps?: number;
+      dwell?: number;
+    };
+⋮----
+// Reset hover state away from the bar between runs.
+⋮----
+// Move across the band horizontally without descending: menu should stay hidden.
+⋮----
+// Now descend through the band; menu should appear promptly.
+⋮----
+// Move upward above the bar; menu should disappear once we leave the bar surface.
+⋮----
+// Prime hover and show the menu.
+⋮----
+// Start sampling menu visibility each frame.
+⋮----
+// Wait for sampler to finish.
+⋮----
+// Enter the menu to assert hover state sticks.
+⋮----
+// Move away from both bar and menu; the menu should disappear quickly.
+⋮----
+// Move laterally outside the hover point while staying near the bar height.
+⋮----
+// Remove hover by moving well outside the bar; segment should vanish and menu should follow.
+⋮----
+// Move across the bar to places that normally shift the hover segment; menu
+// should not translate at all once mounted.
+⋮----
+const dismissMenu = async (page: Page, barBox:
+⋮----
+const spawnMenuAt = async (
+    page: Page,
+    x: number,
+    barBox: { x: number; y: number; width: number; height: number },
+    menu: ReturnType<Page["getByTestId"]>,
+) =>
+⋮----
+const getSegmentEdgesPageX = async (outline: ReturnType<Page["getByTestId"]>) =>
+</file>
+
+<file path="src/state/searchScopeEngine.ts">
+import { createActor, type ActorRefFrom } from "xstate";
+import { createSearchScopeMachine } from "./searchScopeMachine";
+⋮----
+type Vec2 = { x: number; y: number };
+⋮----
+export type ScopeEngineInput = {
+  pointer: Vec2 | null;
+  pointerAbs: Vec2 | null;
+  anchorLocalX: number;
+  anchorAbsX: number;
+  position: { left: number; top: number };
+  size: { width: number; height: number };
+  outlineInset: number;
+  segmentLength?: number;
+  menuHover: boolean;
+  hoverEngaged: boolean;
+  flowDragging: boolean;
+  now: number;
+  menuShown: boolean;
+};
+⋮----
+export type ScopeEngineSnapshot = {
+  visible: boolean;
+  offsetLeft: number;
+  offsetTop: number;
+  width: number;
+  exitTriggered: boolean;
+  pointerWithinBand: boolean;
+  pointerAbove: boolean;
+  dwelling: boolean;
+};
+⋮----
+export class SearchScopeEngine
+⋮----
+private ensureLogBuffers()
+⋮----
+private log(payload: unknown)
+⋮----
+// ignore observer errors
+⋮----
+constructor()
+⋮----
+forceHide()
+⋮----
+getLastPointerAt()
+⋮----
+stop()
+⋮----
+update(input: ScopeEngineInput): ScopeEngineSnapshot
+</file>
+
+<file path="test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
+}
+</file>
+
+<file path="src/components/SearchScopeMenu/useSearchScopeMenu.ts">
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useRef, useState } from "react";
+⋮----
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+  perimeterAtom,
+  scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
+  scopeDwellingAtom,
+  flowDraggingAtom,
+  searchBarContainerAtom,
+  searchBarPathAtom,
+} from "@/state/searchbar";
+import { SearchScopeEngine } from "@/state/searchScopeEngine";
+import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
+⋮----
+type Options = {
+  outlineInset: number;
+  segmentLength?: number;
+};
+⋮----
+export function useSearchScopeMenu({
+  outlineInset,
+  segmentLength,
+}: Options)
+⋮----
+const handler = (event: MouseEvent | PointerEvent) =>
+</file>
+
+</files>

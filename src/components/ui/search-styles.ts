@@ -45,6 +45,17 @@ export const reactFlowVarsClass = css({
   "&.react-flow": reactFlowVarsWithImportant as unknown as SystemStyleObject,
 });
 
+export const reactFlowHandleColorsClass = css({
+  "& .react-flow__handle.source": {
+    "--xy-handle-background-color": "var(--colors-vercel-brand-9)",
+    "--xy-handle-border-color": "var(--colors-vercel-surface-overlay)",
+  },
+  "& .react-flow__handle.target": {
+    "--xy-handle-background-color": "var(--colors-green-plain-fg, #22c55e)",
+    "--xy-handle-border-color": "var(--colors-vercel-surface-overlay)",
+  },
+});
+
 export const searchBarSvgClass = css({
   position: "absolute",
   pointerEvents: "none",

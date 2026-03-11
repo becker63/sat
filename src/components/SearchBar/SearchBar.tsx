@@ -3,6 +3,7 @@
 import { useHover } from "@use-gesture/react";
 import { motion } from "framer-motion";
 import {
+  useEffect,
   type ComponentType,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -21,6 +22,7 @@ import {
   searchButtonClass,
   searchInputClass,
 } from "@/components/ui";
+import { fixturePromptAtom } from "@/state/fixturePromptAtom";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -41,6 +43,7 @@ export const OUTLINE_INSET_PX = OUTLINE_INSET;
 
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
   const flowDragging = useAtomValue(flowDraggingAtom);
+  const prompt = useAtomValue(fixturePromptAtom);
   const {
     containerRef,
     focusOrigin,
@@ -71,8 +74,14 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
   const svgHeight = size.height;
   const contentWidth = Math.max(0, svgWidth - OUTLINE_INSET_PX * 2);
   const contentHeight = Math.max(0, svgHeight - OUTLINE_INSET_PX * 2);
-  const segmentLength = Math.min(HOVER_SEGMENT_LENGTH, contentWidth || HOVER_SEGMENT_LENGTH);
-  const dashGap = Math.max(1, Math.max(perimeter - segmentLength, segmentLength));
+  const segmentLength = Math.min(
+    HOVER_SEGMENT_LENGTH,
+    contentWidth || HOVER_SEGMENT_LENGTH,
+  );
+  const dashGap = Math.max(
+    1,
+    Math.max(perimeter - segmentLength, segmentLength),
+  );
 
   const bindHover = useHover(({ hovering, event }) => {
     if (hovering) {
@@ -85,6 +94,10 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
     }
   });
 
+  useEffect(() => {
+    setValue(prompt);
+  }, [prompt, setValue]);
+
   return (
     <MotionStack
       ref={containerRef}
@@ -94,7 +107,9 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       data-testid="searchbar"
       className={
         hidden
-          ? [searchBarShellClass, searchBarHiddenClass].filter(Boolean).join(" ")
+          ? [searchBarShellClass, searchBarHiddenClass]
+              .filter(Boolean)
+              .join(" ")
           : searchBarShellClass
       }
       onPointerMove={(event: ReactPointerEvent<HTMLDivElement>) =>

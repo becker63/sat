@@ -12,7 +12,7 @@ import {
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
 } from "@/state/searchbar";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   menuContainerClass,
   menuControlClass,
@@ -23,6 +23,9 @@ import {
   menuSubLabelClass,
 } from "@/components/ui";
 
+import { fixtureRegistry } from "@/graph/fixtures";
+import { selectedFixtureAtom } from "@/state/fixtureAtom";
+
 type Props = {
   outlineInset: number;
   segmentLength?: number;
@@ -30,28 +33,28 @@ type Props = {
 
 const MotionBox = motion.create(VStack);
 
-export function SearchScopeMenu({
-  outlineInset,
-  segmentLength,
-}: Props) {
+export function SearchScopeMenu({ outlineInset, segmentLength }: Props) {
   const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
     outlineInset,
     segmentLength,
   });
+
   const flowDragging = useAtomValue(flowDraggingAtom);
+
   const setMenuHover = useSetAtom(scopeMenuHoverAtom);
   const setMenuVisible = useSetAtom(scopeMenuVisibleAtom);
   const setHover = useSetAtom(hoverOffsetAtom);
   const setAnchor = useSetAtom(hoverAnchorAtom);
   const setPointer = useSetAtom(pointerPositionAtom);
-  const items = useMemo(
-    () => [
-      { label: "TanStack Query", defaultChecked: true },
-      { label: "Redux Toolkit", defaultChecked: true },
-      { label: "Zustand", defaultChecked: false },
-    ],
-    [],
-  );
+
+  const setFixture = useSetAtom(selectedFixtureAtom);
+  const fixtureState = useAtomValue(selectedFixtureAtom);
+
+  const items = useMemo(() => Object.values(fixtureRegistry), []);
+
+  useEffect(() => {
+    console.log("Fixture changed:", fixtureState);
+  }, [fixtureState]);
 
   const content = (
     <AnimatePresence>
@@ -97,24 +100,31 @@ export function SearchScopeMenu({
               <span>Corpus</span>
               <span className={menuSubLabelClass}>Scope</span>
             </HStack>
+
             <VStack alignItems="flex-start" gap="12px" w="100%">
-              {items.map((item) => (
+              {items.map((fixture) => (
                 <motion.div
-                  key={item.label}
+                  key={fixture.id}
                   whileHover={{ x: 2 }}
-                  transition={{ duration: 0.1, ease: "easeOut" }}
+                  transition={{ duration: 0.1 }}
                   style={{ width: "100%" }}
                 >
                   <Checkbox.Root
-                    defaultChecked={item.defaultChecked}
+                    checked={fixtureState === fixture.id}
+                    onCheckedChange={() => {
+                      setFixture(
+                        fixtureState === fixture.id ? null : fixture.id,
+                      );
+                    }}
                     className={menuItemClass}
                   >
                     <Checkbox.HiddenInput />
                     <Checkbox.Control className={menuControlClass}>
                       <Checkbox.Indicator className={menuIndicatorClass} />
                     </Checkbox.Control>
+
                     <Checkbox.Label className={menuLabelClass}>
-                      {item.label}
+                      {fixture.label}
                     </Checkbox.Label>
                   </Checkbox.Root>
                 </motion.div>
@@ -127,7 +137,6 @@ export function SearchScopeMenu({
   );
 
   if (flowDragging) return null;
-
   if (typeof document === "undefined") return null;
 
   return createPortal(content, document.body);
