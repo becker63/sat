@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev",
+    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev -p 5000 -H 0.0.0.0",
     "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
-    "start": "next start",
+    "start": "next start -p 5000 -H 0.0.0.0",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "eslint . --ext .ts,.tsx --fix",
     "test": "vitest run",
