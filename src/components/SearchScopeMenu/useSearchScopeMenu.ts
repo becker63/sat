@@ -174,7 +174,7 @@ export function useSearchScopeMenu({
       });
 
       if (result) {
-        const centered = result.bestLength - segmentLength / 2;
+        const centered = result.bestLength - segmentLength / 2 + 5;
         const normalized = ((centered % result.total) + result.total) % result.total;
         setHoverOffset(normalized);
       }
