@@ -57,7 +57,7 @@ export default function GraphStage() {
   }, [setFlowDragging]);
 
   return (
-    <div className={graphStageBackgroundClass}>
+    <div className={graphStageBackgroundClass} suppressHydrationWarning>
       <ReactFlow
         nodes={initialNodes}
         edges={initialEdges}

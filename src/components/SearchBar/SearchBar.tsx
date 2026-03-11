@@ -31,7 +31,9 @@ const MotionButton = motion.create(Button);
 const MotionRect = motion.rect;
 
 const OUTLINE_INSET = 8;
-const OUTLINE_RADIUS = 24;
+// Match the SearchBar shell radius (var(--radii-l3) = 6px)
+const OUTLINE_RADIUS = 6;
+const OUTLINE_COLOR = "#fff";
 /* hover segment length controls scope menu width */
 export const HOVER_SEGMENT_LENGTH = 400;
 export const OUTLINE_INSET_PX = OUTLINE_INSET;
@@ -145,7 +147,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="var(--colors-vercel-text-primary)"
+              stroke={OUTLINE_COLOR}
               strokeWidth="1.5"
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
@@ -179,7 +181,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="var(--colors-vercel-text-primary)"
+              stroke={OUTLINE_COLOR}
               strokeWidth="1.8"
               vectorEffect="non-scaling-stroke"
               initial={{
@@ -208,7 +210,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="var(--colors-vercel-surface-outline)"
+              stroke={OUTLINE_COLOR}
               strokeWidth="1.8"
             />
           )}
