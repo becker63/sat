@@ -1066,3 +1066,240 @@ test.describe("SearchScopeMenu (playwright)", () => {
     expect(maxDrift.dy).toBe(0);
   });
 });
+
+test.describe("segment–menu alignment contract", () => {
+  const installMachineObserver = async (page: Page) => {
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__scopeMachineLog = [];
+      w.__scopeVisibleLog = [];
+      w.__scopeLatchLog = [];
+      w.__scopeObserverLog = [];
+      w.__scopeMachineObservers = [];
+      const observer = (payload: unknown) => {
+        w.__scopeObserverLog.push(payload);
+      };
+      w.__scopeMachineObservers.push(observer);
+    });
+  };
+
+  const gotoAndInstall = async (page: Page) => {
+    await page.goto("/");
+    await installMachineObserver(page);
+  };
+
+  const descendIntoBand = async (
+    page: Page,
+    x: number,
+    startY: number,
+    endY: number,
+    durationMs = 320,
+  ) => {
+    const steps = 18;
+    const stepSize = (endY - startY) / steps;
+    const pause = Math.max(6, Math.round(durationMs / steps));
+    for (let i = 0; i <= steps; i++) {
+      const y = startY + stepSize * i;
+      await page.mouse.move(x, y, { steps: 1 });
+      await page.waitForTimeout(pause);
+    }
+  };
+
+  const dismissMenu = async (page: Page, barBox: { x: number; y: number; width: number; height: number }) => {
+    await page.mouse.move(barBox.x - 200, barBox.y + barBox.height + 300, { steps: 4 });
+    await page.evaluate(
+      ({ x, y }) =>
+        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+      { x: barBox.x - 200, y: barBox.y + barBox.height + 300 },
+    );
+    await page.waitForTimeout(500);
+  };
+
+  const spawnMenuAt = async (
+    page: Page,
+    x: number,
+    barBox: { x: number; y: number; width: number; height: number },
+    menu: ReturnType<Page["getByTestId"]>,
+  ) => {
+    await descendIntoBand(page, x, barBox.y + 8, barBox.y + barBox.height - 4, 360);
+    await menu.waitFor({ state: "visible", timeout: 800 });
+  };
+
+  const getSegmentEdgesPageX = async (outline: ReturnType<Page["getByTestId"]>) => {
+    return outline.evaluate((el) => {
+      const offset = parseFloat(el.getAttribute("data-offset")!);
+      const segLen = parseFloat(el.getAttribute("stroke-dasharray")!.split(" ")[0]);
+      const rect = el as unknown as SVGGeometryElement;
+      const total = rect.getTotalLength();
+      const startOff = ((offset % total) + total) % total;
+      const endOff = (((offset + segLen) % total) + total) % total;
+      const startPt = rect.getPointAtLength(startOff);
+      const endPt = rect.getPointAtLength(endOff);
+      const svgRect = el.closest("svg")!.getBoundingClientRect();
+      const x1 = svgRect.left + startPt.x;
+      const x2 = svgRect.left + endPt.x;
+      return { left: Math.min(x1, x2), right: Math.max(x1, x2) };
+    });
+  };
+
+  test.beforeEach(async ({ page }) => {
+    page.on("console", (msg) => {
+      console.log(`[browser:${msg.type()}]`, msg.text());
+    });
+  });
+
+  test("segment and menu share the same width", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const outline = page.getByTestId("searchbar-outline-hover");
+    const centerX = barBox.x + barBox.width / 2;
+
+    await spawnMenuAt(page, centerX, barBox, menu);
+    await outline.waitFor({ state: "visible", timeout: 800 });
+
+    const segWidth = await outline.evaluate((el) => {
+      return parseFloat(el.getAttribute("stroke-dasharray")!.split(" ")[0]);
+    });
+
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("menu not found");
+
+    expect(
+      Math.abs(segWidth - menuBox.width),
+      `Segment width (${segWidth}) should match menu width (${menuBox.width})`,
+    ).toBeLessThan(2);
+  });
+
+  test("menu left edge aligns with segment left edge at center", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const outline = page.getByTestId("searchbar-outline-hover");
+    const centerX = barBox.x + barBox.width / 2;
+
+    await spawnMenuAt(page, centerX, barBox, menu);
+    await outline.waitFor({ state: "visible", timeout: 800 });
+
+    const segEdges = await getSegmentEdgesPageX(outline);
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("menu not found");
+
+    const drift = Math.abs(segEdges.left - menuBox.x);
+    expect(
+      drift,
+      `Segment left edge (${segEdges.left.toFixed(1)}) should align with menu left edge (${menuBox.x.toFixed(1)}), drift=${drift.toFixed(1)}px`,
+    ).toBeLessThan(15);
+  });
+
+  test("menu left edge aligns with segment left edge at varied positions", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const outline = page.getByTestId("searchbar-outline-hover");
+
+    const fractions = [0.2, 0.4, 0.6, 0.8];
+
+    for (const frac of fractions) {
+      await dismissMenu(page, barBox);
+      await expect(menu).toBeHidden({ timeout: 800 });
+
+      const hoverX = barBox.x + barBox.width * frac;
+      await spawnMenuAt(page, hoverX, barBox, menu);
+      await outline.waitFor({ state: "visible", timeout: 800 });
+
+      const segEdges = await getSegmentEdgesPageX(outline);
+      const menuBox = await menu.boundingBox();
+      if (!menuBox) throw new Error(`menu not found at ${(frac * 100).toFixed(0)}%`);
+
+      const drift = Math.abs(segEdges.left - menuBox.x);
+      expect(
+        drift,
+        `At ${(frac * 100).toFixed(0)}%: segment left (${segEdges.left.toFixed(1)}) vs menu left (${menuBox.x.toFixed(1)}), drift=${drift.toFixed(1)}px`,
+      ).toBeLessThan(15);
+    }
+  });
+
+  test("menu spawns at the hovered position, not always at center", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const leftX = barBox.x + barBox.width * 0.25;
+    const rightX = barBox.x + barBox.width * 0.75;
+
+    await spawnMenuAt(page, leftX, barBox, menu);
+    const leftBox = await menu.boundingBox();
+    if (!leftBox) throw new Error("menu not found at left quarter");
+    const leftCenter = leftBox.x + leftBox.width / 2;
+
+    await dismissMenu(page, barBox);
+    await expect(menu).toBeHidden({ timeout: 800 });
+
+    await spawnMenuAt(page, rightX, barBox, menu);
+    const rightBox = await menu.boundingBox();
+    if (!rightBox) throw new Error("menu not found at right quarter");
+    const rightCenter = rightBox.x + rightBox.width / 2;
+
+    const separation = Math.abs(rightCenter - leftCenter);
+    const expectedMinSeparation = barBox.width * 0.4;
+    expect(
+      separation,
+      `Menu should spawn at different positions: left center=${leftCenter.toFixed(0)}, right center=${rightCenter.toFixed(0)}, separation=${separation.toFixed(0)}px, expected ≥${expectedMinSeparation.toFixed(0)}px`,
+    ).toBeGreaterThanOrEqual(expectedMinSeparation);
+  });
+
+  test("edge clamping keeps menu on-screen without breaking width", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const expectedWidth = 400;
+    const widthTolerance = 20;
+
+    const nearLeftX = barBox.x + 30;
+    await spawnMenuAt(page, nearLeftX, barBox, menu);
+    const leftBox = await menu.boundingBox();
+    if (!leftBox) throw new Error("menu not found near left edge");
+
+    expect(leftBox.x).toBeGreaterThanOrEqual(0);
+    expect(leftBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
+    expect(leftBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
+
+    await dismissMenu(page, barBox);
+    await expect(menu).toBeHidden({ timeout: 800 });
+
+    const viewportWidth = await page.evaluate(() => window.innerWidth);
+    const nearRightX = barBox.x + barBox.width - 30;
+    await spawnMenuAt(page, nearRightX, barBox, menu);
+    const rightBox = await menu.boundingBox();
+    if (!rightBox) throw new Error("menu not found near right edge");
+
+    expect(rightBox.x + rightBox.width).toBeLessThanOrEqual(viewportWidth);
+    expect(rightBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
+    expect(rightBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
+  });
+});

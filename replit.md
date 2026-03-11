@@ -40,7 +40,8 @@ Serves on port 5000 at 0.0.0.0 (required for Replit preview).
 
 ## E2E Tests
 - **SearchBar** (`src/components/SearchBar/SearchBar.e2e.spec.ts`): 7 tests — all passing
-- **SearchScopeMenu** (`src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts`): 12 tests — all passing
+- **SearchScopeMenu** (`src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts`): 12 tests + 5 alignment contract tests — all passing
+- **Alignment contract** (`segment–menu alignment contract` describe block): 5 tests enshrining the core positioning contract — segment previews where the menu spawns (same width, same left edge, position-dependent, edge-clamped)
 - Run: `PLAYWRIGHT_CHROMIUM_PATH=$(which chromium) npx playwright test <file> --workers=1 --timeout=25000`
 - Menu dismiss in tests requires moving pointer far outside bar/menu AND dispatching a synthetic `mousemove` event to ensure window-level handlers fire reliably
 - The `searchScopeEngine.ts` exposes `__scopeMachineLog` / `__scopeObserverLog` on `window` for test observability
