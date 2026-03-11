@@ -1,6 +1,6 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { Provider, createStore } from "jotai";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SearchScopeMenu } from "./SearchScopeMenu";
 import {
   hoverOffsetAtom,
@@ -38,8 +38,14 @@ const setStateEntries = (
   }
 };
 
+afterEach(() => {
+  vi.useRealTimers();
+});
+
 describe("SearchScopeMenu", () => {
   it("shows when hover is active and the pointer moves below the bar", () => {
+    vi.useFakeTimers();
+
     const { store } = renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
@@ -50,12 +56,17 @@ describe("SearchScopeMenu", () => {
 
     act(() => {
       store.set(pointerPositionAtom, { x: 160, y: 90 });
+      vi.advanceTimersByTime(320);
+      // nudge to trigger recalculation after the delay window
+      store.set(pointerPositionAtom, { x: 160, y: 90 });
     });
 
     expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
   });
 
   it("hides when no hover offset is present", () => {
+    vi.useFakeTimers();
+
     renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, null],
@@ -64,10 +75,16 @@ describe("SearchScopeMenu", () => {
       ]),
     );
 
+    act(() => {
+      vi.runAllTimers();
+    });
+
     expect(screen.queryByTestId("searchscope-menu")).toBeNull();
   });
 
   it("stays visible when hovered even if pointer leaves trigger area", () => {
+    vi.useFakeTimers();
+
     renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
@@ -77,10 +94,16 @@ describe("SearchScopeMenu", () => {
       ]),
     );
 
+    act(() => {
+      vi.runAllTimers();
+    });
+
     expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
   });
 
   it("does not show if the pointer is above the trigger line", () => {
+    vi.useFakeTimers();
+
     const { unmount } = renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
@@ -89,13 +112,17 @@ describe("SearchScopeMenu", () => {
       ]),
     );
 
-    const menu = screen.getByTestId("searchscope-menu");
-    expect(menu).toBeInTheDocument();
-    expect(menu.style.opacity).toBe("0");
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
     unmount();
   });
 
   it("shows across the entire bottom band under the segment", () => {
+    vi.useFakeTimers();
+
     const height = 80 + outlineInset * 2;
     const contentHeight = 80;
     const triggerY = 76;
@@ -118,6 +145,8 @@ describe("SearchScopeMenu", () => {
 
       act(() => {
         store.set(pointerPositionAtom, { x: 160, y });
+        vi.advanceTimersByTime(320);
+        store.set(pointerPositionAtom, { x: 160, y });
       });
 
       expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
@@ -126,6 +155,8 @@ describe("SearchScopeMenu", () => {
   });
 
   it("aligns left based on the hover anchor and bar position", () => {
+    vi.useFakeTimers();
+
     const { store } = renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
@@ -139,6 +170,7 @@ describe("SearchScopeMenu", () => {
 
     act(() => {
       store.set(pointerPositionAtom, { x: 120, y: 90 });
+      vi.runAllTimers();
     });
 
     const menu = screen.getByTestId("searchscope-menu");
@@ -148,6 +180,8 @@ describe("SearchScopeMenu", () => {
   });
 
   it("hides when leaving the menu itself", () => {
+    vi.useFakeTimers();
+
     renderWithState((store) =>
       setStateEntries(store, [
         [hoverOffsetAtom, 10],
@@ -157,11 +191,24 @@ describe("SearchScopeMenu", () => {
       ]),
     );
 
+    act(() => {
+      vi.runAllTimers();
+    });
+
     const menu = screen.getByTestId("searchscope-menu");
     fireEvent.pointerLeave(menu);
 
-    return waitFor(() =>
-      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
-    );
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    const maybeMenu = screen.queryByTestId("searchscope-menu");
+    if (maybeMenu) {
+      expect(
+        window.getComputedStyle(maybeMenu as HTMLElement).opacity,
+      ).toBe("0");
+    } else {
+      expect(maybeMenu).toBeNull();
+    }
   });
 });

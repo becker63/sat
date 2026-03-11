@@ -10,6 +10,7 @@ import {
   flowDraggingAtom,
   pointerPositionAtom,
   scopeMenuHoverAtom,
+  scopeMenuVisibleAtom,
 } from "@/state/searchbar";
 import { useMemo } from "react";
 import {
@@ -39,6 +40,7 @@ export function SearchScopeMenu({
   });
   const flowDragging = useAtomValue(flowDraggingAtom);
   const setMenuHover = useSetAtom(scopeMenuHoverAtom);
+  const setMenuVisible = useSetAtom(scopeMenuVisibleAtom);
   const setHover = useSetAtom(hoverOffsetAtom);
   const setAnchor = useSetAtom(hoverAnchorAtom);
   const setPointer = useSetAtom(pointerPositionAtom);
@@ -55,9 +57,9 @@ export function SearchScopeMenu({
     <AnimatePresence>
       {visible && (
         <MotionBox
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.14, ease: "easeOut" }}
           position="absolute"
           top={`${offsetTop}px`}
@@ -79,11 +81,8 @@ export function SearchScopeMenu({
             top: `${offsetTop}px`,
           }}
           onPointerEnter={() => setMenuHover(true)}
-  onPointerLeave={() => {
-    setMenuHover(false);
-    setHover(null);
-            setAnchor(null);
-            setPointer(null);
+          onPointerLeave={() => {
+            setMenuHover(false);
           }}
         >
           <VStack gap="16px" alignItems="flex-start" width="100%">

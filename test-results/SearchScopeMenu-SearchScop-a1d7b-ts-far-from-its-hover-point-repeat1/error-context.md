@@ -1,0 +1,49 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - generic [ref=e6]:
+        - generic:
+          - generic:
+            - img
+            - img:
+              - group "Edge from 1 to 2" [ref=e7] [cursor=pointer]
+          - generic:
+            - group [ref=e10]: "Anchor: useQuery"
+            - group [ref=e13]: focusManager
+      - img
+    - generic [ref=e18]:
+      - img
+      - textbox "Search symbol..." [ref=e19]
+      - button "Replay" [ref=e20]
+  - generic [ref=e25] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e26]:
+      - img [ref=e27]
+    - generic [ref=e30]:
+      - button "Open issues overlay" [ref=e31]:
+        - generic [ref=e32]:
+          - generic [ref=e33]: "0"
+          - generic [ref=e34]: "1"
+        - generic [ref=e35]: Issue
+      - button "Collapse issues badge" [ref=e36]:
+        - img [ref=e37]
+  - alert [ref=e39]
+  - generic [ref=e41]:
+    - generic [ref=e42]:
+      - generic [ref=e43]: Corpus
+      - generic [ref=e44]: Scope
+    - generic [ref=e45]:
+      - generic [ref=e47] [cursor=pointer]:
+        - checkbox "TanStack Query" [checked] [ref=e48]
+        - img [ref=e50]
+        - generic [ref=e52]: TanStack Query
+      - generic [ref=e54] [cursor=pointer]:
+        - checkbox "Redux Toolkit" [checked] [ref=e55]
+        - img [ref=e57]
+        - generic [ref=e59]: Redux Toolkit
+      - generic [ref=e61] [cursor=pointer]:
+        - checkbox "Zustand" [ref=e62]
+        - generic [ref=e64]: Zustand
+```

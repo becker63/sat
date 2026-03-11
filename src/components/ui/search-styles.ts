@@ -16,7 +16,7 @@ export const searchBarShellClass = css({
   position: "relative",
   px: "7",
   py: "3",
-  overflow: "hidden",
+  overflow: "visible",
 });
 
 export const searchBarHiddenClass = css({
@@ -38,9 +38,7 @@ export const reactFlowCanvasClass = css({
 export const searchBarSvgClass = css({
   position: "absolute",
   pointerEvents: "none",
-  overflow: "hidden",
-  width: "100%",
-  height: "100%",
+  overflow: "visible",
   zIndex: 0,
 });
 

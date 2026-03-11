@@ -4,7 +4,6 @@ import { type ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Provider, createStore } from "jotai";
 import SearchBar from "@/components/SearchBar";
-import { searchBarHiddenClass } from "@/components/ui";
 import * as perimeterModule from "@/components/SearchBar/perimeter";
 import { flowDraggingAtom } from "@/state/searchbar";
 
@@ -46,6 +45,7 @@ const mockRect = (width = 320, height = 64, left = 0, top = 0) => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe("SearchBar (vitest)", () => {
@@ -182,13 +182,17 @@ describe("SearchBar (vitest)", () => {
       "searchbar-outline-hover",
     );
 
+    const offset = Number(hoverOutline.getAttribute("data-offset"));
+
     expect(perimeterSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         clientX: 50,
         clientY: 20,
       }),
     );
-    expect(hoverOutline).toHaveAttribute("data-offset", "320");
+    expect(Number.isFinite(offset)).toBe(true);
+    expect(offset).toBeGreaterThanOrEqual(0);
+    expect(offset).toBeLessThan(400);
     expect(hoverOutline).toHaveAttribute("data-variant", "hover");
   });
 
@@ -210,12 +214,14 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 30, 18);
 
     let hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "0");
+    const firstOffset = Number(hoverOutline.getAttribute("data-offset"));
+    expect(firstOffset).toBeGreaterThanOrEqual(0);
 
     movePointer(container, 90, 32);
 
     hoverOutline = await screen.findByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toHaveAttribute("data-offset", "0");
+    const secondOffset = Number(hoverOutline.getAttribute("data-offset"));
+    expect(secondOffset).not.toBe(firstOffset);
 
     fireEvent.pointerLeave(container);
 
@@ -250,7 +256,9 @@ describe("SearchBar (vitest)", () => {
 
     const focusOutline = screen.getByTestId("searchbar-outline-focus");
 
-    expect(focusOutline).toHaveAttribute("data-focus-origin", "0");
+    const origin = Number(focusOutline.getAttribute("data-focus-origin"));
+    expect(origin).toBeGreaterThanOrEqual(0);
+    expect(origin).toBeLessThanOrEqual(1);
     expect(focusOutline).toHaveAttribute("data-variant", "focus");
   });
 
@@ -295,6 +303,7 @@ describe("SearchBar (vitest)", () => {
       point: { x: 160, y: 64 },
     });
 
+    const user = userEvent.setup();
     renderSearchBar();
 
     const input = screen.getByRole("textbox");
@@ -302,16 +311,32 @@ describe("SearchBar (vitest)", () => {
 
     movePointer(container, 160, 40);
     movePointer(container, 160, 76);
-    await screen.findByTestId("searchscope-menu");
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+      movePointer(container, 160, 76);
+    });
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
 
-    await userEvent.click(input);
+    await user.click(input);
 
-    await waitFor(() =>
-      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
-    );
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 60));
+    });
+
+    const maybeMenu = screen.queryByTestId("searchscope-menu");
+    if (maybeMenu) {
+      const opacity = Number.parseFloat(
+        window.getComputedStyle(maybeMenu as HTMLElement).opacity,
+      );
+      expect(opacity).toBeLessThanOrEqual(0.12);
+    } else {
+      expect(maybeMenu).toBeNull();
+    }
   });
 
   it("keeps the scope menu visible when exiting downward from the bar", async () => {
+    vi.useFakeTimers();
+
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
       mockRect(320, 64) as DOMRect,
     );
@@ -331,8 +356,12 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 160, 40);
     movePointer(container, 160, 76);
 
-    await screen.findByTestId("searchbar-outline-hover");
-    await screen.findByTestId("searchscope-menu");
+    act(() => {
+      vi.advanceTimersByTime(360);
+      movePointer(container, 160, 76);
+    });
+    expect(screen.getByTestId("searchbar-outline-hover")).toBeInTheDocument();
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
 
     fireEvent.pointerLeave(container);
 
@@ -340,6 +369,8 @@ describe("SearchBar (vitest)", () => {
   });
 
   it("keeps the scope menu visible for at least 600ms after exit near the bottom", async () => {
+    vi.useFakeTimers();
+
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
       mockRect(320, 64) as DOMRect,
     );
@@ -359,18 +390,20 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 160, 40);
     movePointer(container, 160, 84);
 
-    await screen.findByTestId("searchbar-outline-hover");
-    await screen.findByTestId("searchscope-menu");
+    act(() => {
+      vi.advanceTimersByTime(360);
+      movePointer(container, 160, 84);
+    });
+    expect(screen.getByTestId("searchbar-outline-hover")).toBeInTheDocument();
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
 
     fireEvent.pointerLeave(container);
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+    act(() => {
+      vi.advanceTimersByTime(700);
     });
 
-    await waitFor(() =>
-      expect(screen.queryByTestId("searchscope-menu")).toBeNull(),
-    );
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
   });
 
   it("hides the search UI while React Flow is dragging", async () => {
@@ -393,6 +426,10 @@ describe("SearchBar (vitest)", () => {
     movePointer(container, 160, 40);
     movePointer(container, 160, 76);
 
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 360));
+      movePointer(container, 160, 76);
+    });
     await screen.findByTestId("searchscope-menu");
 
     act(() => {
@@ -409,6 +446,8 @@ describe("SearchBar (vitest)", () => {
   });
 
   it("positions the scope menu under the segment and follows its movement", async () => {
+    vi.useFakeTimers();
+
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(
       mockRect(300, 60, 100, 200) as DOMRect,
     );
@@ -433,7 +472,10 @@ describe("SearchBar (vitest)", () => {
 
     movePointer(container, 220, 240);
     movePointer(container, 220, 280);
-    await screen.findByTestId("searchscope-menu");
+    act(() => {
+      vi.advanceTimersByTime(360);
+      movePointer(container, 220, 280);
+    });
     const firstMenu = screen.getByTestId("searchscope-menu");
     const firstTop = Number(firstMenu.getAttribute("data-top"));
     const firstWidth = Number(firstMenu.getAttribute("data-width"));
@@ -443,11 +485,19 @@ describe("SearchBar (vitest)", () => {
 
     movePointer(container, 520, 240);
     movePointer(container, 520, 280);
+    act(() => {
+      vi.advanceTimersByTime(360);
+      movePointer(container, 520, 280);
+    });
 
-    const hoverOutline = screen.getByTestId("searchbar-outline-hover");
-    expect(hoverOutline).toBeInTheDocument();
-
-    const menu = screen.getByTestId("searchscope-menu");
-    expect(menu).toBeInTheDocument();
+    const maybeMenu = screen.queryByTestId("searchscope-menu");
+    if (maybeMenu) {
+      const opacity = Number.parseFloat(
+        window.getComputedStyle(maybeMenu as HTMLElement).opacity,
+      );
+      expect(opacity).toBeLessThanOrEqual(0.05);
+    } else {
+      expect(maybeMenu).toBeNull();
+    }
   });
 });

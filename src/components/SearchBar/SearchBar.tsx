@@ -50,6 +50,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
     hoverPathRef,
     inputRef,
     outlineLocked,
+    perimeter,
     size,
     triggerReplay,
     setValue,
@@ -65,6 +66,10 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
 
   const svgWidth = size.width;
   const svgHeight = size.height;
+  const contentWidth = Math.max(0, svgWidth - OUTLINE_INSET_PX * 2);
+  const contentHeight = Math.max(0, svgHeight - OUTLINE_INSET_PX * 2);
+  const segmentLength = Math.min(HOVER_SEGMENT_LENGTH, contentWidth || HOVER_SEGMENT_LENGTH);
+  const dashGap = Math.max(1, Math.max(perimeter - segmentLength, segmentLength));
 
   const bindHover = useHover(({ hovering, event }) => {
     if (hovering) {
@@ -113,6 +118,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
             top: -OUTLINE_INSET,
             left: -OUTLINE_INSET,
           }}
+          shapeRendering="geometricPrecision"
         >
           <rect
             ref={hoverPathRef}
@@ -142,10 +148,11 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               stroke="var(--colors-vercel-text-primary)"
               strokeWidth="1.5"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray={`${segmentLength} ${dashGap}`}
               initial={{ opacity: 0, strokeDashoffset: -hoverOffset }}
               animate={{
                 opacity: 1,
-                strokeDasharray: `${HOVER_SEGMENT_LENGTH} 9999`,
                 strokeDashoffset: -hoverOffset,
               }}
               transition={{
@@ -172,8 +179,9 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
               rx={OUTLINE_RADIUS}
               ry={OUTLINE_RADIUS}
               fill="none"
-              stroke="var(--colors-vercel-surface-outline)"
+              stroke="var(--colors-vercel-text-primary)"
               strokeWidth="1.8"
+              vectorEffect="non-scaling-stroke"
               initial={{
                 pathLength: 0,
                 pathOffset: focusOrigin,

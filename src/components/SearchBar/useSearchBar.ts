@@ -19,7 +19,7 @@ import {
 } from "@/state/searchbar";
 
 const MENU_HOLD_MARGIN = 24;
-const MENU_HORIZONTAL_MARGIN = 12;
+const MENU_HORIZONTAL_MARGIN = 200;
 
 type UseSearchBarOptions = {
   outlineInset: number;
@@ -51,10 +51,18 @@ export function useSearchBar({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hoverPathRef = useRef<SVGRectElement>(null);
+  const lastWithinBandAt = useRef<number | null>(null);
+  const pendingPointer = useRef<{ clientX: number; clientY: number } | null>(
+    null,
+  );
+  const pointerFrame = useRef<number | null>(null);
   const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingBandClear = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
       if (lockTimer.current) clearTimeout(lockTimer.current);
+      if (pointerFrame.current !== null)
+        cancelAnimationFrame(pointerFrame.current);
     },
     [],
   );
@@ -99,7 +107,7 @@ export function useSearchBar({
     });
   };
 
-  const handlePointerMove = ({
+  const processPointerMove = ({
     clientX,
     clientY,
   }: {
@@ -123,24 +131,31 @@ export function useSearchBar({
       clientX >= anchorAbsX - horizontalBandHalf &&
       clientX <= anchorAbsX + horizontalBandHalf;
 
-    const menuDeactivated = menuVisible && !pointerWithinBand;
-
-    if (menuDeactivated) {
-      setMenuHover(false);
-      setMenuVisible(false);
-      setHoverOffset(null);
-      setHoverAnchor(null);
-      setPointerPosition(null);
-      return;
+    const now =
+      typeof performance !== "undefined" && performance.now
+        ? performance.now()
+        : Date.now();
+    if (pointerWithinBand) {
+      lastWithinBandAt.current = now;
     }
 
-    if (menuVisible && pointerWithinBand) {
-      return;
-    }
-    setPointerPosition({
+    const recentlyWithinBand =
+      lastWithinBandAt.current !== null &&
+      now - lastWithinBandAt.current < 140;
+
+    const nextPointer = {
       x: clientX - containerRect.left,
       y: clientY - containerRect.top,
-    });
+    };
+
+    if (menuVisible && (pointerWithinBand || recentlyWithinBand)) {
+      // While the menu is owning the interaction, keep the segment fixed and only
+      // update the pointer projection for the engine.
+      setPointerPosition(nextPointer);
+      return;
+    }
+
+    setPointerPosition(nextPointer);
 
     const result = findClosestPerimeterLength({
       container,
@@ -168,37 +183,36 @@ export function useSearchBar({
     }
   };
 
+  const handlePointerMove = ({
+    clientX,
+    clientY,
+  }: {
+    clientX: number;
+    clientY: number;
+  }) => {
+    pendingPointer.current = { clientX, clientY };
+    if (pointerFrame.current !== null) return;
+
+    pointerFrame.current = requestAnimationFrame(() => {
+      pointerFrame.current = null;
+      const next = pendingPointer.current;
+      pendingPointer.current = null;
+      if (!next) return;
+      processPointerMove(next);
+    });
+  };
+
   const handlePointerLeave = () => {
     if (flowDragging) return;
 
     const container = containerRef.current;
     const containerRect = container?.getBoundingClientRect();
 
-    if (menuVisible) {
-      const contentWidth = Math.max(0, size.width - outlineInset * 2);
-      const menuWidth =
-        Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
-      const anchorAbsX =
-        hoverAnchor?.x ??
-        (containerRect ? containerRect.left + contentWidth / 2 : 0);
-      const horizontalBandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
-      const anchorLocalX = containerRect
-        ? anchorAbsX - containerRect.left
-        : anchorAbsX;
+    // Always clear the projected pointer when leaving the bar so the engine
+    // can fall back to global pointer coordinates.
+    setPointerPosition(null);
 
-      const outsideBand =
-        pointerPosition === null ||
-        pointerPosition.x < anchorLocalX - horizontalBandHalf ||
-        pointerPosition.x > anchorLocalX + horizontalBandHalf;
-
-      if (outsideBand) {
-        setMenuHover(false);
-        setMenuVisible(false);
-        setHoverOffset(null);
-        setPointerPosition(null);
-        return;
-      }
-    }
+    if (menuVisible) return;
 
     const nearBottom =
       pointerPosition !== null &&
@@ -206,6 +220,11 @@ export function useSearchBar({
 
     if (!focused && !menuHover && !nearBottom) {
       setHoverOffset(null);
+      setPointerPosition(null);
+    }
+
+    // Clear pointer projection when fully leaving the container.
+    if (!menuVisible) {
       setPointerPosition(null);
     }
   };
@@ -262,13 +281,17 @@ export function useSearchBar({
   }, [setFocused, setHoverAnchor, setHoverOffset, setMenuHover, setOutlineLocked, setPointerPosition]);
 
   useEffect(() => {
-    if (!menuVisible) return;
+    if (!menuVisible && hoverOffset === null) return;
 
     const onPointerMove = (event: PointerEvent | MouseEvent) => {
       const container = containerRef.current;
       if (!container) return;
 
       const rect = container.getBoundingClientRect();
+      setPointerPosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
       const contentWidth = Math.max(0, size.width - outlineInset * 2);
       const menuWidth =
         Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
@@ -280,7 +303,42 @@ export function useSearchBar({
         event.clientX >= anchorAbsX - bandHalf &&
         event.clientX <= anchorAbsX + bandHalf;
 
-      if (!withinX) {
+      const now =
+        typeof performance !== "undefined" && performance.now
+          ? performance.now()
+          : Date.now();
+
+      if (withinX) {
+        lastWithinBandAt.current = now;
+        if (pendingBandClear.current) {
+          clearTimeout(pendingBandClear.current);
+          pendingBandClear.current = null;
+        }
+      }
+
+      const recentlyWithinBand =
+        lastWithinBandAt.current !== null &&
+        now - lastWithinBandAt.current < 140;
+
+      if (!withinX && recentlyWithinBand) {
+        return;
+      }
+
+      if (!withinX && !menuVisible) {
+        if (typeof window !== "undefined") {
+          const log =
+            ((window as any).__scopeBandLog as
+              | Array<{ x: number; min: number; max: number; t: number }>
+              | undefined) ?? [];
+          const timestamp =
+            typeof performance !== "undefined" && performance.now
+            ? performance.now()
+            : Date.now();
+          (window as any).__scopeBandLog = [
+            ...log,
+            { x: event.clientX, min: anchorAbsX - bandHalf, max: anchorAbsX + bandHalf, t: timestamp },
+          ];
+        }
         setMenuHover(false);
         setMenuVisible(false);
         setHoverOffset(null);
@@ -295,9 +353,14 @@ export function useSearchBar({
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("mousemove", onPointerMove);
+      if (pendingBandClear.current) {
+        clearTimeout(pendingBandClear.current);
+        pendingBandClear.current = null;
+      }
     };
   }, [
     hoverAnchor?.x,
+    hoverOffset,
     hoverSegmentLength,
     menuVisible,
     outlineInset,
@@ -308,6 +371,34 @@ export function useSearchBar({
     setPointerPosition,
     size.width,
   ]);
+
+  useEffect(() => {
+    const onPointerMove = (event: PointerEvent | MouseEvent) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const margin = 48;
+      const outside =
+        event.clientX < rect.left - margin ||
+        event.clientX > rect.right + margin ||
+        event.clientY < rect.top - margin ||
+        event.clientY > rect.bottom + margin;
+      if (outside) {
+        setPointerPosition(null);
+        setHoverOffset(null);
+        setHoverAnchor(null);
+        setMenuHover(false);
+        setMenuVisible(false);
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("mousemove", onPointerMove);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("mousemove", onPointerMove);
+    };
+  }, [setHoverAnchor, setHoverOffset, setMenuHover, setMenuVisible, setPointerPosition]);
 
   useEffect(() => {
     if (!flowDragging) return;
@@ -331,6 +422,12 @@ export function useSearchBar({
     setPointerPosition,
   ]);
 
+  useEffect(() => {
+    if (menuVisible) return;
+    setHoverOffset(null);
+    setHoverAnchor(null);
+  }, [menuVisible, setHoverAnchor, setHoverOffset]);
+
   return {
     containerRef,
     focusOrigin,
@@ -343,6 +440,7 @@ export function useSearchBar({
     hoverPathRef,
     inputRef,
     outlineLocked,
+    perimeter,
     size,
     triggerReplay,
     setValue,

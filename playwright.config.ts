@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: "./src/components",
   testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
   timeout: 30_000,
+  workers: process.env.CI ? 4 : 8,
   use: {
     headless: true,
     baseURL: "http://127.0.0.1:5173",
