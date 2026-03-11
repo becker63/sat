@@ -16,6 +16,7 @@ export type ScopeEngineInput = {
   hoverEngaged: boolean;
   flowDragging: boolean;
   now: number;
+  menuShown: boolean;
 };
 
 export type ScopeEngineSnapshot = {
@@ -33,7 +34,7 @@ const HOLD_GRACE_MS = 360;
 const POINTER_STALE_MS = 260;
 const MENU_HEIGHT_ESTIMATE = 140;
 const OUTSIDE_MARGIN = 48;
-export const SHOW_DELAY_MS = 140;
+export const SHOW_DELAY_MS = 300;
 
 export class SearchScopeEngine {
   private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
@@ -103,6 +104,7 @@ export class SearchScopeEngine {
       hoverEngaged,
       flowDragging,
       now,
+      menuShown,
     } = input;
 
     const contentWidth = Math.max(0, size.width - outlineInset * 2);
@@ -215,7 +217,7 @@ export class SearchScopeEngine {
 
     const shouldHold =
       menuHover ||
-      (machineVisible && (pointerWithinBarBounds || pointerNearInteraction)) ||
+      (menuShown && (pointerWithinBarBounds || pointerNearInteraction)) ||
       (pointerWithinBand && !pointerAbove) ||
       bandRecent;
     const recentlyVisible =

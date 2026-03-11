@@ -717,7 +717,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
 
     // Prime hover and show the menu.
     await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height - 4, 360);
-    await menu.waitFor({ state: "visible", timeout: 500 });
+    await menu.waitFor({ state: "visible", timeout: 1200 });
 
     const scenarios = [
       {
@@ -752,7 +752,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
 
     for (const scenario of scenarios) {
       await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height - 4, 360);
-      await menu.waitFor({ state: "visible", timeout: 500 });
+      await menu.waitFor({ state: "visible", timeout: 1200 });
 
       await page.evaluate(() => {
         (window as any).__scopeSweepFrames = [];

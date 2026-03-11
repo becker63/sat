@@ -109,6 +109,7 @@ export function useSearchScopeMenu({
     hoverEngaged: hoverOffset !== null,
     flowDragging,
     now,
+    menuShown: menuVisible,
   });
 
   const [showReady, setShowReady] = useState(false);
