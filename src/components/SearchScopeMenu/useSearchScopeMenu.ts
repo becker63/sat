@@ -12,8 +12,11 @@ import {
   scopeMenuVisibleAtom,
   scopeDwellingAtom,
   flowDraggingAtom,
+  searchBarContainerAtom,
+  searchBarPathAtom,
 } from "@/state/searchbar";
 import { SearchScopeEngine } from "@/state/searchScopeEngine";
+import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
 
 type Options = {
   outlineInset: number;
@@ -36,6 +39,8 @@ export function useSearchScopeMenu({
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
   const setDwelling = useSetAtom(scopeDwellingAtom);
   const perimeter = useAtomValue(perimeterAtom);
+  const barContainer = useAtomValue(searchBarContainerAtom);
+  const barPath = useAtomValue(searchBarPathAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
   const fixedLeftRef = useRef<number | null>(null);
   const globalPointerRef = useRef<{ x: number; y: number } | null>(null);
@@ -153,24 +158,31 @@ export function useSearchScopeMenu({
 
   const hasCenteredRef = useRef(false);
   useEffect(() => {
-    if (snapshot.visible && perimeter > 0 && segmentLength && !hasCenteredRef.current) {
+    if (snapshot.visible && barContainer && barPath && segmentLength && !hasCenteredRef.current) {
       hasCenteredRef.current = true;
       const menuLeft = fixedLeftRef.current ?? snapshot.offsetLeft;
       const menuCenterAbs = menuLeft + snapshot.width / 2;
-      const menuCenterLocal = menuCenterAbs - position.left + outlineInset;
+      const containerRect = barContainer.getBoundingClientRect();
+      const bottomY = containerRect.bottom;
 
-      const svgW = size.width - 1;
-      const svgH = size.height - 1;
-      const simplePerimeter = 2 * svgW + 2 * svgH;
-      const bottomEdgeFraction = (svgW + svgH + (svgW - menuCenterLocal)) / simplePerimeter;
-      const centerPerimeterPos = bottomEdgeFraction * perimeter;
-      const wrapped = ((centerPerimeterPos % perimeter) + perimeter) % perimeter;
-      setHoverOffset(wrapped);
+      const result = findClosestPerimeterLength({
+        container: barContainer,
+        path: barPath,
+        clientX: menuCenterAbs,
+        clientY: bottomY,
+        inset: outlineInset,
+      });
+
+      if (result) {
+        const centered = result.bestLength - segmentLength / 2;
+        const normalized = ((centered % result.total) + result.total) % result.total;
+        setHoverOffset(normalized);
+      }
     }
     if (!snapshot.visible) {
       hasCenteredRef.current = false;
     }
-  }, [snapshot.visible, perimeter, segmentLength, snapshot.width, snapshot.offsetLeft, position.left, outlineInset, size.width, size.height, setHoverOffset]);
+  }, [snapshot.visible, barContainer, barPath, segmentLength, snapshot.width, snapshot.offsetLeft, outlineInset, setHoverOffset]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

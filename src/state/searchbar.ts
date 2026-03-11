@@ -17,3 +17,5 @@ export const scopeMenuHoverAtom = atom(false);
 export const scopeMenuVisibleAtom = atom(false);
 export const scopeDwellingAtom = atom(false);
 export const flowDraggingAtom = atom(false);
+export const searchBarContainerAtom = atom<HTMLElement | null>(null);
+export const searchBarPathAtom = atom<SVGRectElement | null>(null);

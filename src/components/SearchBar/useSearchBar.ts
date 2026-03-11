@@ -1,5 +1,5 @@
 import { useEffect, useRef, type PointerEvent } from "react";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 
 import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
 import {
@@ -17,6 +17,8 @@ import {
   scopeMenuVisibleAtom,
   scopeDwellingAtom,
   flowDraggingAtom,
+  searchBarContainerAtom,
+  searchBarPathAtom,
 } from "@/state/searchbar";
 
 const MENU_HOLD_MARGIN = 24;
@@ -49,6 +51,8 @@ export function useSearchBar({
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
   const dwelling = useAtomValue(scopeDwellingAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
+  const setBarContainer = useSetAtom(searchBarContainerAtom);
+  const setBarPath = useSetAtom(searchBarPathAtom);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -90,6 +94,11 @@ export function useSearchBar({
 
     return () => ro.disconnect();
   }, [outlineInset, setPosition, setSize]);
+
+  useEffect(() => {
+    setBarContainer(containerRef.current);
+    setBarPath(hoverPathRef.current);
+  }, [setBarContainer, setBarPath, size]);
 
   useEffect(() => {
     const path = hoverPathRef.current;
