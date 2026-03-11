@@ -41,7 +41,7 @@ export const createSearchScopeMachine = () =>
         latchedLeft: ({ context, event }) => {
           if (event.type !== "UPDATE") return null;
           if (!event.visible) return null;
-          return context.latchedLeft ?? context.lastLeft ?? event.left;
+          return context.latchedLeft ?? event.left;
         },
       }),
       clearLatch: assign({

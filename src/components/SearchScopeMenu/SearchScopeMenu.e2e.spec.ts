@@ -1302,4 +1302,50 @@ test.describe("segment–menu alignment contract", () => {
     expect(rightBox.width).toBeGreaterThanOrEqual(expectedWidth - widthTolerance);
     expect(rightBox.width).toBeLessThanOrEqual(expectedWidth + widthTolerance);
   });
+
+  test("mid-height descent aligns menu with hover point, not center", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("bar not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const barCenterX = barBox.x + barBox.width / 2;
+
+    for (const [label, startX] of [
+      ["leftQ", barBox.x + barBox.width * 0.25],
+      ["rightQ", barBox.x + barBox.width * 0.75],
+    ] as const) {
+      await dismissMenu(page, barBox);
+      await expect(menu).toBeHidden({ timeout: 800 });
+
+      await page.mouse.move(startX, barBox.y - 50);
+      await page.waitForTimeout(80);
+      await page.mouse.move(startX, barBox.y + barBox.height / 2);
+      await page.waitForTimeout(80);
+
+      const endY = barBox.y + barBox.height - 4;
+      await descendIntoBand(page, startX, barBox.y + barBox.height / 2, endY, 360);
+      await menu.waitFor({ state: "visible", timeout: 800 });
+
+      const menuBox = await menu.boundingBox();
+      if (!menuBox) throw new Error(`menu not found at ${label}`);
+
+      const menuCenter = menuBox.x + menuBox.width / 2;
+      const driftFromHover = Math.abs(menuCenter - startX);
+      const driftFromCenter = Math.abs(menuCenter - barCenterX);
+
+      expect(
+        driftFromCenter,
+        `${label}: menu should NOT be at center — menuCenter=${menuCenter.toFixed(0)}, barCenter=${barCenterX.toFixed(0)}`,
+      ).toBeGreaterThan(barBox.width * 0.15);
+
+      expect(
+        driftFromHover,
+        `${label}: menu center (${menuCenter.toFixed(0)}) should be near hover point (${startX.toFixed(0)}), drift=${driftFromHover.toFixed(0)}px`,
+      ).toBeLessThan(25);
+    }
+  });
 });

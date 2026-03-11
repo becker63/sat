@@ -26,6 +26,7 @@ export function useSearchScopeMenu({
 }: Options) {
   const hoverOffset = useAtomValue(hoverOffsetAtom);
   const setHoverOffset = useSetAtom(hoverOffsetAtom);
+  const setHoverAnchor = useSetAtom(hoverAnchorAtom);
   const setPointerPosition = useSetAtom(pointerPositionAtom);
   const pointer = useAtomValue(pointerPositionAtom);
   const size = useAtomValue(searchBarSizeAtom);
@@ -114,12 +115,14 @@ export function useSearchScopeMenu({
     setMenuVisible(snapshot.visible);
     if (!snapshot.visible && snapshot.exitTriggered) {
       setHoverOffset(null);
+      setHoverAnchor(null);
       setPointerPosition(null);
       fixedLeftRef.current = null;
     }
   }, [
     setMenuVisible,
     setHoverOffset,
+    setHoverAnchor,
     setPointerPosition,
     snapshot.visible,
     snapshot.exitTriggered,

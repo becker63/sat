@@ -424,12 +424,6 @@ export function useSearchBar({
     setPointerPosition,
   ]);
 
-  useEffect(() => {
-    if (menuVisible) return;
-    setHoverOffset(null);
-    setHoverAnchor(null);
-  }, [menuVisible, setHoverAnchor, setHoverOffset]);
-
   return {
     containerRef,
     focusOrigin,
