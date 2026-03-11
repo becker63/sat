@@ -212,7 +212,7 @@ export class SearchScopeEngine {
 
     const wantShow =
       hoverEngaged &&
-      (pointerWithinBand || bandRecent) &&
+      pointerWithinBand &&
       (pastTrigger || triggerRecent);
 
     const shouldHideBounds =
@@ -225,7 +225,7 @@ export class SearchScopeEngine {
     const desiredVisible = machineVisible
       ? !flowDragging && !exitTriggered
       : !flowDragging &&
-        (menuHover || wantShow || shouldHold || recentlyVisible) &&
+        (menuHover || wantShow) &&
         !exitTriggered;
 
     this.log({

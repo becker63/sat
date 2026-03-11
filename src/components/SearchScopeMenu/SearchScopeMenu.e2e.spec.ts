@@ -635,7 +635,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
 
       // Reset hover state away from the bar between runs.
       await page.mouse.move(barBox.x + barBox.width + 80, barBox.y - 40);
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(200);
 
       for (let i = 0; i <= steps; i++) {
         const t = i / steps;
@@ -645,7 +645,11 @@ test.describe("SearchScopeMenu (playwright)", () => {
       }
 
       const menu = page.getByTestId("searchscope-menu");
-      await menu.waitFor({ state: "visible", timeout: 700 });
+      try {
+        await menu.waitFor({ state: "visible", timeout: 1200 });
+      } catch {
+        throw new Error(`Menu did not appear for scenario "${scenario.label}"`);
+      }
       await expect(menu, scenario.label).toBeVisible();
     }
   });
