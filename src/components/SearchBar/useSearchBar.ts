@@ -15,6 +15,7 @@ import {
   searchFocusedAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
+  scopeDwellingAtom,
   flowDraggingAtom,
 } from "@/state/searchbar";
 
@@ -46,6 +47,7 @@ export function useSearchBar({
   const [pointerPosition, setPointerPosition] = useAtom(pointerPositionAtom);
   const [menuHover, setMenuHover] = useAtom(scopeMenuHoverAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const dwelling = useAtomValue(scopeDwellingAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -212,7 +214,7 @@ export function useSearchBar({
     // can fall back to global pointer coordinates.
     setPointerPosition(null);
 
-    if (menuVisible) return;
+    if (menuVisible || dwelling) return;
 
     const nearBottom =
       pointerPosition !== null &&
@@ -223,7 +225,6 @@ export function useSearchBar({
       setPointerPosition(null);
     }
 
-    // Clear pointer projection when fully leaving the container.
     if (!menuVisible) {
       setPointerPosition(null);
     }
@@ -324,7 +325,7 @@ export function useSearchBar({
         return;
       }
 
-      if (!withinX && !menuVisible) {
+      if (!withinX && !menuVisible && !dwelling) {
         if (typeof window !== "undefined") {
           const log =
             ((window as any).__scopeBandLog as
@@ -359,6 +360,7 @@ export function useSearchBar({
       }
     };
   }, [
+    dwelling,
     hoverAnchor?.x,
     hoverOffset,
     hoverSegmentLength,
@@ -374,7 +376,7 @@ export function useSearchBar({
 
   useEffect(() => {
     const onPointerMove = (event: PointerEvent | MouseEvent) => {
-      if (menuVisible || menuHover) return;
+      if (menuVisible || menuHover || dwelling) return;
 
       const container = containerRef.current;
       if (!container) return;
@@ -400,7 +402,7 @@ export function useSearchBar({
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("mousemove", onPointerMove);
     };
-  }, [menuHover, menuVisible, setHoverAnchor, setHoverOffset, setMenuHover, setMenuVisible, setPointerPosition]);
+  }, [dwelling, menuHover, menuVisible, setHoverAnchor, setHoverOffset, setMenuHover, setMenuVisible, setPointerPosition]);
 
   useEffect(() => {
     if (!flowDragging) return;

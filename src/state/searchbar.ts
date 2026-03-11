@@ -15,4 +15,5 @@ export const perimeterAtom = atom(0);
 export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
 export const scopeMenuHoverAtom = atom(false);
 export const scopeMenuVisibleAtom = atom(false);
+export const scopeDwellingAtom = atom(false);
 export const flowDraggingAtom = atom(false);

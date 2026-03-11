@@ -27,24 +27,20 @@ export type ScopeEngineSnapshot = {
   exitTriggered: boolean;
   pointerWithinBand: boolean;
   pointerAbove: boolean;
+  dwelling: boolean;
 };
 
 const HORIZONTAL_MARGIN = 160;
-const HOLD_GRACE_MS = 360;
-const POINTER_STALE_MS = 260;
 const MENU_HEIGHT_ESTIMATE = 140;
 const OUTSIDE_MARGIN = 48;
-export const SHOW_DELAY_MS = 700;
+export const SHOW_DELAY_MS = 350;
 
 export class SearchScopeEngine {
   private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
 
-  private lastBandAt: number | null = null;
-  private lastTriggerAt: number | null = null;
-  private lastVisibleAt: number | null = null;
-  private lastPointerY: number | null = null;
   private lastPointerAt: number | null = null;
-  private lastAboveAt: number | null = null;
+  private spawnZoneEnteredAt: number | null = null;
+
   private ensureLogBuffers() {
     if (typeof window === "undefined") return null;
     const w = window as any;
@@ -78,7 +74,6 @@ export class SearchScopeEngine {
   }
 
   forceHide() {
-    this.lastVisibleAt = null;
     this.actor.send({ type: "FORCE_HIDE" });
   }
 
@@ -112,16 +107,6 @@ export class SearchScopeEngine {
       Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
       contentWidth;
 
-    const movingUp =
-      pointer !== null &&
-      this.lastPointerY !== null &&
-      pointer.y < this.lastPointerY - 1;
-    const movingDown =
-      pointer !== null &&
-      this.lastPointerY !== null &&
-      pointer.y > this.lastPointerY + 1;
-
-    this.lastPointerY = pointer?.y ?? null;
     this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
 
     const barBottom = position.top + size.height - outlineInset * 2;
@@ -133,52 +118,54 @@ export class SearchScopeEngine {
       pointerAbs !== null &&
       pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
       pointerAbs.x <= anchorAbsX + horizontalBandHalf;
+
     const pointerAbove =
       pointerAbs !== null &&
       pointerAbs.y < barBottom - TRIGGER_ZONE_INSIDE - 10;
-    const pointerWithinBand =
+
+    const pointerInSpawnZone =
       pointerAbs !== null &&
       pointerAbs.y >= barBottom - TRIGGER_ZONE_INSIDE &&
       pointerAbs.y <= barBottom + TRIGGER_ZONE_BELOW &&
       pointerWithinBandX;
 
-    if (pointerWithinBand) {
-      this.lastBandAt = now;
-    }
-    const bandRecent = this.lastBandAt !== null && now - this.lastBandAt < 260;
-
-    const pastTrigger =
-      pointerAbs !== null && pointerAbs.y >= barBottom - 4;
-    if (pastTrigger) {
-      this.lastTriggerAt = now;
-    }
-    const triggerRecent =
-      this.lastTriggerAt !== null && now - this.lastTriggerAt < 200;
-
-    if (pointerAbove) {
-      if (this.lastAboveAt === null) {
-        this.lastAboveAt = now;
+    if (pointerInSpawnZone && hoverEngaged) {
+      if (this.spawnZoneEnteredAt === null) {
+        this.spawnZoneEnteredAt = now;
       }
     } else {
-      this.lastAboveAt = null;
+      this.spawnZoneEnteredAt = null;
     }
-    const abovePersistMs =
-      this.lastAboveAt !== null ? now - this.lastAboveAt : 0;
 
-    const anchorAbsXClamped = anchorAbsX;
+    const dwellTime =
+      this.spawnZoneEnteredAt !== null ? now - this.spawnZoneEnteredAt : 0;
+    const dwellReady = dwellTime >= SHOW_DELAY_MS;
+
     const viewportWidth =
       typeof window !== "undefined" && window.innerWidth
         ? window.innerWidth
         : size.width;
 
+    const anchorAbsXClamped = anchorAbsX;
     const desiredLeft = anchorAbsXClamped - menuWidth / 2;
     const clampedLeft = Math.max(
       0,
       Math.min(desiredLeft, viewportWidth - menuWidth),
     );
     const top = position.top + size.height - outlineInset + 8;
-    const menuRight = clampedLeft + menuWidth;
     const menuBottom = top + MENU_HEIGHT_ESTIMATE;
+
+    const preSnapshot = this.actor.getSnapshot();
+    const machineVisible = preSnapshot.matches("visible");
+
+    const menuLeft = position.left + clampedLeft;
+    const menuRightEdge = menuLeft + menuWidth;
+    const pointerNearMenu =
+      pointerAbs !== null &&
+      pointerAbs.x >= menuLeft - OUTSIDE_MARGIN &&
+      pointerAbs.x <= menuRightEdge + OUTSIDE_MARGIN &&
+      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
+      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
 
     const pointerWithinBarBounds =
       pointer !== null &&
@@ -188,75 +175,19 @@ export class SearchScopeEngine {
       pointerAbs.x >= position.left &&
       pointerAbs.x <= position.left + size.width;
 
-    const pointerOutsideMenuBounds =
-      pointerAbs !== null &&
-      (pointerAbs.x < clampedLeft - OUTSIDE_MARGIN ||
-        pointerAbs.x > menuRight + OUTSIDE_MARGIN ||
-        pointerAbs.y < top - OUTSIDE_MARGIN ||
-        pointerAbs.y > menuBottom + OUTSIDE_MARGIN);
-    const pointerFarFromBar =
-      pointerAbs !== null &&
-      (pointerAbs.x < position.left - OUTSIDE_MARGIN ||
-        pointerAbs.x > position.left + size.width + OUTSIDE_MARGIN ||
-        pointerAbs.y < position.top - OUTSIDE_MARGIN ||
-        pointerAbs.y >
-          position.top + size.height + MENU_HEIGHT_ESTIMATE + OUTSIDE_MARGIN);
-    const pointerStale =
-      pointerAbs === null &&
-      (this.lastPointerAt === null || now - this.lastPointerAt > POINTER_STALE_MS);
+    const wantShow = hoverEngaged && dwellReady && !flowDragging;
 
-    const preSnapshot = this.actor.getSnapshot();
-    const machineVisible = preSnapshot.matches("visible");
-
-    const pointerNearInteraction =
-      pointerAbs !== null &&
-      pointerAbs.x >= position.left - OUTSIDE_MARGIN &&
-      pointerAbs.x <= position.left + size.width + OUTSIDE_MARGIN &&
-      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
-      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
-
-    const menuLeft = position.left + clampedLeft;
-    const menuRight = menuLeft + menuWidth;
-    const pointerNearMenu =
-      pointerAbs !== null &&
-      pointerAbs.x >= menuLeft - OUTSIDE_MARGIN &&
-      pointerAbs.x <= menuRight + OUTSIDE_MARGIN &&
-      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
-      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
-
-    const shouldHold = menuShown
-      ? (menuHover || pointerWithinBarBounds || pointerNearMenu)
-      : (menuHover || (pointerWithinBand && !pointerAbove) || bandRecent);
-    const recentlyVisible =
-      this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
-
-    const wantShow =
-      hoverEngaged &&
-      pointerWithinBand &&
-      (pastTrigger || triggerRecent);
-
-    const shouldHideBounds =
-      !menuHover && !pointerWithinBarBounds && pointerOutsideMenuBounds && !pointerWithinBand;
-    const shouldHideFar = pointerFarFromBar && !menuHover;
     const exitTriggered =
       !flowDragging &&
-      (shouldHideFar || pointerStale || (!shouldHold && shouldHideBounds) || (!shouldHold && !bandRecent));
+      machineVisible &&
+      !menuHover &&
+      !pointerWithinBarBounds &&
+      !pointerNearMenu &&
+      !pointerInSpawnZone;
 
     const desiredVisible = machineVisible
-      ? !flowDragging && !exitTriggered
-      : !flowDragging &&
-        (menuHover || wantShow) &&
-        !exitTriggered;
-
-    if (machineVisible && menuShown) {
-      console.log('[ENGINE-DEBUG]', JSON.stringify({
-        pointerAbs: pointerAbs ? { x: Math.round(pointerAbs.x), y: Math.round(pointerAbs.y) } : null,
-        barBounds: { left: Math.round(position.left), top: Math.round(position.top), w: Math.round(size.width), h: Math.round(size.height) },
-        shouldHold, shouldHideFar, shouldHideBounds, exitTriggered,
-        pointerNearInteraction, pointerWithinBarBounds, pointerFarFromBar,
-        menuShown, desiredVisible,
-      }));
-    }
+      ? !exitTriggered
+      : wantShow || menuHover;
 
     this.log({
       t: now,
@@ -291,11 +222,7 @@ export class SearchScopeEngine {
     const latchedLeft =
       actorSnapshot.context.latchedLeft ?? actorSnapshot.context.lastLeft ?? clampedLeft;
 
-    if (visible) {
-      this.lastVisibleAt = now;
-    } else if (exitTriggered) {
-      this.lastVisibleAt = null;
-    }
+    const dwelling = this.spawnZoneEnteredAt !== null && !dwellReady && hoverEngaged;
 
     return {
       visible,
@@ -303,8 +230,9 @@ export class SearchScopeEngine {
       offsetTop: top,
       width: menuWidth,
       exitTriggered,
-      pointerWithinBand,
+      pointerWithinBand: pointerInSpawnZone,
       pointerAbove,
+      dwelling,
     };
   }
 }

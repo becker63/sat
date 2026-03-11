@@ -9,11 +9,10 @@ import {
   searchBarPositionAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
+  scopeDwellingAtom,
   flowDraggingAtom,
 } from "@/state/searchbar";
-import { SearchScopeEngine, SHOW_DELAY_MS } from "@/state/searchScopeEngine";
-
-const POINTER_STALE_MS = 260;
+import { SearchScopeEngine } from "@/state/searchScopeEngine";
 
 type Options = {
   outlineInset: number;
@@ -34,12 +33,12 @@ export function useSearchScopeMenu({
   const menuHover = useAtomValue(scopeMenuHoverAtom);
   const position = useAtomValue(searchBarPositionAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
+  const setDwelling = useSetAtom(scopeDwellingAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
   const fixedLeftRef = useRef<number | null>(null);
   const globalPointerRef = useRef<{ x: number; y: number } | null>(null);
-  const [globalPointerTick, setGlobalPointerTick] = useState(0);
+  const [tick, setTick] = useState(0);
   const engineRef = useRef<SearchScopeEngine | null>(null);
-  const prevMenuHoverRef = useRef<boolean>(false);
 
   const contentWidth = Math.max(0, size.width - outlineInset * 2);
 
@@ -50,7 +49,7 @@ export function useSearchScopeMenu({
       : position.left + contentWidth / 2);
   const anchorLocalX = anchorAbsX - position.left;
 
-  void globalPointerTick;
+  void tick;
   const pointerAbs =
     globalPointerRef.current ??
     (pointer === null
@@ -114,29 +113,19 @@ export function useSearchScopeMenu({
     menuShown: menuVisible,
   });
 
-  const [showReady, setShowReady] = useState(false);
-
   useEffect(() => {
-    if (!menuVisible && !snapshot.visible) return;
-    const id = setInterval(() => setGlobalPointerTick((t) => t + 1), 80);
+    if (!menuVisible && !snapshot.visible && hoverOffset === null) return;
+    const id = setInterval(() => setTick((t) => t + 1), 80);
     return () => clearInterval(id);
-  }, [menuVisible, snapshot.visible]);
+  }, [menuVisible, snapshot.visible, hoverOffset]);
 
   useEffect(() => {
-    if (snapshot.visible && !showReady) {
-      const timer = setTimeout(() => setShowReady(true), SHOW_DELAY_MS);
-      return () => clearTimeout(timer);
-    }
-    if (!snapshot.visible) {
-      setShowReady(false);
-    }
-  }, [snapshot.visible, showReady]);
-
-  const delayedVisible = snapshot.visible && showReady;
+    setDwelling(snapshot.dwelling);
+  }, [setDwelling, snapshot.dwelling]);
 
   useEffect(() => {
-    setMenuVisible(delayedVisible);
-    if (!delayedVisible && snapshot.exitTriggered) {
+    setMenuVisible(snapshot.visible);
+    if (!snapshot.visible && snapshot.exitTriggered) {
       setHoverOffset(null);
       setHoverAnchor(null);
       setPointerPosition(null);
@@ -147,13 +136,9 @@ export function useSearchScopeMenu({
     setHoverOffset,
     setHoverAnchor,
     setPointerPosition,
-    delayedVisible,
+    snapshot.visible,
     snapshot.exitTriggered,
   ]);
-
-  useEffect(() => {
-    prevMenuHoverRef.current = menuHover;
-  }, [menuHover]);
 
   useEffect(() => {
     if (snapshot.visible && fixedLeftRef.current === null) {
@@ -163,23 +148,6 @@ export function useSearchScopeMenu({
       fixedLeftRef.current = null;
     }
   }, [snapshot.visible, snapshot.offsetLeft]);
-
-  const engineVisibleRef = useRef(false);
-  engineVisibleRef.current = snapshot.visible;
-
-  useEffect(() => {
-    if (hoverOffset === null) return;
-    const timer = setTimeout(() => {
-      const current = engineRef.current?.getLastPointerAt() ?? null;
-      const stalePointer = current !== null && now - current > POINTER_STALE_MS;
-      if (!menuVisible && !engineVisibleRef.current && hoverOffset !== null && (pointer === null || stalePointer)) {
-        setHoverOffset(null);
-        setMenuVisible(false);
-        setPointerPosition(null);
-      }
-    }, POINTER_STALE_MS);
-    return () => clearTimeout(timer);
-  }, [hoverOffset, pointer, menuVisible, setHoverOffset, setMenuVisible, setPointerPosition, now]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -218,7 +186,7 @@ export function useSearchScopeMenu({
   }, [hoverOffset, menuVisible, pointer, snapshot.pointerWithinBand, snapshot.visible]);
 
   return {
-    visible: delayedVisible,
+    visible: snapshot.visible,
     width: snapshot.width,
     offsetLeft: snapshot.offsetLeft,
     offsetTop: snapshot.offsetTop,
