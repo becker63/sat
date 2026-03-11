@@ -7,9 +7,15 @@
     "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
-    "lint:eslint": "eslint . --ext .ts,.tsx",
     "format": "eslint . --ext .ts,.tsx --fix",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
+    "playwright:install": "playwright install"
   },
   "dependencies": {
     "@ark-ui/react": "^5.34.1",

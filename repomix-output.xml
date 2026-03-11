@@ -1,10 +1,10 @@
-This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
 
 <file_summary>
 This section contains a summary of this file.
 
 <purpose>
-This file contains a packed representation of the entire repository's contents.
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
 It is designed to be easily consumable by AI systems for analysis, code review,
 or other automated processes.
 </purpose>
@@ -32,6 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: node_modules|styled-system|public
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -42,17 +43,6 @@ The content is organized as follows:
 <directory_structure>
 eslint/
   style-firewall.mjs
-playwright/
-  .cache/
-    assets/
-      index-l0sNRNKZ.js.map
-    file.svg
-    globe.svg
-    index.html
-    metainfo.json
-    next.svg
-    vercel.svg
-    window.svg
 public/
   file.svg
   globe.svg
@@ -131,24 +121,6 @@ src/
     layer-styles.ts
     react-flow.ts
     text-styles.ts
-test-results/
-  SearchScopeMenu-SearchScop-4e879-ossings-through-the-segment/
-    error-context.md
-  SearchScopeMenu-SearchScop-4e879-ossings-through-the-segment-repeat1/
-    error-context.md
-  SearchScopeMenu-SearchScop-9a5c4-ing-downward-in-varied-arcs-repeat1/
-    error-context.md
-  SearchScopeMenu-SearchScop-a1d7b-ts-far-from-its-hover-point-repeat1/
-    error-context.md
-  SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/
-    error-context.md
-  SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally-repeat1/
-    error-context.md
-  SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally-repeat2/
-    error-context.md
-  SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band-repeat1/
-    error-context.md
-  .last-run.json
 .gitignore
 components.json
 eslint.config.mjs
@@ -159,6 +131,7 @@ package.json
 panda.config.ts
 playwright.config.ts
 README.md
+replit.nix
 tsconfig.json
 vitest.config.ts
 vitest.setup.ts
@@ -167,691 +140,38 @@ vitest.setup.ts
 <files>
 This section contains the contents of the repository's files.
 
-<file path="src/state/searchScopeEngine.ts">
-import { createActor, type ActorRefFrom } from "xstate";
-import { createSearchScopeMachine } from "./searchScopeMachine";
+<file path="replit.nix">
+{ pkgs }: {
+  deps = [
+    pkgs.nodejs_20
+    pkgs.bun
+    pkgs.chromium
 
-type Vec2 = { x: number; y: number };
+    # playwright runtime deps
+    pkgs.libgbm
+    pkgs.glib
+    pkgs.nss
+    pkgs.at-spi2-atk
+    pkgs.at-spi2-core
+    pkgs.dbus
+    pkgs.xorg.libX11
+    pkgs.xorg.libXcomposite
+    pkgs.xorg.libXdamage
+    pkgs.xorg.libXext
+    pkgs.xorg.libXfixes
+    pkgs.xorg.libxkbcommon
+    pkgs.xorg.libXrandr
+    pkgs.mesa
+    pkgs.pango
+    pkgs.cairo
+  ];
 
-export type ScopeEngineInput = {
-  pointer: Vec2 | null;
-  pointerAbs: Vec2 | null;
-  anchorLocalX: number;
-  anchorAbsX: number;
-  position: { left: number; top: number };
-  size: { width: number; height: number };
-  outlineInset: number;
-  segmentLength?: number;
-  menuHover: boolean;
-  hoverEngaged: boolean;
-  flowDragging: boolean;
-  now: number;
-};
-
-export type ScopeEngineSnapshot = {
-  visible: boolean;
-  offsetLeft: number;
-  offsetTop: number;
-  width: number;
-  exitTriggered: boolean;
-  pointerWithinBand: boolean;
-  pointerAbove: boolean;
-};
-
-const TRIGGER_MARGIN = -2;
-const HORIZONTAL_MARGIN = 160;
-const HOLD_GRACE_MS = 360;
-const POINTER_STALE_MS = 260;
-const MENU_HEIGHT_ESTIMATE = 140;
-const OUTSIDE_MARGIN = 48;
-
-export class SearchScopeEngine {
-  private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
-
-  private lastBandAt: number | null = null;
-  private lastTriggerAt: number | null = null;
-  private lastVisibleAt: number | null = null;
-  private lastPointerY: number | null = null;
-  private lastPointerAt: number | null = null;
-  private lastAboveAt: number | null = null;
-  private ensureLogBuffers() {
-    if (typeof window === "undefined") return null;
-    const w = window as any;
-    w.__scopeMachineLog = w.__scopeMachineLog ?? [];
-    w.__scopeObserverLog = w.__scopeObserverLog ?? [];
-    w.__scopeMachineObservers = w.__scopeMachineObservers ?? [];
-    return w;
-  }
-
-  private log(payload: unknown) {
-    const w = this.ensureLogBuffers();
-    if (!w) return;
-    const entry = payload as any;
-    w.__scopeMachineLog.push(entry);
-    w.__scopeObserverLog.push(entry);
-    const observers = w.__scopeMachineObservers;
-    if (Array.isArray(observers)) {
-      for (const obs of observers) {
-        try {
-          obs(entry);
-        } catch {
-          // ignore observer errors
-        }
-      }
-    }
-  }
-
-  constructor() {
-    this.actor = createActor(createSearchScopeMachine());
-    this.actor.start();
-  }
-
-  forceHide() {
-    this.lastVisibleAt = null;
-    this.actor.send({ type: "FORCE_HIDE" });
-  }
-
-  getLastPointerAt() {
-    return this.lastPointerAt;
-  }
-
-  stop() {
-    this.actor.stop();
-  }
-
-  update(input: ScopeEngineInput): ScopeEngineSnapshot {
-    const {
-      pointer,
-      pointerAbs,
-      anchorLocalX,
-      anchorAbsX,
-      position,
-      size,
-      outlineInset,
-      segmentLength,
-      menuHover,
-      hoverEngaged,
-      flowDragging,
-      now,
-    } = input;
-
-    const contentHeight = Math.max(0, size.height - outlineInset * 2);
-    const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
-    const triggerY = Math.max(0, Math.min(contentHeight - 2, triggerCandidate));
-    const contentWidth = Math.max(0, size.width - outlineInset * 2);
-    const menuWidth =
-      Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
-      contentWidth;
-
-    const movingUp =
-      pointer !== null &&
-      this.lastPointerY !== null &&
-      pointer.y < this.lastPointerY - 1;
-    const movingDown =
-      pointer !== null &&
-      this.lastPointerY !== null &&
-      pointer.y > this.lastPointerY + 1;
-
-    this.lastPointerY = pointer?.y ?? null;
-    this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
-
-    const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
-    const pointerWithinBandX =
-      pointerAbs !== null &&
-      pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
-      pointerAbs.x <= anchorAbsX + horizontalBandHalf;
-    const pointerAbove = pointerAbs !== null && pointerAbs.y < triggerY - 18;
-    const pointerWithinBand =
-      pointerAbs !== null &&
-      pointerAbs.y >= triggerY - 12 &&
-      pointerWithinBandX;
-
-    if (pointerWithinBand) {
-      this.lastBandAt = now;
-    }
-    const bandRecent = this.lastBandAt !== null && now - this.lastBandAt < 260;
-
-    const pastTrigger = pointer !== null && pointer.y >= triggerY - 6;
-    if (pastTrigger) {
-      this.lastTriggerAt = now;
-    }
-    const triggerRecent =
-      this.lastTriggerAt !== null && now - this.lastTriggerAt < 200;
-
-    if (pointerAbove) {
-      if (this.lastAboveAt === null) {
-        this.lastAboveAt = now;
-      }
-    } else {
-      this.lastAboveAt = null;
-    }
-    const abovePersistMs =
-      this.lastAboveAt !== null ? now - this.lastAboveAt : 0;
-
-    const anchorAbsXClamped = anchorAbsX;
-    const viewportWidth =
-      typeof window !== "undefined" && window.innerWidth
-        ? window.innerWidth
-        : size.width;
-
-    const desiredLeft = anchorAbsXClamped - menuWidth / 2;
-    const clampedLeft = Math.max(
-      0,
-      Math.min(desiredLeft, viewportWidth - menuWidth),
-    );
-    const top = position.top + size.height - outlineInset + 8;
-    const menuRight = clampedLeft + menuWidth;
-    const menuBottom = top + MENU_HEIGHT_ESTIMATE;
-
-    const pointerOutsideMenuBounds =
-      pointerAbs !== null &&
-      (pointerAbs.x < clampedLeft - OUTSIDE_MARGIN ||
-        pointerAbs.x > menuRight + OUTSIDE_MARGIN ||
-        pointerAbs.y < top - OUTSIDE_MARGIN ||
-        pointerAbs.y > menuBottom + OUTSIDE_MARGIN);
-    const pointerFarFromBar =
-      pointerAbs !== null &&
-      (pointerAbs.x < position.left - OUTSIDE_MARGIN ||
-        pointerAbs.x > position.left + size.width + OUTSIDE_MARGIN ||
-        pointerAbs.y < position.top - OUTSIDE_MARGIN ||
-        pointerAbs.y >
-          position.top + size.height + MENU_HEIGHT_ESTIMATE + OUTSIDE_MARGIN);
-    const pointerStale =
-      pointerAbs === null &&
-      (this.lastPointerAt === null || now - this.lastPointerAt > POINTER_STALE_MS);
-    const shouldHold =
-      menuHover || (pointerWithinBand && !pointerAbove) || bandRecent;
-
-    const preSnapshot = this.actor.getSnapshot();
-    const machineVisible = preSnapshot.matches("visible");
-    const recentlyVisible =
-      this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
-
-    const wantShow =
-      hoverEngaged &&
-      (pointerWithinBand || bandRecent) &&
-      (pastTrigger || triggerRecent);
-
-    const shouldHideBounds =
-      !menuHover && pointerOutsideMenuBounds && !pointerWithinBand;
-    const shouldHideFar = pointerFarFromBar && !menuHover;
-    const exitTriggered =
-      !flowDragging &&
-      (shouldHideFar || shouldHideBounds || pointerStale || !shouldHold);
-
-    const desiredVisible = machineVisible
-      ? !flowDragging && !exitTriggered
-      : !flowDragging &&
-        (menuHover || wantShow || shouldHold || recentlyVisible) &&
-        !exitTriggered;
-
-    this.log({
-      t: now,
-      phase: "event",
-      event: {
-        type: "UPDATE",
-        visible: desiredVisible,
-        left: clampedLeft,
-        top,
-        width: menuWidth,
-      },
-      state: preSnapshot.value,
-      context: preSnapshot.context,
-    });
-
-    this.actor.send({
-      type: "UPDATE",
-      visible: desiredVisible,
-      left: clampedLeft,
-      top,
-      width: menuWidth,
-    });
-
-    const actorSnapshot = this.actor.getSnapshot();
-    this.log({
-      t: now,
-      phase: "transition",
-      state: actorSnapshot.value,
-      context: actorSnapshot.context,
-    });
-    const visible = actorSnapshot.matches("visible");
-    const latchedLeft =
-      actorSnapshot.context.latchedLeft ?? actorSnapshot.context.lastLeft ?? clampedLeft;
-
-    if (visible) {
-      this.lastVisibleAt = now;
-    } else if (exitTriggered) {
-      this.lastVisibleAt = null;
-    }
-
-    return {
-      visible,
-      offsetLeft: latchedLeft,
-      offsetTop: top,
-      width: menuWidth,
-      exitTriggered,
-      pointerWithinBand,
-      pointerAbove,
-    };
-  }
+  env = {
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1";
+    PLAYWRIGHT_BROWSERS_PATH = "0";
+    PLAYWRIGHT_CHROMIUM_PATH = "${pkgs.chromium}/bin/chromium";
+  };
 }
-</file>
-
-<file path="src/state/searchScopeMachine.ts">
-import { assign, setup } from "xstate";
-
-type UpdateEvent = {
-  type: "UPDATE";
-  visible: boolean;
-  left: number;
-  top: number;
-  width: number;
-};
-
-type HideEvent = { type: "FORCE_HIDE" };
-
-type Events = UpdateEvent | HideEvent;
-
-type Context = {
-  visible: boolean;
-  latchedLeft: number | null;
-  lastLeft: number | null;
-  top: number;
-  width: number;
-};
-
-export const createSearchScopeMachine = () =>
-  setup({
-    types: {} as {
-      context: Context;
-      events: Events;
-    },
-      actions: {
-        assignFromUpdate: assign({
-        visible: ({ event }) => (event.type === "UPDATE" ? event.visible : false),
-        lastLeft: ({ event, context }) => {
-          if (event.type !== "UPDATE") return context.lastLeft;
-          if (context.visible) return context.lastLeft;
-          return event.left;
-        },
-        top: ({ event, context }) =>
-          event.type === "UPDATE" ? event.top : context.top,
-        width: ({ event, context }) =>
-          event.type === "UPDATE" ? event.width : context.width,
-        latchedLeft: ({ context, event }) => {
-          if (event.type !== "UPDATE") return null;
-          if (!event.visible) return null;
-          return context.latchedLeft ?? context.lastLeft ?? event.left;
-        },
-      }),
-      clearLatch: assign({
-        latchedLeft: () => null,
-        visible: () => false,
-      }),
-    },
-  }).createMachine({
-    id: "searchScopeMenu",
-    initial: "hidden",
-    context: {
-      visible: false,
-      latchedLeft: null,
-      lastLeft: null,
-      top: 0,
-      width: 0,
-    },
-    states: {
-      hidden: {
-        on: {
-          UPDATE: [
-            {
-              guard: ({ event }) => event.visible,
-              target: "visible",
-              actions: ["assignFromUpdate"],
-            },
-            {
-              actions: ["assignFromUpdate", "clearLatch"],
-            },
-          ],
-        },
-      },
-      visible: {
-        entry: ["assignFromUpdate"],
-        on: {
-          UPDATE: [
-            {
-              guard: ({ event }) => event.visible,
-              actions: ["assignFromUpdate"],
-            },
-            {
-              target: "hidden",
-              actions: ["clearLatch"],
-            },
-          ],
-          FORCE_HIDE: {
-            target: "hidden",
-            actions: ["clearLatch"],
-          },
-        },
-      },
-    },
-  });
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-4e879-ossings-through-the-segment/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - generic [ref=e6]:
-        - generic:
-          - generic:
-            - img
-            - img:
-              - group "Edge from 1 to 2" [ref=e7] [cursor=pointer]
-          - generic:
-            - group [ref=e10]: "Anchor: useQuery"
-            - group [ref=e13]: focusManager
-      - img
-    - generic [ref=e18]:
-      - img
-      - textbox "Search symbol..." [ref=e19]
-      - button "Replay" [ref=e20]
-  - generic [ref=e25] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e26]:
-      - img [ref=e27]
-    - generic [ref=e30]:
-      - button "Open issues overlay" [ref=e31]:
-        - generic [ref=e32]:
-          - generic [ref=e33]: "0"
-          - generic [ref=e34]: "1"
-        - generic [ref=e35]: Issue
-      - button "Collapse issues badge" [ref=e36]:
-        - img [ref=e37]
-  - alert [ref=e39]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-4e879-ossings-through-the-segment-repeat1/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [ref=e2]:
-  - generic:
-    - application:
-      - img
-  - generic [ref=e6]:
-    - textbox "Search symbol..." [ref=e7]
-    - button "Replay" [ref=e8]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-9a5c4-ing-downward-in-varied-arcs-repeat1/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [ref=e1]:
-  - generic [active]:
-    - generic [ref=e4]:
-      - generic [ref=e5]:
-        - generic [ref=e6]:
-          - navigation [ref=e7]:
-            - button "previous" [disabled] [ref=e8]:
-              - img "previous" [ref=e9]
-            - generic [ref=e11]:
-              - generic [ref=e12]: 1/
-              - text: "2"
-            - button "next" [ref=e13] [cursor=pointer]:
-              - img "next" [ref=e14]
-          - img
-        - generic [ref=e16]:
-          - generic [ref=e17]:
-            - img [ref=e18]
-            - generic "Latest available version is detected (16.1.6)." [ref=e20]: Next.js 16.1.6
-            - generic [ref=e21]: Turbopack
-          - img
-      - dialog "Runtime ChunkLoadError" [ref=e23]:
-        - generic [ref=e26]:
-          - generic [ref=e27]:
-            - generic [ref=e28]:
-              - generic [ref=e30]: Runtime ChunkLoadError
-              - generic [ref=e31]:
-                - button "Copy Error Info" [ref=e32] [cursor=pointer]:
-                  - img [ref=e33]
-                - button "No related documentation found" [disabled] [ref=e35]:
-                  - img [ref=e36]
-                - button "Attach Node.js inspector" [ref=e38] [cursor=pointer]:
-                  - img [ref=e39]
-            - generic [ref=e48]: Failed to load chunk /_next/static/chunks/node_modules_2c65e232._.js from module [project]/node_modules/next/dist/compiled/react-server-dom-turbopack/cjs/react-server-dom-turbopack-client.browser.development.js [app-client] (ecmascript)
-          - generic [ref=e49]:
-            - generic [ref=e50]:
-              - paragraph [ref=e52]:
-                - img [ref=e54]
-                - generic [ref=e57]: src/app/page.tsx (8:7) @ Home
-                - button "Open in editor" [ref=e58] [cursor=pointer]:
-                  - img [ref=e60]
-              - generic [ref=e63]:
-                - generic [ref=e64]: 6 | return (
-                - generic [ref=e65]: 7 | <Box position="relative" h="100vh" w="100vw">
-                - generic [ref=e66]: "> 8 | <GraphStage />"
-                - generic [ref=e67]: "| ^"
-                - generic [ref=e68]: 9 |
-                - generic [ref=e69]: 10 | <Box
-                - generic [ref=e70]: 11 | position="absolute"
-            - generic [ref=e71]:
-              - generic [ref=e72]:
-                - paragraph [ref=e73]:
-                  - text: Call Stack
-                  - generic [ref=e74]: "2"
-                - button "Show 1 ignore-listed frame(s)" [ref=e75] [cursor=pointer]:
-                  - text: Show 1 ignore-listed frame(s)
-                  - img [ref=e76]
-              - generic [ref=e78]:
-                - generic [ref=e79]:
-                  - text: Home
-                  - button "Open Home in editor" [ref=e80] [cursor=pointer]:
-                    - img [ref=e81]
-                - text: src/app/page.tsx (8:7)
-        - generic [ref=e83]: "1"
-        - generic [ref=e84]: "2"
-    - generic [ref=e89] [cursor=pointer]:
-      - button "Open Next.js Dev Tools" [ref=e90]:
-        - img [ref=e91]
-      - generic [ref=e94]:
-        - button "Open issues overlay" [ref=e95]:
-          - generic [ref=e96]:
-            - generic [ref=e97]: "1"
-            - generic [ref=e98]: "2"
-          - generic [ref=e99]:
-            - text: Issue
-            - generic [ref=e100]: s
-        - button "Collapse issues badge" [ref=e101]:
-          - img [ref=e102]
-  - 'heading "Application error: a client-side exception has occurred while loading 127.0.0.1 (see the browser console for more information)." [level=2] [ref=e106]'
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-a1d7b-ts-far-from-its-hover-point-repeat1/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - generic [ref=e6]:
-        - generic:
-          - generic:
-            - img
-            - img:
-              - group "Edge from 1 to 2" [ref=e7] [cursor=pointer]
-          - generic:
-            - group [ref=e10]: "Anchor: useQuery"
-            - group [ref=e13]: focusManager
-      - img
-    - generic [ref=e18]:
-      - img
-      - textbox "Search symbol..." [ref=e19]
-      - button "Replay" [ref=e20]
-  - generic [ref=e25] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e26]:
-      - img [ref=e27]
-    - generic [ref=e30]:
-      - button "Open issues overlay" [ref=e31]:
-        - generic [ref=e32]:
-          - generic [ref=e33]: "0"
-          - generic [ref=e34]: "1"
-        - generic [ref=e35]: Issue
-      - button "Collapse issues badge" [ref=e36]:
-        - img [ref=e37]
-  - alert [ref=e39]
-  - generic [ref=e41]:
-    - generic [ref=e42]:
-      - generic [ref=e43]: Corpus
-      - generic [ref=e44]: Scope
-    - generic [ref=e45]:
-      - generic [ref=e47] [cursor=pointer]:
-        - checkbox "TanStack Query" [checked] [ref=e48]
-        - img [ref=e50]
-        - generic [ref=e52]: TanStack Query
-      - generic [ref=e54] [cursor=pointer]:
-        - checkbox "Redux Toolkit" [checked] [ref=e55]
-        - img [ref=e57]
-        - generic [ref=e59]: Redux Toolkit
-      - generic [ref=e61] [cursor=pointer]:
-        - checkbox "Zustand" [ref=e62]
-        - generic [ref=e64]: Zustand
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - generic [ref=e6]:
-        - generic:
-          - generic:
-            - img
-            - img:
-              - group "Edge from 1 to 2" [ref=e7] [cursor=pointer]
-          - generic:
-            - group [ref=e10]: "Anchor: useQuery"
-            - group [ref=e13]: focusManager
-      - img
-    - generic [ref=e18]:
-      - img
-      - textbox "Search symbol..." [ref=e19]
-      - button "Replay" [ref=e20]
-  - generic [ref=e25] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e26]:
-      - img [ref=e27]
-    - generic [ref=e30]:
-      - button "Open issues overlay" [ref=e31]:
-        - generic [ref=e32]:
-          - generic [ref=e33]: "0"
-          - generic [ref=e34]: "1"
-        - generic [ref=e35]: Issue
-      - button "Collapse issues badge" [ref=e36]:
-        - img [ref=e37]
-  - alert [ref=e39]
-  - generic [ref=e41]:
-    - generic [ref=e42]:
-      - generic [ref=e43]: Corpus
-      - generic [ref=e44]: Scope
-    - generic [ref=e45]:
-      - generic [ref=e47] [cursor=pointer]:
-        - checkbox "TanStack Query" [checked] [ref=e48]
-        - img [ref=e50]
-        - generic [ref=e52]: TanStack Query
-      - generic [ref=e54] [cursor=pointer]:
-        - checkbox "Redux Toolkit" [checked] [ref=e55]
-        - img [ref=e57]
-        - generic [ref=e59]: Redux Toolkit
-      - generic [ref=e61] [cursor=pointer]:
-        - checkbox "Zustand" [ref=e62]
-        - generic [ref=e64]: Zustand
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally-repeat1/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [ref=e3]:
-  - generic [ref=e6]:
-    - heading "Your connection was interrupted" [level=1] [ref=e7]
-    - paragraph [ref=e8]: Your computer went to sleep.
-    - generic [ref=e9]: ERR_NETWORK_IO_SUSPENDED
-  - button "Reload" [ref=e12] [cursor=pointer]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally-repeat2/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - generic [ref=e6]:
-        - generic:
-          - generic:
-            - img
-            - img:
-              - group "Edge from 1 to 2" [ref=e7] [cursor=pointer]
-          - generic:
-            - group [ref=e10]: "Anchor: useQuery"
-            - group [ref=e13]: focusManager
-      - img
-    - generic [ref=e18]:
-      - img
-      - textbox "Search symbol..." [ref=e19]
-      - button "Replay" [ref=e20]
-  - generic [ref=e25] [cursor=pointer]:
-    - button "Open Next.js Dev Tools" [ref=e26]:
-      - img [ref=e27]
-    - generic [ref=e30]:
-      - button "Open issues overlay" [ref=e31]:
-        - generic [ref=e32]:
-          - generic [ref=e33]: "0"
-          - generic [ref=e34]: "1"
-        - generic [ref=e35]: Issue
-      - button "Collapse issues badge" [ref=e36]:
-        - img [ref=e37]
-  - alert [ref=e39]
-  - generic [ref=e41]:
-    - generic [ref=e42]:
-      - generic [ref=e43]: Corpus
-      - generic [ref=e44]: Scope
-    - generic [ref=e45]:
-      - generic [ref=e47] [cursor=pointer]:
-        - checkbox "TanStack Query" [checked] [ref=e48]
-        - img [ref=e50]
-        - generic [ref=e52]: TanStack Query
-      - generic [ref=e54] [cursor=pointer]:
-        - checkbox "Redux Toolkit" [checked] [ref=e55]
-        - img [ref=e57]
-        - generic [ref=e59]: Redux Toolkit
-      - generic [ref=e61] [cursor=pointer]:
-        - checkbox "Zustand" [ref=e62]
-        - generic [ref=e64]: Zustand
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band-repeat1/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [ref=e2]:
-  - application [ref=e4]:
-    - img
-  - generic [ref=e9]:
-    - textbox "Search symbol..." [ref=e10]
-    - button "Replay" [ref=e11]
-```
 </file>
 
 <file path="eslint/style-firewall.mjs">
@@ -1369,64 +689,6 @@ const rules = {
 export default { rules };
 </file>
 
-<file path="playwright/.cache/assets/index-l0sNRNKZ.js.map">
-{"version":3,"file":"index-l0sNRNKZ.js","sources":[],"sourcesContent":[],"names":[],"mappings":""}
-</file>
-
-<file path="playwright/.cache/file.svg">
-<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
-</file>
-
-<file path="playwright/.cache/globe.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
-</file>
-
-<file path="playwright/.cache/index.html">
-<!doctype html>
-<html>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
-</file>
-
-<file path="playwright/.cache/metainfo.json">
-{
-  "version": "1.58.2",
-  "viteVersion": "6.4.1",
-  "registerSourceHash": "ea233d95b980072c81eb49458aee55f5d33fdb02",
-  "components": [
-    {
-      "id": "_home_becker_projects_sat_src_components_SearchBar___components_SearchBar",
-      "filename": "/home/becker/projects/sat/src/components/SearchBar/SearchBar.ct.spec.tsx",
-      "importSource": "@/components/SearchBar"
-    }
-  ],
-  "sources": {
-    "/home/becker/projects/sat/playwright/index.html": {
-      "timestamp": 1772867891089.0696
-    }
-  },
-  "deps": {
-    "/home/becker/projects/sat/src/components/SearchBar/index.ts": [
-      "/home/becker/projects/sat/src/components/SearchBar/index.ts"
-    ]
-  }
-}
-</file>
-
-<file path="playwright/.cache/next.svg">
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
-</file>
-
-<file path="playwright/.cache/vercel.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
-</file>
-
-<file path="playwright/.cache/window.svg">
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
-</file>
-
 <file path="public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
 </file>
@@ -1673,454 +935,6 @@ Also: Make the repo selector width match the search bar exactly.
 
 <file path="src/components/SearchBar/index.ts">
 export { default } from "./SearchBar";
-</file>
-
-<file path="src/components/SearchBar/SearchBar.e2e.spec.ts">
-import { expect, test } from "@playwright/test";
-
-test.describe("SearchBar outline (playwright)", () => {
-  test("hover segment stays stable when pointer pauses", async ({ page }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    await bar.waitFor();
-
-    const box = await bar.boundingBox();
-    if (!box) throw new Error("Search bar bounding box not found");
-
-    const centerX = box.x + box.width / 2;
-    const centerY = box.y + box.height / 2;
-    const nearBottom = box.y + box.height - 4;
-
-    await page.mouse.move(centerX, centerY);
-    await page.mouse.move(centerX, nearBottom);
-
-    const outline = page.getByTestId("searchbar-outline-hover");
-    await expect(outline).toBeVisible();
-
-    const samples = await page.evaluate(
-      ({ sampleCount }) =>
-        new Promise<{
-          xs: number[];
-          missing: number;
-        }>((resolve) => {
-          const xs: number[] = [];
-          let missing = 0;
-
-          const sample = () => {
-            const rect = document.querySelector(
-              "[data-testid='searchbar-outline-hover']",
-            ) as SVGRectElement | null;
-            if (!rect || !rect.ownerSVGElement) {
-              missing += 1;
-            } else {
-              const svg = rect.ownerSVGElement;
-              const dash = rect.getAttribute("stroke-dasharray");
-              const offset = rect.getAttribute("data-offset");
-              const widthAttr = rect.getAttribute("width");
-              const heightAttr = rect.getAttribute("height");
-              if (dash && offset && widthAttr && heightAttr) {
-                const dashLength = Number(dash.split(" ")[0]);
-                const perimeter = Number(widthAttr) * 2 + Number(heightAttr) * 2;
-                const current = (Number(offset) + dashLength / 2) % perimeter;
-                const width = Number(widthAttr);
-                const height = Number(heightAttr);
-
-                let xPos = 0;
-                const rightEdge = width;
-                const bottomEdge = width + height;
-                const leftEdge = width * 2 + height;
-                if (current <= width) {
-                  xPos = current;
-                } else if (current <= bottomEdge) {
-                  xPos = width;
-                } else if (current <= leftEdge) {
-                  xPos = width - (current - bottomEdge);
-                } else {
-                  xPos = 0;
-                }
-
-                xs.push(xPos);
-              } else {
-                missing += 1;
-              }
-            }
-
-            if (xs.length + missing >= sampleCount) {
-              resolve({ xs, missing });
-              return;
-            }
-            requestAnimationFrame(sample);
-          };
-          requestAnimationFrame(sample);
-        }),
-      { sampleCount: 120 },
-    );
-
-    expect(samples.xs.length).toBeGreaterThanOrEqual(80);
-    expect(samples.missing).toBe(0);
-
-    const range = Math.max(...samples.xs) - Math.min(...samples.xs);
-
-    // Failing guard: segment should stay in one place; any horizontal drift signals jitter.
-    expect(range).toBeLessThanOrEqual(0.01);
-  });
-
-  test("draws a visible hover segment with the token stroke color", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    await bar.waitFor();
-
-    const box = await bar.boundingBox();
-    if (!box) throw new Error("Search bar bounding box not found");
-
-    const centerX = box.x + box.width / 2;
-    const ySteps = [box.y + 8, box.y + box.height / 2, box.y + box.height - 6];
-    for (const y of ySteps) {
-      await page.mouse.move(centerX, y);
-    }
-
-    const outline = page.getByTestId("searchbar-outline-hover");
-    await expect(outline).toBeVisible();
-
-    const { stroke, tokenStroke } = await outline.evaluate(() => {
-      const elementStroke = getComputedStyle(
-        document.querySelector('[data-testid="searchbar-outline-hover"]') as SVGElement,
-      ).stroke;
-      const probe = document.createElement("div");
-      probe.style.color = "var(--colors-vercel-text-primary)";
-      document.body.appendChild(probe);
-      const tokenColor = getComputedStyle(probe).color;
-      probe.remove();
-      return { stroke: elementStroke, tokenStroke: tokenColor };
-    });
-
-    expect(stroke).toBe(tokenStroke);
-    expect(stroke).not.toBe("transparent");
-    expect(stroke).not.toBe("rgba(0, 0, 0, 0)");
-  });
-
-  test("menu appears only after hover delay and matches segment width", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    await bar.waitFor();
-    const barBox = await bar.boundingBox();
-    if (!barBox) throw new Error("Search bar bounding box not found");
-
-    const center = { x: barBox.x + barBox.width / 2, y: barBox.y + barBox.height / 2 };
-    await page.mouse.move(center.x, center.y);
-
-    const menu = page.getByTestId("searchscope-menu");
-    await expect(menu).toHaveCount(0);
-
-    const outline = page.getByTestId("searchbar-outline-hover");
-    await expect(outline).toBeVisible();
-    const dashLength = await outline.evaluate(() => {
-      const dash = (document
-        .querySelector("[data-testid='searchbar-outline-hover']") as SVGRectElement)?.getAttribute(
-        "stroke-dasharray",
-      );
-      if (!dash) return null;
-      const first = parseFloat(dash.split(" ")[0].replace("px", ""));
-      return Number.isFinite(first) ? first : null;
-    });
-
-    // Drag downward past the bar to trigger the menu.
-    const insideBottomY = barBox.y + barBox.height - 4;
-    await page.mouse.move(center.x, insideBottomY);
-    const downSteps = [
-      barBox.y + barBox.height + 2,
-      barBox.y + barBox.height + 10,
-    ];
-    for (const y of downSteps) {
-      await page.mouse.move(center.x, y);
-    }
-    await page.waitForTimeout(260);
-    await menu.waitFor({ state: "visible", timeout: 1_000 });
-
-    const menuBox = await menu.boundingBox();
-    if (!menuBox || dashLength === null) throw new Error("Missing menu or dash length");
-
-    const tol = 8;
-    expect(menuBox.width).toBeGreaterThanOrEqual(dashLength - tol);
-    expect(menuBox.width).toBeLessThanOrEqual(dashLength + tol);
-  });
-
-  test("hover outline hugs the bar perimeter with the inset gap", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    const input = page.getByRole("textbox");
-    await bar.waitFor();
-
-    const barBox = await bar.boundingBox();
-    if (!barBox) throw new Error("Search bar bounding box not found");
-
-    const centerX = barBox.x + barBox.width / 2;
-    const centerY = barBox.y + barBox.height / 2;
-    await page.mouse.move(centerX, centerY);
-
-    const outline = page.getByTestId("searchbar-outline-hover");
-    await expect(outline).toBeVisible();
-
-    const outlineBox = await outline.boundingBox();
-    const inputBox = await input.boundingBox();
-    if (!outlineBox || !inputBox) throw new Error("Bounding boxes missing");
-
-    const debugSizes = await outline.evaluate((el) => {
-      const svg = el.ownerSVGElement;
-      const rect = el as SVGRectElement;
-      return {
-        rectWidth: rect.width.baseVal.value,
-        rectHeight: rect.height.baseVal.value,
-        svgSize: svg
-          ? {
-              width: svg.getAttribute("width"),
-              height: svg.getAttribute("height"),
-              bbox: svg.getBoundingClientRect().toJSON(),
-              styleWidth: getComputedStyle(svg).width,
-            }
-          : null,
-        dashArray: rect.getAttribute("stroke-dasharray"),
-      };
-    });
-
-    console.log(
-      "hover-geometry",
-      JSON.stringify({ barBox, outlineBox, inputBox, debugSizes }, null, 2),
-    );
-
-    const svgBBox = debugSizes.svgSize?.bbox;
-    if (!svgBBox) throw new Error("SVG bbox missing");
-
-    const insetMin = 4;
-    const insetMax = 16;
-
-    expect(svgBBox.x).toBeGreaterThanOrEqual(barBox.x - insetMax);
-    expect(svgBBox.x).toBeLessThanOrEqual(barBox.x + insetMin);
-    expect(svgBBox.y).toBeGreaterThanOrEqual(barBox.y - insetMax);
-    expect(svgBBox.y).toBeLessThanOrEqual(barBox.y + insetMin);
-
-    expect(svgBBox.width).toBeGreaterThanOrEqual(barBox.width - insetMin);
-    expect(svgBBox.width).toBeLessThanOrEqual(barBox.width + insetMax * 2);
-    expect(svgBBox.height).toBeGreaterThanOrEqual(barBox.height - insetMin);
-    expect(svgBBox.height).toBeLessThanOrEqual(barBox.height + insetMax * 2);
-
-    // Ensure there is a visible gap between the outline and the input content box using the full outline box.
-    expect(inputBox.x).toBeGreaterThan(svgBBox.x + insetMin / 2);
-    expect(inputBox.y).toBeGreaterThan(svgBBox.y + insetMin / 2);
-
-    // Ensure the stroke draws a segment (non-empty dash length).
-    expect(debugSizes.dashArray).toBeTruthy();
-  });
-
-  test("focus outline matches hover geometry and uses token stroke", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    const input = page.getByRole("textbox");
-    await bar.waitFor();
-
-    const barBox = await bar.boundingBox();
-    if (!barBox) throw new Error("Search bar bounding box not found");
-
-    await input.click();
-
-    const focusOutline = page.getByTestId("searchbar-outline-focus");
-    await expect(focusOutline).toBeVisible();
-
-    const outlineBox = await focusOutline.boundingBox();
-    if (!outlineBox) throw new Error("Focus outline bounding box missing");
-
-    const debugSizes = await focusOutline.evaluate((el) => {
-      const svg = el.ownerSVGElement;
-      const rect = el as SVGRectElement;
-      return {
-        rectWidth: rect.width.baseVal.value,
-        rectHeight: rect.height.baseVal.value,
-        svgSize: svg
-          ? {
-              width: svg.getAttribute("width"),
-              height: svg.getAttribute("height"),
-              bbox: svg.getBoundingClientRect().toJSON(),
-              styleWidth: getComputedStyle(svg).width,
-            }
-          : null,
-      };
-    });
-
-    console.log(
-      "focus-geometry",
-      JSON.stringify({ barBox, outlineBox, debugSizes }, null, 2),
-    );
-
-    const svgBBox = debugSizes.svgSize?.bbox;
-    if (!svgBBox) throw new Error("SVG bbox missing");
-
-    const insetMin = 4;
-    const insetMax = 16;
-
-    expect(svgBBox.x).toBeGreaterThanOrEqual(barBox.x - insetMax);
-    expect(svgBBox.x).toBeLessThanOrEqual(barBox.x + insetMin);
-    expect(svgBBox.y).toBeGreaterThanOrEqual(barBox.y - insetMax);
-    expect(svgBBox.y).toBeLessThanOrEqual(barBox.y + insetMin);
-    expect(svgBBox.width).toBeGreaterThanOrEqual(barBox.width - insetMin);
-    expect(svgBBox.width).toBeLessThanOrEqual(barBox.width + insetMax * 2);
-    expect(svgBBox.height).toBeGreaterThanOrEqual(barBox.height - insetMin);
-    expect(svgBBox.height).toBeLessThanOrEqual(barBox.height + insetMax * 2);
-
-    const stroke = await focusOutline.evaluate((el) => {
-      const s = getComputedStyle(el as HTMLElement);
-      return s.stroke;
-    });
-    const tokenStroke = await page.evaluate(() => {
-      const probe = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      probe.setAttribute("stroke", "var(--colors-vercel-text-primary)");
-      document.body.appendChild(probe);
-      const color = getComputedStyle(probe).stroke;
-      probe.remove();
-      return color;
-    });
-    expect(stroke).toBe(tokenStroke);
-  });
-
-  test("hover outline matches bar geometry (bounds alignment)", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    await bar.waitFor();
-
-    const barBox = await bar.boundingBox();
-    if (!barBox) throw new Error("Search bar bounding box not found");
-
-    const center = { x: barBox.x + barBox.width / 2, y: barBox.y + barBox.height / 2 };
-    await page.mouse.move(center.x, center.y);
-
-    const outline = page.getByTestId("searchbar-outline-hover");
-    await expect(outline).toBeVisible();
-
-    const geom = await outline.evaluate((el) => {
-      const rect = el as SVGRectElement;
-      const svg = rect.ownerSVGElement!;
-      const svgBox = svg.getBoundingClientRect();
-      return {
-        rectWidthAttr: parseFloat(rect.getAttribute("width") ?? "0"),
-        rectHeightAttr: parseFloat(rect.getAttribute("height") ?? "0"),
-        svgWidthAttr: parseFloat(svg.getAttribute("width") ?? "0"),
-        svgHeightAttr: parseFloat(svg.getAttribute("height") ?? "0"),
-        svgBox: svgBox.toJSON(),
-      };
-    });
-
-    const OUTLINE_INSET = 8;
-    const expectedSvgWidth = barBox.width + OUTLINE_INSET * 2;
-    const expectedSvgHeight = barBox.height + OUTLINE_INSET * 2;
-
-    expect(geom.svgWidthAttr).toBeCloseTo(expectedSvgWidth, 1);
-    expect(geom.svgHeightAttr).toBeCloseTo(expectedSvgHeight, 1);
-    expect(geom.rectWidthAttr).toBeCloseTo(expectedSvgWidth - 1, 1);
-    expect(geom.rectHeightAttr).toBeCloseTo(expectedSvgHeight - 1, 1);
-
-    // The rendered svg box should wrap the bar with the inset applied.
-    const tol = 6;
-    expect(geom.svgBox.x).toBeGreaterThanOrEqual(barBox.x - OUTLINE_INSET - tol);
-    expect(geom.svgBox.x).toBeLessThanOrEqual(barBox.x + tol);
-    expect(geom.svgBox.width).toBeGreaterThanOrEqual(barBox.width + OUTLINE_INSET * 2 - tol);
-    expect(geom.svgBox.width).toBeLessThanOrEqual(barBox.width + OUTLINE_INSET * 2 + tol);
-  });
-
-  test("locks hover segment horizontally until leaving the scope menu span", async ({
-    page,
-  }) => {
-    await page.goto("/");
-
-    const bar = page.getByTestId("searchbar");
-    await bar.waitFor();
-    const barBox = await bar.boundingBox();
-    if (!barBox) throw new Error("Search bar bounding box not found");
-
-    const centerX = barBox.x + barBox.width / 2;
-    const startY = barBox.y + 6;
-    const endY = barBox.y + barBox.height + 10;
-    const menu = page.getByTestId("searchscope-menu");
-    const outline = page.getByTestId("searchbar-outline-hover");
-
-    const steps = 18;
-    const dy = (endY - startY) / steps;
-    for (let i = 0; i <= steps; i++) {
-      await page.mouse.move(centerX, startY + dy * i, { steps: 1 });
-      await page.waitForTimeout(12);
-    }
-
-    await outline.waitFor({ state: "visible", timeout: 600 });
-    await menu.waitFor({ state: "visible", timeout: 800 });
-
-    const menuBox = await menu.boundingBox();
-    if (!menuBox) throw new Error("Menu bounding box not found");
-
-    const readSegmentX = async () =>
-      await outline.evaluate(() => {
-        const rect = document.querySelector(
-          '[data-testid="searchbar-outline-hover"]',
-        ) as SVGRectElement | null;
-        if (!rect || !rect.ownerSVGElement) throw new Error("missing hover rect");
-        const svg = rect.ownerSVGElement;
-        const dash = rect.getAttribute("stroke-dasharray");
-        const offset = rect.getAttribute("data-offset");
-        const widthAttr = rect.getAttribute("width");
-        const heightAttr = rect.getAttribute("height");
-        if (!dash || !offset || !widthAttr || !heightAttr) throw new Error("missing attrs");
-        const dashLength = Number(dash.split(" ")[0]);
-        const perimeter = Number(widthAttr) * 2 + Number(heightAttr) * 2;
-        const current = (Number(offset) + dashLength / 2) % perimeter;
-        const width = Number(widthAttr);
-        const height = Number(heightAttr);
-        if (current <= width) return current;
-        const bottomEdge = width + height;
-        if (current <= bottomEdge) return width;
-        const leftEdge = width * 2 + height;
-        if (current <= leftEdge) return width - (current - bottomEdge);
-        return 0;
-      });
-
-    const insideSamples: number[] = [await readSegmentX()];
-    const insideXs = [
-      menuBox.x + menuBox.width * 0.25,
-      menuBox.x + menuBox.width * 0.5,
-      menuBox.x + menuBox.width * 0.75,
-    ];
-
-    for (const x of insideXs) {
-      await page.mouse.move(x, menuBox.y + menuBox.height / 2, { steps: 2 });
-      await page.waitForTimeout(30);
-      insideSamples.push(await readSegmentX());
-    }
-
-    const insideRange =
-      Math.max(...insideSamples) - Math.min(...insideSamples);
-    expect(insideRange).toBeLessThanOrEqual(0.5);
-
-    // Leaving the menu span should allow the segment to unlock and reposition.
-    await page.mouse.move(menuBox.x - 220, menuBox.y + menuBox.height / 2, { steps: 3 });
-    await page.waitForTimeout(80);
-    const afterOutside = await readSegmentX();
-
-    const baseline = insideSamples[0]!;
-    expect(Math.abs(afterOutside - baseline)).toBeGreaterThan(1);
-  });
-});
 </file>
 
 <file path="src/components/SearchScopeMenu/capture-menu.ts">
@@ -2471,158 +1285,6 @@ export const Loader = forwardRef<HTMLSpanElement, LoaderProps>(function Loader(p
 })
 </file>
 
-<file path="src/components/ui/search-styles.ts">
-import { css, cx } from "../../../styled-system/css";
-
-export const searchBarShellClass = css({
-  layerStyle: "panel",
-  background: "var(--colors-vercel-surface-overlay)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  boxShadow: "var(--shadows-panel)",
-  backdropFilter: "blur(14px)",
-  borderRadius: "var(--radii-l3)",
-  display: "flex",
-  alignItems: "center",
-  gap: "3",
-  width: "100%",
-  height: "72px",
-  boxSizing: "border-box",
-  position: "relative",
-  px: "7",
-  py: "3",
-  overflow: "visible",
-});
-
-export const searchBarHiddenClass = css({
-  pointerEvents: "none",
-  visibility: "hidden",
-});
-
-export const graphStageBackgroundClass = css({
-  position: "absolute",
-  inset: 0,
-  zIndex: 0,
-  background: "var(--colors-vercel-surface-overlay)",
-});
-
-export const reactFlowCanvasClass = css({
-  background: "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
-});
-
-export const searchBarSvgClass = css({
-  position: "absolute",
-  pointerEvents: "none",
-  overflow: "visible",
-  zIndex: 0,
-});
-
-export const outlineHoverClass = css({
-  filter: "drop-shadow(0 0 6px var(--colors-vercel-surface-highlight))",
-});
-
-export const searchInputClass = css({
-  flex: "1 1 0",
-  minWidth: 0,
-  height: "48px",
-  background: "transparent",
-  border: "none",
-  outline: "none",
-  color: "var(--colors-vercel-text-primary)",
-  fontSize: "16px",
-  zIndex: 1,
-});
-
-export const searchButtonClass = css({
-  flex: "0 0 auto",
-  height: "48px",
-  px: "6",
-  borderRadius: "var(--radii-l2)",
-  zIndex: 1,
-});
-
-export const menuContainerClass = css({
-  layerStyle: "panel",
-  background: "var(--colors-vercel-surface-overlay)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  boxShadow: "var(--shadows-panel)",
-  backdropFilter: "blur(14px)",
-  borderRadius: "var(--radii-l3)",
-  position: "absolute",
-  minHeight: "200px",
-  minWidth: "380px",
-  overflow: "hidden",
-});
-
-export const menuHeaderClass = css({
-  width: "100%",
-  paddingBottom: "10px",
-  marginBottom: "4px",
-  borderBottom: "1px solid var(--colors-vercel-surface-border)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  fontSize: "13px",
-  letterSpacing: "0.02em",
-  fontWeight: 600,
-});
-
-export const menuItemClass = css({
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  gap: "10px",
-  padding: "8px 6px",
-  borderRadius: "var(--radii-l2)",
-  cursor: "pointer",
-  transition: "background 0.12s ease",
-  "&:hover": {
-    background: "var(--colors-vercel-surface-muted)",
-  },
-});
-
-export const menuControlClass = css({
-  width: "16px",
-  height: "16px",
-  borderRadius: "var(--radii-l1)",
-  border: "1px solid var(--colors-vercel-surface-borderStrong)",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  transition: "all 0.12s ease-out",
-  "&[data-state=checked]": {
-    backgroundColor: "var(--colors-vercel-brand-9)",
-    borderColor: "var(--colors-vercel-brand-9)",
-  },
-  "&:focus-visible": {
-    outline: "none",
-    boxShadow: "var(--shadows-glow)",
-  },
-});
-
-export const menuIndicatorClass = css({
-  color: "var(--colors-vercel-text-primary)",
-  fontSize: "12px",
-});
-
-export const menuLabelClass = css({
-  fontSize: "14px",
-  color: "var(--colors-vercel-text-muted)",
-  lineHeight: "1.5",
-  fontWeight: 500,
-  display: "inline-flex",
-  alignItems: "center",
-});
-
-export const searchSurfaceClassName = cx(searchBarShellClass);
-
-export const menuSubLabelClass = css({
-  fontSize: "12px",
-  color: "var(--colors-vercel-text-subtle)",
-  letterSpacing: "0.04em",
-  paddingLeft: "6px",
-});
-</file>
-
 <file path="src/components/ui/span.tsx">
 import type { ComponentProps } from 'react'
 import { styled } from 'styled-system/jsx'
@@ -2716,6 +1378,376 @@ export function mirrorConsole() {
     send("unhandledrejection", [event.reason]);
   });
 }
+</file>
+
+<file path="src/state/searchScopeEngine.ts">
+import { createActor, type ActorRefFrom } from "xstate";
+import { createSearchScopeMachine } from "./searchScopeMachine";
+
+type Vec2 = { x: number; y: number };
+
+export type ScopeEngineInput = {
+  pointer: Vec2 | null;
+  pointerAbs: Vec2 | null;
+  anchorLocalX: number;
+  anchorAbsX: number;
+  position: { left: number; top: number };
+  size: { width: number; height: number };
+  outlineInset: number;
+  segmentLength?: number;
+  menuHover: boolean;
+  hoverEngaged: boolean;
+  flowDragging: boolean;
+  now: number;
+};
+
+export type ScopeEngineSnapshot = {
+  visible: boolean;
+  offsetLeft: number;
+  offsetTop: number;
+  width: number;
+  exitTriggered: boolean;
+  pointerWithinBand: boolean;
+  pointerAbove: boolean;
+};
+
+const TRIGGER_MARGIN = -2;
+const HORIZONTAL_MARGIN = 160;
+const HOLD_GRACE_MS = 360;
+const POINTER_STALE_MS = 260;
+const MENU_HEIGHT_ESTIMATE = 140;
+const OUTSIDE_MARGIN = 48;
+
+export class SearchScopeEngine {
+  private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
+
+  private lastBandAt: number | null = null;
+  private lastTriggerAt: number | null = null;
+  private lastVisibleAt: number | null = null;
+  private lastPointerY: number | null = null;
+  private lastPointerAt: number | null = null;
+  private lastAboveAt: number | null = null;
+  private ensureLogBuffers() {
+    if (typeof window === "undefined") return null;
+    const w = window as any;
+    w.__scopeMachineLog = w.__scopeMachineLog ?? [];
+    w.__scopeObserverLog = w.__scopeObserverLog ?? [];
+    w.__scopeMachineObservers = w.__scopeMachineObservers ?? [];
+    return w;
+  }
+
+  private log(payload: unknown) {
+    const w = this.ensureLogBuffers();
+    if (!w) return;
+    const entry = payload as any;
+    w.__scopeMachineLog.push(entry);
+    w.__scopeObserverLog.push(entry);
+    const observers = w.__scopeMachineObservers;
+    if (Array.isArray(observers)) {
+      for (const obs of observers) {
+        try {
+          obs(entry);
+        } catch {
+          // ignore observer errors
+        }
+      }
+    }
+  }
+
+  constructor() {
+    this.actor = createActor(createSearchScopeMachine());
+    this.actor.start();
+  }
+
+  forceHide() {
+    this.lastVisibleAt = null;
+    this.actor.send({ type: "FORCE_HIDE" });
+  }
+
+  getLastPointerAt() {
+    return this.lastPointerAt;
+  }
+
+  stop() {
+    this.actor.stop();
+  }
+
+  update(input: ScopeEngineInput): ScopeEngineSnapshot {
+    const {
+      pointer,
+      pointerAbs,
+      anchorLocalX,
+      anchorAbsX,
+      position,
+      size,
+      outlineInset,
+      segmentLength,
+      menuHover,
+      hoverEngaged,
+      flowDragging,
+      now,
+    } = input;
+
+    const contentHeight = Math.max(0, size.height - outlineInset * 2);
+    const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
+    const triggerY = Math.max(0, Math.min(contentHeight - 2, triggerCandidate));
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const menuWidth =
+      Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
+      contentWidth;
+
+    const movingUp =
+      pointer !== null &&
+      this.lastPointerY !== null &&
+      pointer.y < this.lastPointerY - 1;
+    const movingDown =
+      pointer !== null &&
+      this.lastPointerY !== null &&
+      pointer.y > this.lastPointerY + 1;
+
+    this.lastPointerY = pointer?.y ?? null;
+    this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
+
+    const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
+    const pointerWithinBandX =
+      pointerAbs !== null &&
+      pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
+      pointerAbs.x <= anchorAbsX + horizontalBandHalf;
+    const pointerAbove = pointerAbs !== null && pointerAbs.y < triggerY - 18;
+    const pointerWithinBand =
+      pointerAbs !== null &&
+      pointerAbs.y >= triggerY - 12 &&
+      pointerWithinBandX;
+
+    if (pointerWithinBand) {
+      this.lastBandAt = now;
+    }
+    const bandRecent = this.lastBandAt !== null && now - this.lastBandAt < 260;
+
+    const pastTrigger = pointer !== null && pointer.y >= triggerY - 6;
+    if (pastTrigger) {
+      this.lastTriggerAt = now;
+    }
+    const triggerRecent =
+      this.lastTriggerAt !== null && now - this.lastTriggerAt < 200;
+
+    if (pointerAbove) {
+      if (this.lastAboveAt === null) {
+        this.lastAboveAt = now;
+      }
+    } else {
+      this.lastAboveAt = null;
+    }
+    const abovePersistMs =
+      this.lastAboveAt !== null ? now - this.lastAboveAt : 0;
+
+    const anchorAbsXClamped = anchorAbsX;
+    const viewportWidth =
+      typeof window !== "undefined" && window.innerWidth
+        ? window.innerWidth
+        : size.width;
+
+    const desiredLeft = anchorAbsXClamped - menuWidth / 2;
+    const clampedLeft = Math.max(
+      0,
+      Math.min(desiredLeft, viewportWidth - menuWidth),
+    );
+    const top = position.top + size.height - outlineInset + 8;
+    const menuRight = clampedLeft + menuWidth;
+    const menuBottom = top + MENU_HEIGHT_ESTIMATE;
+
+    const pointerOutsideMenuBounds =
+      pointerAbs !== null &&
+      (pointerAbs.x < clampedLeft - OUTSIDE_MARGIN ||
+        pointerAbs.x > menuRight + OUTSIDE_MARGIN ||
+        pointerAbs.y < top - OUTSIDE_MARGIN ||
+        pointerAbs.y > menuBottom + OUTSIDE_MARGIN);
+    const pointerFarFromBar =
+      pointerAbs !== null &&
+      (pointerAbs.x < position.left - OUTSIDE_MARGIN ||
+        pointerAbs.x > position.left + size.width + OUTSIDE_MARGIN ||
+        pointerAbs.y < position.top - OUTSIDE_MARGIN ||
+        pointerAbs.y >
+          position.top + size.height + MENU_HEIGHT_ESTIMATE + OUTSIDE_MARGIN);
+    const pointerStale =
+      pointerAbs === null &&
+      (this.lastPointerAt === null || now - this.lastPointerAt > POINTER_STALE_MS);
+    const shouldHold =
+      menuHover || (pointerWithinBand && !pointerAbove) || bandRecent;
+
+    const preSnapshot = this.actor.getSnapshot();
+    const machineVisible = preSnapshot.matches("visible");
+    const recentlyVisible =
+      this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
+
+    const wantShow =
+      hoverEngaged &&
+      (pointerWithinBand || bandRecent) &&
+      (pastTrigger || triggerRecent);
+
+    const shouldHideBounds =
+      !menuHover && pointerOutsideMenuBounds && !pointerWithinBand;
+    const shouldHideFar = pointerFarFromBar && !menuHover;
+    const exitTriggered =
+      !flowDragging &&
+      (shouldHideFar || shouldHideBounds || pointerStale || !shouldHold);
+
+    const desiredVisible = machineVisible
+      ? !flowDragging && !exitTriggered
+      : !flowDragging &&
+        (menuHover || wantShow || shouldHold || recentlyVisible) &&
+        !exitTriggered;
+
+    this.log({
+      t: now,
+      phase: "event",
+      event: {
+        type: "UPDATE",
+        visible: desiredVisible,
+        left: clampedLeft,
+        top,
+        width: menuWidth,
+      },
+      state: preSnapshot.value,
+      context: preSnapshot.context,
+    });
+
+    this.actor.send({
+      type: "UPDATE",
+      visible: desiredVisible,
+      left: clampedLeft,
+      top,
+      width: menuWidth,
+    });
+
+    const actorSnapshot = this.actor.getSnapshot();
+    this.log({
+      t: now,
+      phase: "transition",
+      state: actorSnapshot.value,
+      context: actorSnapshot.context,
+    });
+    const visible = actorSnapshot.matches("visible");
+    const latchedLeft =
+      actorSnapshot.context.latchedLeft ?? actorSnapshot.context.lastLeft ?? clampedLeft;
+
+    if (visible) {
+      this.lastVisibleAt = now;
+    } else if (exitTriggered) {
+      this.lastVisibleAt = null;
+    }
+
+    return {
+      visible,
+      offsetLeft: latchedLeft,
+      offsetTop: top,
+      width: menuWidth,
+      exitTriggered,
+      pointerWithinBand,
+      pointerAbove,
+    };
+  }
+}
+</file>
+
+<file path="src/state/searchScopeMachine.ts">
+import { assign, setup } from "xstate";
+
+type UpdateEvent = {
+  type: "UPDATE";
+  visible: boolean;
+  left: number;
+  top: number;
+  width: number;
+};
+
+type HideEvent = { type: "FORCE_HIDE" };
+
+type Events = UpdateEvent | HideEvent;
+
+type Context = {
+  visible: boolean;
+  latchedLeft: number | null;
+  lastLeft: number | null;
+  top: number;
+  width: number;
+};
+
+export const createSearchScopeMachine = () =>
+  setup({
+    types: {} as {
+      context: Context;
+      events: Events;
+    },
+      actions: {
+        assignFromUpdate: assign({
+        visible: ({ event }) => (event.type === "UPDATE" ? event.visible : false),
+        lastLeft: ({ event, context }) => {
+          if (event.type !== "UPDATE") return context.lastLeft;
+          if (context.visible) return context.lastLeft;
+          return event.left;
+        },
+        top: ({ event, context }) =>
+          event.type === "UPDATE" ? event.top : context.top,
+        width: ({ event, context }) =>
+          event.type === "UPDATE" ? event.width : context.width,
+        latchedLeft: ({ context, event }) => {
+          if (event.type !== "UPDATE") return null;
+          if (!event.visible) return null;
+          return context.latchedLeft ?? context.lastLeft ?? event.left;
+        },
+      }),
+      clearLatch: assign({
+        latchedLeft: () => null,
+        visible: () => false,
+      }),
+    },
+  }).createMachine({
+    id: "searchScopeMenu",
+    initial: "hidden",
+    context: {
+      visible: false,
+      latchedLeft: null,
+      lastLeft: null,
+      top: 0,
+      width: 0,
+    },
+    states: {
+      hidden: {
+        on: {
+          UPDATE: [
+            {
+              guard: ({ event }) => event.visible,
+              target: "visible",
+              actions: ["assignFromUpdate"],
+            },
+            {
+              actions: ["assignFromUpdate", "clearLatch"],
+            },
+          ],
+        },
+      },
+      visible: {
+        entry: ["assignFromUpdate"],
+        on: {
+          UPDATE: [
+            {
+              guard: ({ event }) => event.visible,
+              actions: ["assignFromUpdate"],
+            },
+            {
+              target: "hidden",
+              actions: ["clearLatch"],
+            },
+          ],
+          FORCE_HIDE: {
+            target: "hidden",
+            actions: ["clearLatch"],
+          },
+        },
+      },
+    },
+  });
 </file>
 
 <file path="src/theme/colors/green.ts">
@@ -4128,219 +3160,450 @@ export function findClosestPerimeterLength({
 }
 </file>
 
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import { Provider, createStore } from "jotai";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { SearchScopeMenu } from "./SearchScopeMenu";
-import {
-  hoverOffsetAtom,
-  hoverAnchorAtom,
-  pointerPositionAtom,
-  scopeMenuHoverAtom,
-  searchBarSizeAtom,
-  searchBarPositionAtom,
-} from "@/state/searchbar";
+<file path="src/components/SearchBar/SearchBar.e2e.spec.ts">
+import { expect, test } from "@playwright/test";
 
-const outlineInset = 8;
+test.describe("SearchBar outline (playwright)", () => {
+  test("hover segment stays stable when pointer pauses", async ({ page }) => {
+    await page.goto("/");
 
-const renderWithState = (
-  setState: (store: ReturnType<typeof createStore>) => void,
-) => {
-  const store = createStore();
-  setState(store);
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
 
-  const result = render(
-    <Provider store={store}>
-      <div style={{ width: "320px", height: "100px" }}>
-        <SearchScopeMenu outlineInset={outlineInset} />
-      </div>
-    </Provider>,
-  );
-  return { ...result, store };
-};
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("Search bar bounding box not found");
 
-const setStateEntries = (
-  store: ReturnType<typeof createStore>,
-  entries: Array<[any, any]>,
-) => {
-  for (const [atom, value] of entries) {
-    store.set(atom, value);
-  }
-};
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+    const nearBottom = box.y + box.height - 4;
 
-afterEach(() => {
-  vi.useRealTimers();
-});
+    await page.mouse.move(centerX, centerY);
+    await page.mouse.move(centerX, nearBottom);
 
-describe("SearchScopeMenu", () => {
-  it("shows when hover is active and the pointer moves below the bar", () => {
-    vi.useFakeTimers();
+    const outline = page.getByTestId("searchbar-outline-hover");
+    await expect(outline).toBeVisible();
 
-    const { store } = renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, 10],
-        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
-        [pointerPositionAtom, { x: 160, y: 20 }],
-      ]),
+    const samples = await page.evaluate(
+      ({ sampleCount }) =>
+        new Promise<{
+          xs: number[];
+          missing: number;
+        }>((resolve) => {
+          const xs: number[] = [];
+          let missing = 0;
+
+          const sample = () => {
+            const rect = document.querySelector(
+              "[data-testid='searchbar-outline-hover']",
+            ) as SVGRectElement | null;
+            if (!rect || !rect.ownerSVGElement) {
+              missing += 1;
+            } else {
+              const svg = rect.ownerSVGElement;
+              const dash = rect.getAttribute("stroke-dasharray");
+              const offset = rect.getAttribute("data-offset");
+              const widthAttr = rect.getAttribute("width");
+              const heightAttr = rect.getAttribute("height");
+              if (dash && offset && widthAttr && heightAttr) {
+                const dashLength = Number(dash.split(" ")[0]);
+                const perimeter = Number(widthAttr) * 2 + Number(heightAttr) * 2;
+                const current = (Number(offset) + dashLength / 2) % perimeter;
+                const width = Number(widthAttr);
+                const height = Number(heightAttr);
+
+                let xPos = 0;
+                const rightEdge = width;
+                const bottomEdge = width + height;
+                const leftEdge = width * 2 + height;
+                if (current <= width) {
+                  xPos = current;
+                } else if (current <= bottomEdge) {
+                  xPos = width;
+                } else if (current <= leftEdge) {
+                  xPos = width - (current - bottomEdge);
+                } else {
+                  xPos = 0;
+                }
+
+                xs.push(xPos);
+              } else {
+                missing += 1;
+              }
+            }
+
+            if (xs.length + missing >= sampleCount) {
+              resolve({ xs, missing });
+              return;
+            }
+            requestAnimationFrame(sample);
+          };
+          requestAnimationFrame(sample);
+        }),
+      { sampleCount: 120 },
     );
 
-    act(() => {
-      store.set(pointerPositionAtom, { x: 160, y: 90 });
-      vi.advanceTimersByTime(320);
-      // nudge to trigger recalculation after the delay window
-      store.set(pointerPositionAtom, { x: 160, y: 90 });
-    });
+    expect(samples.xs.length).toBeGreaterThanOrEqual(80);
+    expect(samples.missing).toBe(0);
 
-    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+    const range = Math.max(...samples.xs) - Math.min(...samples.xs);
+
+    // Failing guard: segment should stay in one place; any horizontal drift signals jitter.
+    expect(range).toBeLessThanOrEqual(0.01);
   });
 
-  it("hides when no hover offset is present", () => {
-    vi.useFakeTimers();
+  test("draws a visible hover segment with the token stroke color", async ({
+    page,
+  }) => {
+    await page.goto("/");
 
-    renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, null],
-        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
-        [pointerPositionAtom, { x: 160, y: 90 }],
-      ]),
-    );
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
 
-    act(() => {
-      vi.runAllTimers();
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("Search bar bounding box not found");
+
+    const centerX = box.x + box.width / 2;
+    const ySteps = [box.y + 8, box.y + box.height / 2, box.y + box.height - 6];
+    for (const y of ySteps) {
+      await page.mouse.move(centerX, y);
+    }
+
+    const outline = page.getByTestId("searchbar-outline-hover");
+    await expect(outline).toBeVisible();
+
+    const { stroke, tokenStroke } = await outline.evaluate(() => {
+      const elementStroke = getComputedStyle(
+        document.querySelector('[data-testid="searchbar-outline-hover"]') as SVGElement,
+      ).stroke;
+      const probe = document.createElement("div");
+      probe.style.color = "var(--colors-vercel-text-primary)";
+      document.body.appendChild(probe);
+      const tokenColor = getComputedStyle(probe).color;
+      probe.remove();
+      return { stroke: elementStroke, tokenStroke: tokenColor };
     });
 
-    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+    expect(stroke).toBe(tokenStroke);
+    expect(stroke).not.toBe("transparent");
+    expect(stroke).not.toBe("rgba(0, 0, 0, 0)");
   });
 
-  it("stays visible when hovered even if pointer leaves trigger area", () => {
-    vi.useFakeTimers();
+  test("menu appears only after hover delay and matches segment width", async ({
+    page,
+  }) => {
+    await page.goto("/");
 
-    renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, 10],
-        [scopeMenuHoverAtom, true],
-        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
-        [pointerPositionAtom, null],
-      ]),
-    );
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
 
-    act(() => {
-      vi.runAllTimers();
-    });
+    const center = { x: barBox.x + barBox.width / 2, y: barBox.y + barBox.height / 2 };
+    await page.mouse.move(center.x, center.y);
 
-    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
-  });
+    const menu = page.getByTestId("searchscope-menu");
+    await expect(menu).toHaveCount(0);
 
-  it("does not show if the pointer is above the trigger line", () => {
-    vi.useFakeTimers();
-
-    const { unmount } = renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, 10],
-        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
-        [pointerPositionAtom, { x: 160, y: 5 }],
-      ]),
-    );
-
-    act(() => {
-      vi.runAllTimers();
-    });
-
-    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
-    unmount();
-  });
-
-  it("shows across the entire bottom band under the segment", () => {
-    vi.useFakeTimers();
-
-    const height = 80 + outlineInset * 2;
-    const contentHeight = 80;
-    const triggerY = 76;
-
-    const bandSamples = [
-      triggerY,
-      triggerY + 4,
-      triggerY + 8,
-      contentHeight + 4,
-    ];
-
-    for (const y of bandSamples) {
-      const { store, unmount } = renderWithState((store) =>
-        setStateEntries(store, [
-          [hoverOffsetAtom, 10],
-          [searchBarSizeAtom, { width: 320, height }],
-          [pointerPositionAtom, { x: 160, y: triggerY - 10 }],
-        ]),
+    const outline = page.getByTestId("searchbar-outline-hover");
+    await expect(outline).toBeVisible();
+    const dashLength = await outline.evaluate(() => {
+      const dash = (document
+        .querySelector("[data-testid='searchbar-outline-hover']") as SVGRectElement)?.getAttribute(
+        "stroke-dasharray",
       );
+      if (!dash) return null;
+      const first = parseFloat(dash.split(" ")[0].replace("px", ""));
+      return Number.isFinite(first) ? first : null;
+    });
 
-      act(() => {
-        store.set(pointerPositionAtom, { x: 160, y });
-        vi.advanceTimersByTime(320);
-        store.set(pointerPositionAtom, { x: 160, y });
+    // Drag downward past the bar to trigger the menu.
+    const insideBottomY = barBox.y + barBox.height - 4;
+    await page.mouse.move(center.x, insideBottomY);
+    const downSteps = [
+      barBox.y + barBox.height + 2,
+      barBox.y + barBox.height + 10,
+    ];
+    for (const y of downSteps) {
+      await page.mouse.move(center.x, y);
+    }
+    await page.waitForTimeout(260);
+    await menu.waitFor({ state: "visible", timeout: 1_000 });
+
+    const menuBox = await menu.boundingBox();
+    if (!menuBox || dashLength === null) throw new Error("Missing menu or dash length");
+
+    const tol = 8;
+    expect(menuBox.width).toBeGreaterThanOrEqual(dashLength - tol);
+    expect(menuBox.width).toBeLessThanOrEqual(dashLength + tol);
+  });
+
+  test("hover outline hugs the bar perimeter with the inset gap", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const bar = page.getByTestId("searchbar");
+    const input = page.getByRole("textbox");
+    await bar.waitFor();
+
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
+
+    const centerX = barBox.x + barBox.width / 2;
+    const centerY = barBox.y + barBox.height / 2;
+    await page.mouse.move(centerX, centerY);
+
+    const outline = page.getByTestId("searchbar-outline-hover");
+    await expect(outline).toBeVisible();
+
+    const outlineBox = await outline.boundingBox();
+    const inputBox = await input.boundingBox();
+    if (!outlineBox || !inputBox) throw new Error("Bounding boxes missing");
+
+    const debugSizes = await outline.evaluate((el) => {
+      const svg = el.ownerSVGElement;
+      const rect = el as SVGRectElement;
+      return {
+        rectWidth: rect.width.baseVal.value,
+        rectHeight: rect.height.baseVal.value,
+        svgSize: svg
+          ? {
+              width: svg.getAttribute("width"),
+              height: svg.getAttribute("height"),
+              bbox: svg.getBoundingClientRect().toJSON(),
+              styleWidth: getComputedStyle(svg).width,
+            }
+          : null,
+        dashArray: rect.getAttribute("stroke-dasharray"),
+      };
+    });
+
+    console.log(
+      "hover-geometry",
+      JSON.stringify({ barBox, outlineBox, inputBox, debugSizes }, null, 2),
+    );
+
+    const svgBBox = debugSizes.svgSize?.bbox;
+    if (!svgBBox) throw new Error("SVG bbox missing");
+
+    const insetMin = 4;
+    const insetMax = 16;
+
+    expect(svgBBox.x).toBeGreaterThanOrEqual(barBox.x - insetMax);
+    expect(svgBBox.x).toBeLessThanOrEqual(barBox.x + insetMin);
+    expect(svgBBox.y).toBeGreaterThanOrEqual(barBox.y - insetMax);
+    expect(svgBBox.y).toBeLessThanOrEqual(barBox.y + insetMin);
+
+    expect(svgBBox.width).toBeGreaterThanOrEqual(barBox.width - insetMin);
+    expect(svgBBox.width).toBeLessThanOrEqual(barBox.width + insetMax * 2);
+    expect(svgBBox.height).toBeGreaterThanOrEqual(barBox.height - insetMin);
+    expect(svgBBox.height).toBeLessThanOrEqual(barBox.height + insetMax * 2);
+
+    // Ensure there is a visible gap between the outline and the input content box using the full outline box.
+    expect(inputBox.x).toBeGreaterThan(svgBBox.x + insetMin / 2);
+    expect(inputBox.y).toBeGreaterThan(svgBBox.y + insetMin / 2);
+
+    // Ensure the stroke draws a segment (non-empty dash length).
+    expect(debugSizes.dashArray).toBeTruthy();
+  });
+
+  test("focus outline matches hover geometry and uses token stroke", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const bar = page.getByTestId("searchbar");
+    const input = page.getByRole("textbox");
+    await bar.waitFor();
+
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
+
+    await input.click();
+
+    const focusOutline = page.getByTestId("searchbar-outline-focus");
+    await expect(focusOutline).toBeVisible();
+
+    const outlineBox = await focusOutline.boundingBox();
+    if (!outlineBox) throw new Error("Focus outline bounding box missing");
+
+    const debugSizes = await focusOutline.evaluate((el) => {
+      const svg = el.ownerSVGElement;
+      const rect = el as SVGRectElement;
+      return {
+        rectWidth: rect.width.baseVal.value,
+        rectHeight: rect.height.baseVal.value,
+        svgSize: svg
+          ? {
+              width: svg.getAttribute("width"),
+              height: svg.getAttribute("height"),
+              bbox: svg.getBoundingClientRect().toJSON(),
+              styleWidth: getComputedStyle(svg).width,
+            }
+          : null,
+      };
+    });
+
+    console.log(
+      "focus-geometry",
+      JSON.stringify({ barBox, outlineBox, debugSizes }, null, 2),
+    );
+
+    const svgBBox = debugSizes.svgSize?.bbox;
+    if (!svgBBox) throw new Error("SVG bbox missing");
+
+    const insetMin = 4;
+    const insetMax = 16;
+
+    expect(svgBBox.x).toBeGreaterThanOrEqual(barBox.x - insetMax);
+    expect(svgBBox.x).toBeLessThanOrEqual(barBox.x + insetMin);
+    expect(svgBBox.y).toBeGreaterThanOrEqual(barBox.y - insetMax);
+    expect(svgBBox.y).toBeLessThanOrEqual(barBox.y + insetMin);
+    expect(svgBBox.width).toBeGreaterThanOrEqual(barBox.width - insetMin);
+    expect(svgBBox.width).toBeLessThanOrEqual(barBox.width + insetMax * 2);
+    expect(svgBBox.height).toBeGreaterThanOrEqual(barBox.height - insetMin);
+    expect(svgBBox.height).toBeLessThanOrEqual(barBox.height + insetMax * 2);
+
+    const stroke = await focusOutline.evaluate((el) => {
+      const s = getComputedStyle(el as HTMLElement);
+      return s.stroke;
+    });
+    const tokenStroke = await page.evaluate(() => {
+      const probe = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      probe.setAttribute("stroke", "var(--colors-vercel-text-primary)");
+      document.body.appendChild(probe);
+      const color = getComputedStyle(probe).stroke;
+      probe.remove();
+      return color;
+    });
+    expect(stroke).toBe(tokenStroke);
+  });
+
+  test("hover outline matches bar geometry (bounds alignment)", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
+
+    const center = { x: barBox.x + barBox.width / 2, y: barBox.y + barBox.height / 2 };
+    await page.mouse.move(center.x, center.y);
+
+    const outline = page.getByTestId("searchbar-outline-hover");
+    await expect(outline).toBeVisible();
+
+    const geom = await outline.evaluate((el) => {
+      const rect = el as SVGRectElement;
+      const svg = rect.ownerSVGElement!;
+      const svgBox = svg.getBoundingClientRect();
+      return {
+        rectWidthAttr: parseFloat(rect.getAttribute("width") ?? "0"),
+        rectHeightAttr: parseFloat(rect.getAttribute("height") ?? "0"),
+        svgWidthAttr: parseFloat(svg.getAttribute("width") ?? "0"),
+        svgHeightAttr: parseFloat(svg.getAttribute("height") ?? "0"),
+        svgBox: svgBox.toJSON(),
+      };
+    });
+
+    const OUTLINE_INSET = 8;
+    const expectedSvgWidth = barBox.width + OUTLINE_INSET * 2;
+    const expectedSvgHeight = barBox.height + OUTLINE_INSET * 2;
+
+    expect(geom.svgWidthAttr).toBeCloseTo(expectedSvgWidth, 1);
+    expect(geom.svgHeightAttr).toBeCloseTo(expectedSvgHeight, 1);
+    expect(geom.rectWidthAttr).toBeCloseTo(expectedSvgWidth - 1, 1);
+    expect(geom.rectHeightAttr).toBeCloseTo(expectedSvgHeight - 1, 1);
+
+    // The rendered svg box should wrap the bar with the inset applied.
+    const tol = 6;
+    expect(geom.svgBox.x).toBeGreaterThanOrEqual(barBox.x - OUTLINE_INSET - tol);
+    expect(geom.svgBox.x).toBeLessThanOrEqual(barBox.x + tol);
+    expect(geom.svgBox.width).toBeGreaterThanOrEqual(barBox.width + OUTLINE_INSET * 2 - tol);
+    expect(geom.svgBox.width).toBeLessThanOrEqual(barBox.width + OUTLINE_INSET * 2 + tol);
+  });
+
+  test("locks hover segment horizontally until leaving the scope menu span", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
+
+    const centerX = barBox.x + barBox.width / 2;
+    const startY = barBox.y + 6;
+    const endY = barBox.y + barBox.height + 10;
+    const menu = page.getByTestId("searchscope-menu");
+    const outline = page.getByTestId("searchbar-outline-hover");
+
+    const steps = 18;
+    const dy = (endY - startY) / steps;
+    for (let i = 0; i <= steps; i++) {
+      await page.mouse.move(centerX, startY + dy * i, { steps: 1 });
+      await page.waitForTimeout(12);
+    }
+
+    await outline.waitFor({ state: "visible", timeout: 600 });
+    await menu.waitFor({ state: "visible", timeout: 800 });
+
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("Menu bounding box not found");
+
+    const readSegmentX = async () =>
+      await outline.evaluate(() => {
+        const rect = document.querySelector(
+          '[data-testid="searchbar-outline-hover"]',
+        ) as SVGRectElement | null;
+        if (!rect || !rect.ownerSVGElement) throw new Error("missing hover rect");
+        const svg = rect.ownerSVGElement;
+        const dash = rect.getAttribute("stroke-dasharray");
+        const offset = rect.getAttribute("data-offset");
+        const widthAttr = rect.getAttribute("width");
+        const heightAttr = rect.getAttribute("height");
+        if (!dash || !offset || !widthAttr || !heightAttr) throw new Error("missing attrs");
+        const dashLength = Number(dash.split(" ")[0]);
+        const perimeter = Number(widthAttr) * 2 + Number(heightAttr) * 2;
+        const current = (Number(offset) + dashLength / 2) % perimeter;
+        const width = Number(widthAttr);
+        const height = Number(heightAttr);
+        if (current <= width) return current;
+        const bottomEdge = width + height;
+        if (current <= bottomEdge) return width;
+        const leftEdge = width * 2 + height;
+        if (current <= leftEdge) return width - (current - bottomEdge);
+        return 0;
       });
 
-      expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
-      unmount();
+    const insideSamples: number[] = [await readSegmentX()];
+    const insideXs = [
+      menuBox.x + menuBox.width * 0.25,
+      menuBox.x + menuBox.width * 0.5,
+      menuBox.x + menuBox.width * 0.75,
+    ];
+
+    for (const x of insideXs) {
+      await page.mouse.move(x, menuBox.y + menuBox.height / 2, { steps: 2 });
+      await page.waitForTimeout(30);
+      insideSamples.push(await readSegmentX());
     }
-  });
 
-  it("aligns left based on the hover anchor and bar position", () => {
-    vi.useFakeTimers();
+    const insideRange =
+      Math.max(...insideSamples) - Math.min(...insideSamples);
+    expect(insideRange).toBeLessThanOrEqual(0.5);
 
-    const { store } = renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, 10],
-        [searchBarSizeAtom, { width: 200, height: 80 + outlineInset * 2 }],
-        [searchBarPositionAtom, { left: 100, top: 50 }],
-        [pointerPositionAtom, { x: 120, y: 60 }],
-        [scopeMenuHoverAtom, true],
-        [hoverAnchorAtom, { x: 150, y: 0 }],
-      ]),
-    );
+    // Leaving the menu span should allow the segment to unlock and reposition.
+    await page.mouse.move(menuBox.x - 220, menuBox.y + menuBox.height / 2, { steps: 3 });
+    await page.waitForTimeout(80);
+    const afterOutside = await readSegmentX();
 
-    act(() => {
-      store.set(pointerPositionAtom, { x: 120, y: 90 });
-      vi.runAllTimers();
-    });
-
-    const menu = screen.getByTestId("searchscope-menu");
-    expect(Number(menu.getAttribute("data-left"))).toBeCloseTo(58, 0);
-    expect(Number(menu.getAttribute("data-width"))).toBeCloseTo(184, 0);
-    expect(Number(menu.getAttribute("data-top"))).toBeGreaterThan(140);
-  });
-
-  it("hides when leaving the menu itself", () => {
-    vi.useFakeTimers();
-
-    renderWithState((store) =>
-      setStateEntries(store, [
-        [hoverOffsetAtom, 10],
-        [scopeMenuHoverAtom, true],
-        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
-        [pointerPositionAtom, { x: 160, y: 90 }],
-      ]),
-    );
-
-    act(() => {
-      vi.runAllTimers();
-    });
-
-    const menu = screen.getByTestId("searchscope-menu");
-    fireEvent.pointerLeave(menu);
-
-    act(() => {
-      vi.runAllTimers();
-    });
-
-    const maybeMenu = screen.queryByTestId("searchscope-menu");
-    if (maybeMenu) {
-      expect(
-        window.getComputedStyle(maybeMenu as HTMLElement).opacity,
-      ).toBe("0");
-    } else {
-      expect(maybeMenu).toBeNull();
-    }
+    const baseline = insideSamples[0]!;
+    expect(Math.abs(afterOutside - baseline)).toBeGreaterThan(1);
   });
 });
 </file>
@@ -4357,6 +3620,158 @@ export { Span, type SpanProps } from "./span";
 export { Spinner, type SpinnerProps } from "./spinner";
 export * from "./search-styles";
 export { GraphBackground } from "./graph-background";
+</file>
+
+<file path="src/components/ui/search-styles.ts">
+import { css, cx } from "../../../styled-system/css";
+
+export const searchBarShellClass = css({
+  layerStyle: "panel",
+  background: "var(--colors-vercel-surface-overlay)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  boxShadow: "var(--shadows-panel)",
+  backdropFilter: "blur(14px)",
+  borderRadius: "var(--radii-l3)",
+  display: "flex",
+  alignItems: "center",
+  gap: "3",
+  width: "100%",
+  height: "72px",
+  boxSizing: "border-box",
+  position: "relative",
+  px: "7",
+  py: "3",
+  overflow: "visible",
+});
+
+export const searchBarHiddenClass = css({
+  pointerEvents: "none",
+  visibility: "hidden",
+});
+
+export const graphStageBackgroundClass = css({
+  position: "absolute",
+  inset: 0,
+  zIndex: 0,
+  background: "var(--colors-vercel-surface-overlay)",
+});
+
+export const reactFlowCanvasClass = css({
+  background: "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
+});
+
+export const searchBarSvgClass = css({
+  position: "absolute",
+  pointerEvents: "none",
+  overflow: "visible",
+  zIndex: 0,
+});
+
+export const outlineHoverClass = css({
+  filter: "drop-shadow(0 0 6px var(--colors-vercel-surface-highlight))",
+});
+
+export const searchInputClass = css({
+  flex: "1 1 0",
+  minWidth: 0,
+  height: "48px",
+  background: "transparent",
+  border: "none",
+  outline: "none",
+  color: "var(--colors-vercel-text-primary)",
+  fontSize: "16px",
+  zIndex: 1,
+});
+
+export const searchButtonClass = css({
+  flex: "0 0 auto",
+  height: "48px",
+  px: "6",
+  borderRadius: "var(--radii-l2)",
+  zIndex: 1,
+});
+
+export const menuContainerClass = css({
+  layerStyle: "panel",
+  background: "var(--colors-vercel-surface-overlay)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  boxShadow: "var(--shadows-panel)",
+  backdropFilter: "blur(14px)",
+  borderRadius: "var(--radii-l3)",
+  position: "absolute",
+  minHeight: "200px",
+  minWidth: "380px",
+  overflow: "hidden",
+});
+
+export const menuHeaderClass = css({
+  width: "100%",
+  paddingBottom: "10px",
+  marginBottom: "4px",
+  borderBottom: "1px solid var(--colors-vercel-surface-border)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  fontSize: "13px",
+  letterSpacing: "0.02em",
+  fontWeight: 600,
+});
+
+export const menuItemClass = css({
+  width: "100%",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  padding: "8px 6px",
+  borderRadius: "var(--radii-l2)",
+  cursor: "pointer",
+  transition: "background 0.12s ease",
+  "&:hover": {
+    background: "var(--colors-vercel-surface-muted)",
+  },
+});
+
+export const menuControlClass = css({
+  width: "16px",
+  height: "16px",
+  borderRadius: "var(--radii-l1)",
+  border: "1px solid var(--colors-vercel-surface-borderStrong)",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "all 0.12s ease-out",
+  "&[data-state=checked]": {
+    backgroundColor: "var(--colors-vercel-brand-9)",
+    borderColor: "var(--colors-vercel-brand-9)",
+  },
+  "&:focus-visible": {
+    outline: "none",
+    boxShadow: "var(--shadows-glow)",
+  },
+});
+
+export const menuIndicatorClass = css({
+  color: "var(--colors-vercel-text-primary)",
+  fontSize: "12px",
+});
+
+export const menuLabelClass = css({
+  fontSize: "14px",
+  color: "var(--colors-vercel-text-muted)",
+  lineHeight: "1.5",
+  fontWeight: 500,
+  display: "inline-flex",
+  alignItems: "center",
+});
+
+export const searchSurfaceClassName = cx(searchBarShellClass);
+
+export const menuSubLabelClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-subtle)",
+  letterSpacing: "0.04em",
+  paddingLeft: "6px",
+});
 </file>
 
 <file path="src/theme/recipes/index.ts">
@@ -4579,22 +3994,6 @@ export const layerStyles = defineLayerStyles({
 });
 </file>
 
-<file path="test-results/.last-run.json">
-{
-  "status": "failed",
-  "failedTests": [
-    "b89b6e7344509afb616c-36f11da342719ad09042",
-    "b89b6e7344509afb616c-e736235aa3523d12c0ed",
-    "b89b6e7344509afb616c-cf5b15580680f6de442e",
-    "b89b6e7344509afb616c-807c11f234a98612aa0b",
-    "b89b6e7344509afb616c-42755c1de174a01c51a7",
-    "b89b6e7344509afb616c-de949fdecc1c900287f6",
-    "b89b6e7344509afb616c-0636585c0dd8b4860b8b",
-    "b89b6e7344509afb616c-885968e5be1a2d23bca9"
-  ]
-}
-</file>
-
 <file path=".gitignore">
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
@@ -4702,32 +4101,6 @@ styled-system-studio
       }
     );
 }
-</file>
-
-<file path="playwright.config.ts">
-import { defineConfig } from "@playwright/test";
-
-export default defineConfig({
-  testDir: "./src/components",
-  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
-  timeout: 30_000,
-  workers: process.env.CI ? 4 : 8,
-  use: {
-    headless: true,
-    baseURL: "http://127.0.0.1:5173",
-    browserName: "chromium",
-    launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
-    },
-  },
-  webServer: {
-    command:
-      'npx panda cssgen "./src/**/*.{ts,tsx}" && npx next dev --hostname 127.0.0.1 --port 5173',
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-  },
-});
 </file>
 
 <file path="README.md">
@@ -4878,6 +4251,500 @@ export default function RootLayout({
         {children}
       </body>
     </html>
+  );
+}
+</file>
+
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { Provider, createStore } from "jotai";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { SearchScopeMenu } from "./SearchScopeMenu";
+import {
+  hoverOffsetAtom,
+  hoverAnchorAtom,
+  pointerPositionAtom,
+  scopeMenuHoverAtom,
+  searchBarSizeAtom,
+  searchBarPositionAtom,
+} from "@/state/searchbar";
+
+const outlineInset = 8;
+
+const renderWithState = (
+  setState: (store: ReturnType<typeof createStore>) => void,
+) => {
+  const store = createStore();
+  setState(store);
+
+  const result = render(
+    <Provider store={store}>
+      <div style={{ width: "320px", height: "100px" }}>
+        <SearchScopeMenu outlineInset={outlineInset} />
+      </div>
+    </Provider>,
+  );
+  return { ...result, store };
+};
+
+const setStateEntries = (
+  store: ReturnType<typeof createStore>,
+  entries: Array<[any, any]>,
+) => {
+  for (const [atom, value] of entries) {
+    store.set(atom, value);
+  }
+};
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe("SearchScopeMenu", () => {
+  it("shows when hover is active and the pointer moves below the bar", () => {
+    vi.useFakeTimers();
+
+    const { store } = renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 20 }],
+      ]),
+    );
+
+    act(() => {
+      store.set(pointerPositionAtom, { x: 160, y: 90 });
+      vi.advanceTimersByTime(320);
+      // nudge to trigger recalculation after the delay window
+      store.set(pointerPositionAtom, { x: 160, y: 90 });
+    });
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("hides when no hover offset is present", () => {
+    vi.useFakeTimers();
+
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, null],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 90 }],
+      ]),
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+  });
+
+  it("stays visible when hovered even if pointer leaves trigger area", () => {
+    vi.useFakeTimers();
+
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [scopeMenuHoverAtom, true],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, null],
+      ]),
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+  });
+
+  it("does not show if the pointer is above the trigger line", () => {
+    vi.useFakeTimers();
+
+    const { unmount } = renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 5 }],
+      ]),
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.queryByTestId("searchscope-menu")).toBeNull();
+    unmount();
+  });
+
+  it("shows across the entire bottom band under the segment", () => {
+    vi.useFakeTimers();
+
+    const height = 80 + outlineInset * 2;
+    const contentHeight = 80;
+    const triggerY = 76;
+
+    const bandSamples = [
+      triggerY,
+      triggerY + 4,
+      triggerY + 8,
+      contentHeight + 4,
+    ];
+
+    for (const y of bandSamples) {
+      const { store, unmount } = renderWithState((store) =>
+        setStateEntries(store, [
+          [hoverOffsetAtom, 10],
+          [searchBarSizeAtom, { width: 320, height }],
+          [pointerPositionAtom, { x: 160, y: triggerY - 10 }],
+        ]),
+      );
+
+      act(() => {
+        store.set(pointerPositionAtom, { x: 160, y });
+        vi.advanceTimersByTime(320);
+        store.set(pointerPositionAtom, { x: 160, y });
+      });
+
+      expect(screen.getByTestId("searchscope-menu")).toBeInTheDocument();
+      unmount();
+    }
+  });
+
+  it("aligns left based on the hover anchor and bar position", () => {
+    vi.useFakeTimers();
+
+    const { store } = renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [searchBarSizeAtom, { width: 200, height: 80 + outlineInset * 2 }],
+        [searchBarPositionAtom, { left: 100, top: 50 }],
+        [pointerPositionAtom, { x: 120, y: 60 }],
+        [scopeMenuHoverAtom, true],
+        [hoverAnchorAtom, { x: 150, y: 0 }],
+      ]),
+    );
+
+    act(() => {
+      store.set(pointerPositionAtom, { x: 120, y: 90 });
+      vi.runAllTimers();
+    });
+
+    const menu = screen.getByTestId("searchscope-menu");
+    expect(Number(menu.getAttribute("data-left"))).toBeCloseTo(58, 0);
+    expect(Number(menu.getAttribute("data-width"))).toBeCloseTo(184, 0);
+    expect(Number(menu.getAttribute("data-top"))).toBeGreaterThan(140);
+  });
+
+  it("hides when leaving the menu itself", () => {
+    vi.useFakeTimers();
+
+    renderWithState((store) =>
+      setStateEntries(store, [
+        [hoverOffsetAtom, 10],
+        [scopeMenuHoverAtom, true],
+        [searchBarSizeAtom, { width: 320, height: 80 + outlineInset * 2 }],
+        [pointerPositionAtom, { x: 160, y: 90 }],
+      ]),
+    );
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    const menu = screen.getByTestId("searchscope-menu");
+    fireEvent.pointerLeave(menu);
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    const maybeMenu = screen.queryByTestId("searchscope-menu");
+    if (maybeMenu) {
+      expect(
+        window.getComputedStyle(maybeMenu as HTMLElement).opacity,
+      ).toBe("0");
+    } else {
+      expect(maybeMenu).toBeNull();
+    }
+  });
+});
+</file>
+
+<file path="src/components/GraphStage.tsx">
+"use client";
+
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  type Node,
+  type Edge,
+} from "@xyflow/react";
+import { useCallback, useEffect } from "react";
+import { useSetAtom } from "jotai";
+
+import "@xyflow/react/dist/style.css";
+import { flowDraggingAtom } from "@/state/searchbar";
+import { reactFlowNodeStyle, reactFlowTheme } from "@/theme/react-flow";
+import { GraphBackground, graphStageBackgroundClass, reactFlowCanvasClass } from "@/components/ui";
+
+const nodeTypes = {};
+const edgeTypes = {};
+
+const initialNodes: Node[] = [
+  {
+    id: "1",
+    position: { x: 0, y: 0 },
+    data: { label: "Anchor: useQuery" },
+    style: reactFlowNodeStyle,
+  },
+  {
+    id: "2",
+    position: { x: 200, y: 120 },
+    data: { label: "focusManager" },
+    style: reactFlowNodeStyle,
+  },
+];
+
+const initialEdges: Edge[] = [
+  {
+    id: "e1-2",
+    source: "1",
+    target: "2",
+  },
+];
+
+export default function GraphStage() {
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  return (
+    <div className={graphStageBackgroundClass}>
+      <ReactFlow
+        nodes={initialNodes}
+        edges={initialEdges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
+        defaultEdgeOptions={{
+          style: {
+            stroke: reactFlowTheme.edge.stroke,
+          },
+          markerEnd: {
+            type: "arrowclosed",
+            color: reactFlowTheme.edge.stroke,
+          },
+        }}
+        className={reactFlowCanvasClass}
+      >
+        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
+      </ReactFlow>
+    </div>
+  );
+}
+</file>
+
+<file path="src/state/searchbar.ts">
+import { atom } from "jotai";
+
+export type SearchBarSize = { width: number; height: number };
+export type SearchBarPosition = { left: number; top: number };
+
+export const queryAtom = atom("");
+export const searchFocusedAtom = atom(false);
+export const outlineLockedAtom = atom(false);
+export const hoverOffsetAtom = atom<number | null>(null);
+export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
+export const focusOriginAtom = atom(0);
+export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
+export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
+export const perimeterAtom = atom(0);
+export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
+export const scopeMenuHoverAtom = atom(false);
+export const scopeMenuVisibleAtom = atom(false);
+export const flowDraggingAtom = atom(false);
+</file>
+
+<file path="panda.config.ts">
+import { green } from "@/theme/colors/green";
+import { red } from "@/theme/colors/red";
+import { slate } from "@/theme/colors/slate";
+import { vercel } from "@/theme/colors/vercel";
+import { animationStyles } from "@/theme/animation-styles";
+import { zIndex } from "@/theme/tokens/z-index";
+import { shadows } from "@/theme/tokens/shadows";
+import { durations } from "@/theme/tokens/durations";
+import { colors } from "@/theme/tokens/colors";
+import { textStyles } from "@/theme/text-styles";
+import { layerStyles } from "@/theme/layer-styles";
+import { keyframes } from "@/theme/keyframes";
+import { globalCss } from "@/theme/global-css";
+import { conditions } from "@/theme/conditions";
+import { slotRecipes, recipes } from "@/theme/recipes";
+import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  preflight: true,
+  include: ["./src/**/*.{js,jsx,ts,tsx}"],
+  jsxFramework: "react",
+  outdir: "styled-system",
+
+  theme: {
+    extend: {
+      animationStyles: animationStyles,
+      recipes: recipes,
+      slotRecipes: slotRecipes,
+      keyframes: keyframes,
+      layerStyles: layerStyles,
+      textStyles: textStyles,
+
+      tokens: {
+        colors: colors,
+        durations: durations,
+        zIndex: zIndex
+      },
+
+      semanticTokens: {
+        colors: {
+          fg: {
+            default: {
+              value: {
+                _light: "{colors.gray.12}",
+                _dark: "{colors.gray.12}"
+              }
+            },
+
+            muted: {
+              value: {
+                _light: "{colors.gray.11}",
+                _dark: "{colors.gray.11}"
+              }
+            },
+
+            subtle: {
+              value: {
+                _light: "{colors.gray.10}",
+                _dark: "{colors.gray.10}"
+              }
+            }
+          },
+
+          border: {
+            value: {
+              _light: "{colors.gray.4}",
+              _dark: "{colors.gray.4}"
+            }
+          },
+
+          error: {
+            value: {
+              _light: "{colors.red.9}",
+              _dark: "{colors.red.9}"
+            }
+          },
+
+          gray: slate,
+          red: red,
+          green: green,
+          vercel: vercel
+        },
+
+        shadows: shadows,
+
+        radii: {
+          l1: {
+            value: "{radii.xs}"
+          },
+
+          l2: {
+            value: "{radii.sm}"
+          },
+
+          l3: {
+            value: "{radii.md}"
+          }
+        }
+      }
+    },
+  },
+
+  globalCss: globalCss,
+  conditions: conditions
+});
+</file>
+
+<file path="playwright.config.ts">
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./src/components",
+  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
+  timeout: 30_000,
+  workers: process.env.CI ? 4 : 8,
+  use: {
+    headless: true,
+    baseURL: "http://127.0.0.1:5173",
+    browserName: "chromium",
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+    },
+  },
+  webServer: {
+    command:
+      'npx panda cssgen "./src/**/*.{ts,tsx}" && npx next dev --hostname 127.0.0.1 --port 5173',
+    url: "http://127.0.0.1:5173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 60_000,
+  },
+});
+</file>
+
+<file path="src/app/page.tsx">
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
+
+export default function Home() {
+  return (
+    <Box position="relative" h="100vh" w="100vw">
+      <GraphStage />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        p="5"
+        pointerEvents="none"
+      >
+        <Box
+          pointerEvents="auto"
+          w="100%"
+          h="72px"
+        >
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
   );
 }
 </file>
@@ -6233,257 +6100,6 @@ export function useSearchScopeMenu({
     offsetLeft: snapshot.offsetLeft,
     offsetTop: snapshot.offsetTop,
   };
-}
-</file>
-
-<file path="src/components/GraphStage.tsx">
-"use client";
-
-import {
-  ReactFlow,
-  Background,
-  BackgroundVariant,
-  type Node,
-  type Edge,
-} from "@xyflow/react";
-import { useCallback, useEffect } from "react";
-import { useSetAtom } from "jotai";
-
-import "@xyflow/react/dist/style.css";
-import { flowDraggingAtom } from "@/state/searchbar";
-import { reactFlowNodeStyle, reactFlowTheme } from "@/theme/react-flow";
-import { GraphBackground, graphStageBackgroundClass, reactFlowCanvasClass } from "@/components/ui";
-
-const nodeTypes = {};
-const edgeTypes = {};
-
-const initialNodes: Node[] = [
-  {
-    id: "1",
-    position: { x: 0, y: 0 },
-    data: { label: "Anchor: useQuery" },
-    style: reactFlowNodeStyle,
-  },
-  {
-    id: "2",
-    position: { x: 200, y: 120 },
-    data: { label: "focusManager" },
-    style: reactFlowNodeStyle,
-  },
-];
-
-const initialEdges: Edge[] = [
-  {
-    id: "e1-2",
-    source: "1",
-    target: "2",
-  },
-];
-
-export default function GraphStage() {
-  const setFlowDragging = useSetAtom(flowDraggingAtom);
-
-  const handleDragStart = useCallback(() => {
-    setFlowDragging(true);
-  }, [setFlowDragging]);
-
-  const handleDragEnd = useCallback(() => {
-    setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  useEffect(() => {
-    return () => setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  return (
-    <div className={graphStageBackgroundClass}>
-      <ReactFlow
-        nodes={initialNodes}
-        edges={initialEdges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        fitView
-        colorMode="dark"
-        proOptions={{ hideAttribution: true }}
-        onNodeDragStart={handleDragStart}
-        onNodeDragStop={handleDragEnd}
-        defaultEdgeOptions={{
-          style: {
-            stroke: reactFlowTheme.edge.stroke,
-          },
-          markerEnd: {
-            type: "arrowclosed",
-            color: reactFlowTheme.edge.stroke,
-          },
-        }}
-        className={reactFlowCanvasClass}
-      >
-        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
-      </ReactFlow>
-    </div>
-  );
-}
-</file>
-
-<file path="src/state/searchbar.ts">
-import { atom } from "jotai";
-
-export type SearchBarSize = { width: number; height: number };
-export type SearchBarPosition = { left: number; top: number };
-
-export const queryAtom = atom("");
-export const searchFocusedAtom = atom(false);
-export const outlineLockedAtom = atom(false);
-export const hoverOffsetAtom = atom<number | null>(null);
-export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
-export const focusOriginAtom = atom(0);
-export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
-export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
-export const perimeterAtom = atom(0);
-export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
-export const scopeMenuHoverAtom = atom(false);
-export const scopeMenuVisibleAtom = atom(false);
-export const flowDraggingAtom = atom(false);
-</file>
-
-<file path="panda.config.ts">
-import { green } from "@/theme/colors/green";
-import { red } from "@/theme/colors/red";
-import { slate } from "@/theme/colors/slate";
-import { vercel } from "@/theme/colors/vercel";
-import { animationStyles } from "@/theme/animation-styles";
-import { zIndex } from "@/theme/tokens/z-index";
-import { shadows } from "@/theme/tokens/shadows";
-import { durations } from "@/theme/tokens/durations";
-import { colors } from "@/theme/tokens/colors";
-import { textStyles } from "@/theme/text-styles";
-import { layerStyles } from "@/theme/layer-styles";
-import { keyframes } from "@/theme/keyframes";
-import { globalCss } from "@/theme/global-css";
-import { conditions } from "@/theme/conditions";
-import { slotRecipes, recipes } from "@/theme/recipes";
-import { defineConfig } from "@pandacss/dev";
-
-export default defineConfig({
-  preflight: true,
-  include: ["./src/**/*.{js,jsx,ts,tsx}"],
-  jsxFramework: "react",
-  outdir: "styled-system",
-
-  theme: {
-    extend: {
-      animationStyles: animationStyles,
-      recipes: recipes,
-      slotRecipes: slotRecipes,
-      keyframes: keyframes,
-      layerStyles: layerStyles,
-      textStyles: textStyles,
-
-      tokens: {
-        colors: colors,
-        durations: durations,
-        zIndex: zIndex
-      },
-
-      semanticTokens: {
-        colors: {
-          fg: {
-            default: {
-              value: {
-                _light: "{colors.gray.12}",
-                _dark: "{colors.gray.12}"
-              }
-            },
-
-            muted: {
-              value: {
-                _light: "{colors.gray.11}",
-                _dark: "{colors.gray.11}"
-              }
-            },
-
-            subtle: {
-              value: {
-                _light: "{colors.gray.10}",
-                _dark: "{colors.gray.10}"
-              }
-            }
-          },
-
-          border: {
-            value: {
-              _light: "{colors.gray.4}",
-              _dark: "{colors.gray.4}"
-            }
-          },
-
-          error: {
-            value: {
-              _light: "{colors.red.9}",
-              _dark: "{colors.red.9}"
-            }
-          },
-
-          gray: slate,
-          red: red,
-          green: green,
-          vercel: vercel
-        },
-
-        shadows: shadows,
-
-        radii: {
-          l1: {
-            value: "{radii.xs}"
-          },
-
-          l2: {
-            value: "{radii.sm}"
-          },
-
-          l3: {
-            value: "{radii.md}"
-          }
-        }
-      }
-    },
-  },
-
-  globalCss: globalCss,
-  conditions: conditions
-});
-</file>
-
-<file path="src/app/page.tsx">
-import { Box } from "../../styled-system/jsx";
-import GraphStage from "@/components/GraphStage";
-import SearchBar from "@/components/SearchBar";
-
-export default function Home() {
-  return (
-    <Box position="relative" h="100vh" w="100vw">
-      <GraphStage />
-
-      <Box
-        position="absolute"
-        inset="0"
-        zIndex="10"
-        display="flex"
-        justifyContent="center"
-        alignItems="flex-start"
-        p="5"
-        pointerEvents="none"
-      >
-        <Box
-          pointerEvents="auto"
-          w="100%"
-          h="72px"
-        >
-          <SearchBar />
-        </Box>
-      </Box>
-    </Box>
-  );
 }
 </file>
 
