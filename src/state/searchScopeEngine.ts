@@ -111,7 +111,7 @@ export class SearchScopeEngine {
 
     const barBottom = position.top + size.height - outlineInset * 2;
     const TRIGGER_ZONE_INSIDE = 14;
-    const TRIGGER_ZONE_BELOW = 80;
+    const TRIGGER_ZONE_BELOW = 160;
 
     const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
     const pointerWithinBandX =
