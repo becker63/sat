@@ -37,6 +37,7 @@ export function useSearchScopeMenu({
   const flowDragging = useAtomValue(flowDraggingAtom);
   const fixedLeftRef = useRef<number | null>(null);
   const globalPointerRef = useRef<{ x: number; y: number } | null>(null);
+  const [globalPointerTick, setGlobalPointerTick] = useState(0);
   const engineRef = useRef<SearchScopeEngine | null>(null);
   const prevMenuHoverRef = useRef<boolean>(false);
 
@@ -49,6 +50,7 @@ export function useSearchScopeMenu({
       : position.left + contentWidth / 2);
   const anchorLocalX = anchorAbsX - position.left;
 
+  void globalPointerTick;
   const pointerAbs =
     globalPointerRef.current ??
     (pointer === null
@@ -115,6 +117,12 @@ export function useSearchScopeMenu({
   const [showReady, setShowReady] = useState(false);
 
   useEffect(() => {
+    if (!menuVisible && !snapshot.visible) return;
+    const id = setInterval(() => setGlobalPointerTick((t) => t + 1), 80);
+    return () => clearInterval(id);
+  }, [menuVisible, snapshot.visible]);
+
+  useEffect(() => {
     if (snapshot.visible && !showReady) {
       const timer = setTimeout(() => setShowReady(true), SHOW_DELAY_MS);
       return () => clearTimeout(timer);
@@ -156,12 +164,15 @@ export function useSearchScopeMenu({
     }
   }, [snapshot.visible, snapshot.offsetLeft]);
 
+  const engineVisibleRef = useRef(false);
+  engineVisibleRef.current = snapshot.visible;
+
   useEffect(() => {
     if (hoverOffset === null) return;
     const timer = setTimeout(() => {
       const current = engineRef.current?.getLastPointerAt() ?? null;
       const stalePointer = current !== null && now - current > POINTER_STALE_MS;
-      if (!menuVisible && hoverOffset !== null && (pointer === null || stalePointer)) {
+      if (!menuVisible && !engineVisibleRef.current && hoverOffset !== null && (pointer === null || stalePointer)) {
         setHoverOffset(null);
         setMenuVisible(false);
         setPointerPosition(null);

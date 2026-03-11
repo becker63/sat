@@ -34,7 +34,7 @@ const HOLD_GRACE_MS = 360;
 const POINTER_STALE_MS = 260;
 const MENU_HEIGHT_ESTIMATE = 140;
 const OUTSIDE_MARGIN = 48;
-export const SHOW_DELAY_MS = 300;
+export const SHOW_DELAY_MS = 700;
 
 export class SearchScopeEngine {
   private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
@@ -125,7 +125,7 @@ export class SearchScopeEngine {
     this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
 
     const barBottom = position.top + size.height - outlineInset * 2;
-    const TRIGGER_ZONE_INSIDE = 6;
+    const TRIGGER_ZONE_INSIDE = 14;
     const TRIGGER_ZONE_BELOW = 24;
 
     const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
@@ -215,11 +215,18 @@ export class SearchScopeEngine {
       pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
       pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
 
-    const shouldHold =
-      menuHover ||
-      (menuShown && (pointerWithinBarBounds || pointerNearInteraction)) ||
-      (pointerWithinBand && !pointerAbove) ||
-      bandRecent;
+    const menuLeft = position.left + clampedLeft;
+    const menuRight = menuLeft + menuWidth;
+    const pointerNearMenu =
+      pointerAbs !== null &&
+      pointerAbs.x >= menuLeft - OUTSIDE_MARGIN &&
+      pointerAbs.x <= menuRight + OUTSIDE_MARGIN &&
+      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
+      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
+
+    const shouldHold = menuShown
+      ? (menuHover || pointerWithinBarBounds || pointerNearMenu)
+      : (menuHover || (pointerWithinBand && !pointerAbove) || bandRecent);
     const recentlyVisible =
       this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
 
@@ -233,13 +240,23 @@ export class SearchScopeEngine {
     const shouldHideFar = pointerFarFromBar && !menuHover;
     const exitTriggered =
       !flowDragging &&
-      (shouldHideFar || shouldHideBounds || pointerStale || !shouldHold);
+      (shouldHideFar || pointerStale || (!shouldHold && shouldHideBounds) || (!shouldHold && !bandRecent));
 
     const desiredVisible = machineVisible
       ? !flowDragging && !exitTriggered
       : !flowDragging &&
         (menuHover || wantShow) &&
         !exitTriggered;
+
+    if (machineVisible && menuShown) {
+      console.log('[ENGINE-DEBUG]', JSON.stringify({
+        pointerAbs: pointerAbs ? { x: Math.round(pointerAbs.x), y: Math.round(pointerAbs.y) } : null,
+        barBounds: { left: Math.round(position.left), top: Math.round(position.top), w: Math.round(size.width), h: Math.round(size.height) },
+        shouldHold, shouldHideFar, shouldHideBounds, exitTriggered,
+        pointerNearInteraction, pointerWithinBarBounds, pointerFarFromBar,
+        menuShown, desiredVisible,
+      }));
+    }
 
     this.log({
       t: now,

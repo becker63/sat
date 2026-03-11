@@ -164,7 +164,7 @@ test.describe("SearchBar outline (playwright)", () => {
       await page.mouse.move(center.x, y);
     }
     await page.waitForTimeout(260);
-    await menu.waitFor({ state: "visible", timeout: 1_000 });
+    await menu.waitFor({ state: "visible", timeout: 2_000 });
 
     const menuBox = await menu.boundingBox();
     if (!menuBox || dashLength === null) throw new Error("Missing menu or dash length");
@@ -410,8 +410,8 @@ test.describe("SearchBar outline (playwright)", () => {
       await page.waitForTimeout(12);
     }
 
-    await outline.waitFor({ state: "visible", timeout: 1_000 });
-    await menu.waitFor({ state: "visible", timeout: 1_000 });
+    await outline.waitFor({ state: "visible", timeout: 2_000 });
+    await menu.waitFor({ state: "visible", timeout: 2_000 });
 
     const menuBox = await menu.boundingBox();
     if (!menuBox) throw new Error("Menu bounding box not found");

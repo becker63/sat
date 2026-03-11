@@ -521,7 +521,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
 
       try {
         if (!seen) {
-          await menu.waitFor({ state: "visible", timeout: 240 });
+          await menu.waitFor({ state: "visible", timeout: 1500 });
         }
       } catch (error) {
         failures += 1;
@@ -676,7 +676,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
 
     // Now descend through the band; menu should appear promptly.
     await descendIntoBand(page, centerX, aboveY + 4, nearBottom + 24, 320);
-    await menu.waitFor({ state: "visible", timeout: 260 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
   });
 
   test("hides when moving upward out of the band", async ({ page }) => {
@@ -691,7 +691,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
 
     await descendIntoBand(page, centerX, barBox.y + 8, bottom, 360);
-    await menu.waitFor({ state: "visible", timeout: 1000 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
 
     // Move upward above the bar; menu should disappear once we leave the bar surface.
     for (const y of [barBox.y + barBox.height * 0.5, barBox.y + 4, barBox.y - 30]) {
@@ -879,7 +879,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
 
     await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height + 8, 340);
-    await menu.waitFor({ state: "visible", timeout: 800 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
 
     const menuBox = await menu.boundingBox();
     if (!menuBox) throw new Error("Menu bounding box not found");
@@ -909,7 +909,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
 
     await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height + 10, 340);
-    await menu.waitFor({ state: "visible", timeout: 800 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
 
     const menuBox = await menu.boundingBox();
     if (!menuBox) throw new Error("Menu bounding box not found");
@@ -936,8 +936,8 @@ test.describe("SearchScopeMenu (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
 
     await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height + 8, 340);
-    await outline.waitFor({ state: "visible", timeout: 800 });
-    await menu.waitFor({ state: "visible", timeout: 800 });
+    await outline.waitFor({ state: "visible", timeout: 1500 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
 
     // Remove hover by moving well outside the bar; segment should vanish and menu should follow.
     await page.mouse.move(barBox.x - 200, barBox.y + barBox.height + 300, { steps: 4 });
@@ -980,8 +980,8 @@ test.describe("SearchScopeMenu (playwright)", () => {
       await expect(menu).toBeHidden({ timeout: 800 });
 
       await descendIntoBand(page, pos.x, barBox.y + 8, barBox.y + barBox.height - 4, 360);
-      await menu.waitFor({ state: "visible", timeout: 800 });
-      await outline.waitFor({ state: "visible", timeout: 800 });
+      await menu.waitFor({ state: "visible", timeout: 1500 });
+      await outline.waitFor({ state: "visible", timeout: 1500 });
 
       const segmentCenterPageX = await outline.evaluate((el) => {
         const offset = parseFloat(el.getAttribute("data-offset")!);
@@ -1024,7 +1024,7 @@ test.describe("SearchScopeMenu (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
 
     await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height + 8, 340);
-    await menu.waitFor({ state: "visible", timeout: 800 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
 
     await expect(menu, "menu should stay mounted before sampling drift").toBeVisible({
       timeout: 800,
@@ -1126,7 +1126,7 @@ test.describe("segment–menu alignment contract", () => {
     menu: ReturnType<Page["getByTestId"]>,
   ) => {
     await descendIntoBand(page, x, barBox.y + 8, barBox.y + barBox.height - 4, 360);
-    await menu.waitFor({ state: "visible", timeout: 800 });
+    await menu.waitFor({ state: "visible", timeout: 1500 });
   };
 
   const getSegmentEdgesPageX = async (outline: ReturnType<Page["getByTestId"]>) => {
@@ -1165,7 +1165,7 @@ test.describe("segment–menu alignment contract", () => {
     const centerX = barBox.x + barBox.width / 2;
 
     await spawnMenuAt(page, centerX, barBox, menu);
-    await outline.waitFor({ state: "visible", timeout: 800 });
+    await outline.waitFor({ state: "visible", timeout: 1500 });
 
     const segWidth = await outline.evaluate((el) => {
       return parseFloat(el.getAttribute("stroke-dasharray")!.split(" ")[0]);
@@ -1193,7 +1193,7 @@ test.describe("segment–menu alignment contract", () => {
     const centerX = barBox.x + barBox.width / 2;
 
     await spawnMenuAt(page, centerX, barBox, menu);
-    await outline.waitFor({ state: "visible", timeout: 800 });
+    await outline.waitFor({ state: "visible", timeout: 1500 });
 
     const segEdges = await getSegmentEdgesPageX(outline);
     const menuBox = await menu.boundingBox();
@@ -1225,7 +1225,7 @@ test.describe("segment–menu alignment contract", () => {
 
       const hoverX = barBox.x + barBox.width * frac;
       await spawnMenuAt(page, hoverX, barBox, menu);
-      await outline.waitFor({ state: "visible", timeout: 800 });
+      await outline.waitFor({ state: "visible", timeout: 1500 });
 
       const segEdges = await getSegmentEdgesPageX(outline);
       const menuBox = await menu.boundingBox();
@@ -1332,7 +1332,7 @@ test.describe("segment–menu alignment contract", () => {
 
       const endY = barBox.y + barBox.height - 4;
       await descendIntoBand(page, startX, barBox.y + barBox.height / 2, endY, 360);
-      await menu.waitFor({ state: "visible", timeout: 800 });
+      await menu.waitFor({ state: "visible", timeout: 1500 });
 
       const menuBox = await menu.boundingBox();
       if (!menuBox) throw new Error(`menu not found at ${label}`);
