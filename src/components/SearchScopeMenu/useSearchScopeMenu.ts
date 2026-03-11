@@ -164,8 +164,7 @@ export function useSearchScopeMenu({
       const simplePerimeter = 2 * svgW + 2 * svgH;
       const bottomEdgeFraction = (svgW + svgH + (svgW - menuCenterLocal)) / simplePerimeter;
       const centerPerimeterPos = bottomEdgeFraction * perimeter;
-      const targetOffset = centerPerimeterPos - segmentLength / 2;
-      const wrapped = ((targetOffset % perimeter) + perimeter) % perimeter;
+      const wrapped = ((centerPerimeterPos % perimeter) + perimeter) % perimeter;
       setHoverOffset(wrapped);
     }
     if (!snapshot.visible) {
