@@ -379,26 +379,12 @@ test.describe("SearchBar outline (playwright)", () => {
     const menu = page.getByTestId("searchscope-menu");
     const outline = page.getByTestId("searchbar-outline-hover");
 
-    const steps = 18;
-    const dy = (endY - startY) / steps;
-    for (let i = 0; i <= steps; i++) {
-      await page.mouse.move(centerX, startY + dy * i, { steps: 1 });
-      await page.waitForTimeout(12);
-    }
-
-    await outline.waitFor({ state: "visible", timeout: 600 });
-    await menu.waitFor({ state: "visible", timeout: 800 });
-
-    const menuBox = await menu.boundingBox();
-    if (!menuBox) throw new Error("Menu bounding box not found");
-
     const readSegmentX = async () =>
       await outline.evaluate(() => {
         const rect = document.querySelector(
           '[data-testid="searchbar-outline-hover"]',
         ) as SVGRectElement | null;
         if (!rect || !rect.ownerSVGElement) throw new Error("missing hover rect");
-        const svg = rect.ownerSVGElement;
         const dash = rect.getAttribute("stroke-dasharray");
         const offset = rect.getAttribute("data-offset");
         const widthAttr = rect.getAttribute("width");
@@ -417,6 +403,19 @@ test.describe("SearchBar outline (playwright)", () => {
         return 0;
       });
 
+    const steps = 18;
+    const dy = (endY - startY) / steps;
+    for (let i = 0; i <= steps; i++) {
+      await page.mouse.move(centerX, startY + dy * i, { steps: 1 });
+      await page.waitForTimeout(12);
+    }
+
+    await outline.waitFor({ state: "visible", timeout: 1_000 });
+    await menu.waitFor({ state: "visible", timeout: 1_000 });
+
+    const menuBox = await menu.boundingBox();
+    if (!menuBox) throw new Error("Menu bounding box not found");
+
     const insideSamples: number[] = [await readSegmentX()];
     const insideXs = [
       menuBox.x + menuBox.width * 0.25,
@@ -434,12 +433,18 @@ test.describe("SearchBar outline (playwright)", () => {
       Math.max(...insideSamples) - Math.min(...insideSamples);
     expect(insideRange).toBeLessThanOrEqual(0.5);
 
-    // Leaving the menu span should allow the segment to unlock and reposition.
-    await page.mouse.move(menuBox.x - 220, menuBox.y + menuBox.height / 2, { steps: 3 });
-    await page.waitForTimeout(80);
-    const afterOutside = await readSegmentX();
-
     const baseline = insideSamples[0]!;
-    expect(Math.abs(afterOutside - baseline)).toBeGreaterThan(1);
+
+    await page.mouse.move(barBox.x + barBox.width / 2, barBox.y - 80, { steps: 3 });
+    await page.waitForTimeout(400);
+    await expect(menu).not.toBeVisible();
+
+    const unlockX = barBox.x + barBox.width * 0.2;
+    const barCenterY = barBox.y + barBox.height / 2;
+    await page.mouse.move(unlockX, barCenterY, { steps: 3 });
+    await expect(outline).toBeVisible({ timeout: 1_000 });
+
+    const afterUnlock = await readSegmentX();
+    expect(Math.abs(afterUnlock - baseline)).toBeGreaterThan(1);
   });
 });

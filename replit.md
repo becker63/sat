@@ -117,3 +117,6 @@ Overall goal:
 
 Help maintain a high-discipline frontend codebase optimized for agent-assisted TDD, where behavior is inspectable, tests are meaningful, and UI interactions are treated as systems rather than decoration.
 
+
+
+NOTE!: Always take a look at current.md for instructions

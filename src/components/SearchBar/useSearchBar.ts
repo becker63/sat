@@ -173,7 +173,7 @@ export function useSearchBar({
     const normalized = ((centered % total) + total) % total;
 
     setHoverOffset(normalized);
-    if (point && !menuDeactivated) {
+    if (point && !menuVisible) {
       const anchorX = containerRect.left + point.x;
       const anchorY = containerRect.top + point.y;
       setHoverAnchor({
@@ -374,6 +374,8 @@ export function useSearchBar({
 
   useEffect(() => {
     const onPointerMove = (event: PointerEvent | MouseEvent) => {
+      if (menuVisible || menuHover) return;
+
       const container = containerRef.current;
       if (!container) return;
       const rect = container.getBoundingClientRect();
@@ -398,7 +400,7 @@ export function useSearchBar({
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("mousemove", onPointerMove);
     };
-  }, [setHoverAnchor, setHoverOffset, setMenuHover, setMenuVisible, setPointerPosition]);
+  }, [menuHover, menuVisible, setHoverAnchor, setHoverOffset, setMenuHover, setMenuVisible, setPointerPosition]);
 
   useEffect(() => {
     if (!flowDragging) return;

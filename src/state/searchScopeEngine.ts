@@ -130,10 +130,10 @@ export class SearchScopeEngine {
       pointerAbs !== null &&
       pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
       pointerAbs.x <= anchorAbsX + horizontalBandHalf;
-    const pointerAbove = pointerAbs !== null && pointerAbs.y < triggerY - 18;
+    const pointerAbove = pointer !== null && pointer.y < triggerY - 18;
     const pointerWithinBand =
-      pointerAbs !== null &&
-      pointerAbs.y >= triggerY - 12 &&
+      pointer !== null &&
+      pointer.y >= triggerY - 12 &&
       pointerWithinBandX;
 
     if (pointerWithinBand) {

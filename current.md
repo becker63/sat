@@ -1,3 +1,15 @@
+Id like you to iterate on src/components/SearchBar/SearchBar.e2e.spec.ts until it is green. 
+
+Currently tests are flaky so you'll need to start by running them a few times to determine whats failing, and then once you do that you can rewrite them to be more deterministic. Thats important for you to do before you iterate.
+
+The tests should conceptually encode the behavior, I want and the context below should give you the information required to work on it. 
+
+I give you the liberty in this scenario to make big changes, just make sure the spirit of the tests are maintained.
+
+Have fun :).
+
+
+
 The simplification is this:
 
 > **Stop tying the menu to the moving segment geometry. Anchor it once.**
