@@ -7,6 +7,7 @@ import {
   pointerPositionAtom,
   searchBarSizeAtom,
   searchBarPositionAtom,
+  perimeterAtom,
   scopeMenuHoverAtom,
   scopeMenuVisibleAtom,
   scopeDwellingAtom,
@@ -34,6 +35,7 @@ export function useSearchScopeMenu({
   const position = useAtomValue(searchBarPositionAtom);
   const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
   const setDwelling = useSetAtom(scopeDwellingAtom);
+  const perimeter = useAtomValue(perimeterAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
   const fixedLeftRef = useRef<number | null>(null);
   const globalPointerRef = useRef<{ x: number; y: number } | null>(null);
@@ -148,6 +150,28 @@ export function useSearchScopeMenu({
       fixedLeftRef.current = null;
     }
   }, [snapshot.visible, snapshot.offsetLeft]);
+
+  const hasCenteredRef = useRef(false);
+  useEffect(() => {
+    if (snapshot.visible && perimeter > 0 && segmentLength && !hasCenteredRef.current) {
+      hasCenteredRef.current = true;
+      const menuLeft = fixedLeftRef.current ?? snapshot.offsetLeft;
+      const menuCenterAbs = menuLeft + snapshot.width / 2;
+      const menuCenterLocal = menuCenterAbs - position.left + outlineInset;
+
+      const svgW = size.width - 1;
+      const svgH = size.height - 1;
+      const simplePerimeter = 2 * svgW + 2 * svgH;
+      const bottomEdgeFraction = (svgW + svgH + (svgW - menuCenterLocal)) / simplePerimeter;
+      const centerPerimeterPos = bottomEdgeFraction * perimeter;
+      const targetOffset = centerPerimeterPos - segmentLength / 2;
+      const wrapped = ((targetOffset % perimeter) + perimeter) % perimeter;
+      setHoverOffset(wrapped);
+    }
+    if (!snapshot.visible) {
+      hasCenteredRef.current = false;
+    }
+  }, [snapshot.visible, perimeter, segmentLength, snapshot.width, snapshot.offsetLeft, position.left, outlineInset, size.width, size.height, setHoverOffset]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
