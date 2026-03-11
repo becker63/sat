@@ -1,5 +1,5 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   hoverOffsetAtom,
@@ -11,7 +11,7 @@ import {
   scopeMenuVisibleAtom,
   flowDraggingAtom,
 } from "@/state/searchbar";
-import { SearchScopeEngine } from "@/state/searchScopeEngine";
+import { SearchScopeEngine, SHOW_DELAY_MS } from "@/state/searchScopeEngine";
 
 const POINTER_STALE_MS = 260;
 
@@ -111,9 +111,23 @@ export function useSearchScopeMenu({
     now,
   });
 
+  const [showReady, setShowReady] = useState(false);
+
   useEffect(() => {
-    setMenuVisible(snapshot.visible);
-    if (!snapshot.visible && snapshot.exitTriggered) {
+    if (snapshot.visible && !showReady) {
+      const timer = setTimeout(() => setShowReady(true), SHOW_DELAY_MS);
+      return () => clearTimeout(timer);
+    }
+    if (!snapshot.visible) {
+      setShowReady(false);
+    }
+  }, [snapshot.visible, showReady]);
+
+  const delayedVisible = snapshot.visible && showReady;
+
+  useEffect(() => {
+    setMenuVisible(delayedVisible);
+    if (!delayedVisible && snapshot.exitTriggered) {
       setHoverOffset(null);
       setHoverAnchor(null);
       setPointerPosition(null);
@@ -124,7 +138,7 @@ export function useSearchScopeMenu({
     setHoverOffset,
     setHoverAnchor,
     setPointerPosition,
-    snapshot.visible,
+    delayedVisible,
     snapshot.exitTriggered,
   ]);
 
@@ -192,7 +206,7 @@ export function useSearchScopeMenu({
   }, [hoverOffset, menuVisible, pointer, snapshot.pointerWithinBand, snapshot.visible]);
 
   return {
-    visible: snapshot.visible,
+    visible: delayedVisible,
     width: snapshot.width,
     offsetLeft: snapshot.offsetLeft,
     offsetTop: snapshot.offsetTop,

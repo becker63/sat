@@ -34,6 +34,7 @@ const HOLD_GRACE_MS = 360;
 const POINTER_STALE_MS = 260;
 const MENU_HEIGHT_ESTIMATE = 140;
 const OUTSIDE_MARGIN = 48;
+export const SHOW_DELAY_MS = 140;
 
 export class SearchScopeEngine {
   private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
@@ -203,9 +204,9 @@ export class SearchScopeEngine {
 
     const shouldHold =
       menuHover ||
+      (machineVisible && pointerWithinBarBounds) ||
       (pointerWithinBand && !pointerAbove) ||
-      bandRecent ||
-      (machineVisible && pointerWithinBarBounds);
+      bandRecent;
     const recentlyVisible =
       this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
 
