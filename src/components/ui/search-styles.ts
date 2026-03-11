@@ -1,4 +1,6 @@
 import { css, cx } from "../../../styled-system/css";
+import { reactFlowCssVars } from "@/theme/react-flow";
+import type { SystemStyleObject } from "../../../styled-system/types";
 
 export const searchBarShellClass = css({
   layerStyle: "panel",
@@ -33,6 +35,14 @@ export const graphStageBackgroundClass = css({
 
 export const reactFlowCanvasClass = css({
   background: "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
+});
+
+const reactFlowVarsWithImportant = Object.fromEntries(
+  Object.entries(reactFlowCssVars).map(([key, value]) => [key, `${value} !important`]),
+) as Record<string, string>;
+
+export const reactFlowVarsClass = css({
+  "&.react-flow": reactFlowVarsWithImportant as unknown as SystemStyleObject,
 });
 
 export const searchBarSvgClass = css({
