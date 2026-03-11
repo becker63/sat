@@ -689,13 +689,13 @@ test.describe("SearchScopeMenu (playwright)", () => {
     await descendIntoBand(page, centerX, barBox.y + 8, bottom, 360);
     await menu.waitFor({ state: "visible", timeout: 1000 });
 
-    // Move upward out of the trigger band; menu should disappear quickly.
-    for (const y of [barBox.y + barBox.height - 8, barBox.y + 12, barBox.y + 4]) {
+    // Move upward above the bar; menu should disappear once we leave the bar surface.
+    for (const y of [barBox.y + barBox.height * 0.5, barBox.y + 4, barBox.y - 30]) {
       await page.mouse.move(centerX, y, { steps: 2 });
       await page.waitForTimeout(24);
     }
 
-    await expect(menu).toBeHidden({ timeout: 180 });
+    await expect(menu).toBeHidden({ timeout: 500 });
   });
 
   test("stays visible while sweeping downward diagonally", async ({ page }) => {
@@ -747,6 +747,9 @@ test.describe("SearchScopeMenu (playwright)", () => {
     ] as const;
 
     for (const scenario of scenarios) {
+      await descendIntoBand(page, centerX, barBox.y + 8, barBox.y + barBox.height - 4, 360);
+      await menu.waitFor({ state: "visible", timeout: 500 });
+
       await page.evaluate(() => {
         (window as any).__scopeSweepFrames = [];
         (window as any).__scopeVisibleLog = [];

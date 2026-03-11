@@ -126,22 +126,8 @@ export function useSearchScopeMenu({
   ]);
 
   useEffect(() => {
-    if (prevMenuHoverRef.current && !menuHover && snapshot.visible) {
-      engine.forceHide();
-      setMenuVisible(false);
-      setHoverOffset(null);
-      setPointerPosition(null);
-      fixedLeftRef.current = null;
-    }
     prevMenuHoverRef.current = menuHover;
-  }, [
-    engine,
-    menuHover,
-    setHoverOffset,
-    setMenuVisible,
-    setPointerPosition,
-    snapshot.visible,
-  ]);
+  }, [menuHover]);
 
   useEffect(() => {
     if (snapshot.visible && fixedLeftRef.current === null) {

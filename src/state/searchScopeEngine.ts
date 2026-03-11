@@ -173,6 +173,14 @@ export class SearchScopeEngine {
     const menuRight = clampedLeft + menuWidth;
     const menuBottom = top + MENU_HEIGHT_ESTIMATE;
 
+    const pointerWithinBarBounds =
+      pointer !== null &&
+      pointer.y >= 0 &&
+      pointer.y <= size.height &&
+      pointerAbs !== null &&
+      pointerAbs.x >= position.left &&
+      pointerAbs.x <= position.left + size.width;
+
     const pointerOutsideMenuBounds =
       pointerAbs !== null &&
       (pointerAbs.x < clampedLeft - OUTSIDE_MARGIN ||
@@ -189,11 +197,15 @@ export class SearchScopeEngine {
     const pointerStale =
       pointerAbs === null &&
       (this.lastPointerAt === null || now - this.lastPointerAt > POINTER_STALE_MS);
-    const shouldHold =
-      menuHover || (pointerWithinBand && !pointerAbove) || bandRecent;
 
     const preSnapshot = this.actor.getSnapshot();
     const machineVisible = preSnapshot.matches("visible");
+
+    const shouldHold =
+      menuHover ||
+      (pointerWithinBand && !pointerAbove) ||
+      bandRecent ||
+      (machineVisible && pointerWithinBarBounds);
     const recentlyVisible =
       this.lastVisibleAt !== null && now - this.lastVisibleAt < HOLD_GRACE_MS;
 
@@ -203,7 +215,7 @@ export class SearchScopeEngine {
       (pastTrigger || triggerRecent);
 
     const shouldHideBounds =
-      !menuHover && pointerOutsideMenuBounds && !pointerWithinBand;
+      !menuHover && !pointerWithinBarBounds && pointerOutsideMenuBounds && !pointerWithinBand;
     const shouldHideFar = pointerFarFromBar && !menuHover;
     const exitTriggered =
       !flowDragging &&
