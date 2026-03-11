@@ -174,9 +174,17 @@ export function useSearchScopeMenu({
       });
 
       if (result) {
-        const centered = result.bestLength - segmentLength / 2 + 5;
+        const centered = result.bestLength - segmentLength / 2;
         const normalized = ((centered % result.total) + result.total) % result.total;
-        setHoverOffset(normalized);
+
+        const segCenterPerimeter = normalized + segmentLength / 2;
+        const segCenterPt = barPath.getPointAtLength(segCenterPerimeter % result.total);
+        const svgRect = barContainer.getBoundingClientRect();
+        const segCenterScreenX = svgRect.left - outlineInset + segCenterPt.x;
+        const deltaX = menuCenterAbs - segCenterScreenX;
+        const corrected = normalized - deltaX;
+        const correctedNorm = ((corrected % result.total) + result.total) % result.total;
+        setHoverOffset(correctedNorm);
       }
     }
     if (!snapshot.visible) {
