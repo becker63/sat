@@ -13,7 +13,7 @@ export default defineConfig({
     baseURL: `http://127.0.0.1:${basePort}`,
     browserName: "chromium",
     launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH || (isReplit ? "/nix/store/qa9cnw4v5xkxyip6mb9kxqfq1z4x2dx1-chromium-138.0.7204.100/bin/chromium" : undefined),
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     },
   },
