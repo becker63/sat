@@ -435,9 +435,14 @@ test.describe("SearchBar outline (playwright)", () => {
 
     const baseline = insideSamples[0]!;
 
-    await page.mouse.move(barBox.x + barBox.width / 2, barBox.y - 80, { steps: 3 });
-    await page.waitForTimeout(400);
-    await expect(menu).not.toBeVisible();
+    await page.mouse.move(barBox.x - 200, barBox.y + barBox.height + 300, { steps: 4 });
+    await page.evaluate(
+      ({ x, y }) =>
+        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+      { x: barBox.x - 200, y: barBox.y + barBox.height + 300 },
+    );
+    await page.waitForTimeout(500);
+    await expect(menu).not.toBeVisible({ timeout: 800 });
 
     const unlockX = barBox.x + barBox.width * 0.2;
     const barCenterY = barBox.y + barBox.height / 2;

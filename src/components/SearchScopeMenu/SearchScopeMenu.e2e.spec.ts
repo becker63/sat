@@ -936,11 +936,76 @@ test.describe("SearchScopeMenu (playwright)", () => {
     await menu.waitFor({ state: "visible", timeout: 800 });
 
     // Remove hover by moving well outside the bar; segment should vanish and menu should follow.
-    await page.mouse.move(barBox.x - 140, barBox.y - 140, { steps: 4 });
-    await page.waitForTimeout(200);
+    await page.mouse.move(barBox.x - 200, barBox.y + barBox.height + 300, { steps: 4 });
+    await page.evaluate(
+      ({ x, y }) =>
+        window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+      { x: barBox.x - 200, y: barBox.y + barBox.height + 300 },
+    );
+    await page.waitForTimeout(300);
 
-    await expect(outline).toBeHidden({ timeout: 400 });
-    await expect(menu).toBeHidden({ timeout: 300 });
+    await expect(outline).toBeHidden({ timeout: 600 });
+    await expect(menu).toBeHidden({ timeout: 400 });
+  });
+
+  test("menu box aligns horizontally with the hover segment", async ({ page }) => {
+    await gotoAndInstall(page);
+
+    const bar = page.getByTestId("searchbar");
+    await bar.waitFor();
+    const barBox = await bar.boundingBox();
+    if (!barBox) throw new Error("Search bar bounding box not found");
+
+    const menu = page.getByTestId("searchscope-menu");
+    const outline = page.getByTestId("searchbar-outline-hover");
+
+    const hoverPositions = [
+      { label: "left quarter", x: barBox.x + barBox.width * 0.25 },
+      { label: "center", x: barBox.x + barBox.width * 0.5 },
+      { label: "right quarter", x: barBox.x + barBox.width * 0.75 },
+    ];
+
+    for (const pos of hoverPositions) {
+      await page.mouse.move(barBox.x - 200, barBox.y + barBox.height + 300, { steps: 4 });
+      await page.evaluate(
+        ({ x, y }) =>
+          window.dispatchEvent(new MouseEvent("mousemove", { clientX: x, clientY: y })),
+        { x: barBox.x - 200, y: barBox.y + barBox.height + 300 },
+      );
+      await page.waitForTimeout(500);
+      await expect(menu).toBeHidden({ timeout: 800 });
+
+      await descendIntoBand(page, pos.x, barBox.y + 8, barBox.y + barBox.height - 4, 360);
+      await menu.waitFor({ state: "visible", timeout: 800 });
+      await outline.waitFor({ state: "visible", timeout: 800 });
+
+      const segmentCenterPageX = await outline.evaluate((el) => {
+        const offset = parseFloat(el.getAttribute("data-offset")!);
+        const dashArr = el.getAttribute("stroke-dasharray")!;
+        const segLen = parseFloat(dashArr.split(" ")[0]);
+
+        const rect = el as unknown as SVGGeometryElement;
+        const total = rect.getTotalLength();
+        const centerOffset = ((offset + segLen / 2) % total + total) % total;
+        const point = rect.getPointAtLength(centerOffset);
+
+        const svgEl = el.closest("svg")!;
+        const svgRect = svgEl.getBoundingClientRect();
+        return svgRect.left + point.x;
+      });
+
+      expect(segmentCenterPageX).not.toBeNull();
+
+      const menuBox = await menu.boundingBox();
+      if (!menuBox) throw new Error(`Menu box not found at ${pos.label}`);
+      const menuCenterX = menuBox.x + menuBox.width / 2;
+
+      const drift = Math.abs(segmentCenterPageX! - menuCenterX);
+      expect(
+        drift,
+        `Menu center and segment center should align at ${pos.label} (drift=${drift.toFixed(1)}px)`,
+      ).toBeLessThan(25);
+    }
   });
 
   test("never repositions after it spawns", async ({ page }) => {

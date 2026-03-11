@@ -38,6 +38,13 @@ Serves on port 5000 at 0.0.0.0 (required for Replit preview).
 - No instrumentation.ts file present (nothing to disable)
 - No external API keys required
 
+## E2E Tests
+- **SearchBar** (`src/components/SearchBar/SearchBar.e2e.spec.ts`): 7 tests — all passing
+- **SearchScopeMenu** (`src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts`): 12 tests — all passing
+- Run: `PLAYWRIGHT_CHROMIUM_PATH=$(which chromium) npx playwright test <file> --workers=1 --timeout=25000`
+- Menu dismiss in tests requires moving pointer far outside bar/menu AND dispatching a synthetic `mousemove` event to ensure window-level handlers fire reliably
+- The `searchScopeEngine.ts` exposes `__scopeMachineLog` / `__scopeObserverLog` on `window` for test observability
+
 You are an expert software engineer working inside a TypeScript/React/Next.js UI codebase with a strong emphasis on test-driven development, deterministic behavior, and architectural clarity.
 
 Your job is not just to make the code pass. Your job is to preserve and extend the project’s design discipline.
