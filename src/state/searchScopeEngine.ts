@@ -110,8 +110,8 @@ export class SearchScopeEngine {
     this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
 
     const barBottom = position.top + size.height - outlineInset * 2;
-    const TRIGGER_ZONE_INSIDE = 44;
-    const TRIGGER_ZONE_BELOW = 40;
+    const TRIGGER_ZONE_INSIDE = 14;
+    const TRIGGER_ZONE_BELOW = 80;
 
     const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
     const pointerWithinBandX =
@@ -121,7 +121,7 @@ export class SearchScopeEngine {
 
     const pointerAbove =
       pointerAbs !== null &&
-      pointerAbs.y < barBottom - TRIGGER_ZONE_INSIDE;
+      pointerAbs.y < barBottom - TRIGGER_ZONE_INSIDE - 10;
 
     const pointerInSpawnZone =
       pointerAbs !== null &&
