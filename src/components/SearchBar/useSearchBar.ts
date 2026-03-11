@@ -174,8 +174,8 @@ export function useSearchBar({
 
     setHoverOffset(normalized);
     if (point && !menuVisible) {
-      const anchorX = containerRect.left + point.x;
-      const anchorY = containerRect.top + point.y;
+      const anchorX = containerRect.left - outlineInset + point.x;
+      const anchorY = containerRect.top - outlineInset + point.y;
       setHoverAnchor({
         x: anchorX,
         y: anchorY,

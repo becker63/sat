@@ -1199,7 +1199,7 @@ test.describe("segment–menu alignment contract", () => {
     expect(
       drift,
       `Segment left edge (${segEdges.left.toFixed(1)}) should align with menu left edge (${menuBox.x.toFixed(1)}), drift=${drift.toFixed(1)}px`,
-    ).toBeLessThan(15);
+    ).toBeLessThan(5);
   });
 
   test("menu left edge aligns with segment left edge at varied positions", async ({ page }) => {
@@ -1231,7 +1231,7 @@ test.describe("segment–menu alignment contract", () => {
       expect(
         drift,
         `At ${(frac * 100).toFixed(0)}%: segment left (${segEdges.left.toFixed(1)}) vs menu left (${menuBox.x.toFixed(1)}), drift=${drift.toFixed(1)}px`,
-      ).toBeLessThan(15);
+      ).toBeLessThan(5);
     }
   });
 
