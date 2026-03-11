@@ -28,7 +28,6 @@ export type ScopeEngineSnapshot = {
   pointerAbove: boolean;
 };
 
-const TRIGGER_MARGIN = -2;
 const HORIZONTAL_MARGIN = 160;
 const HOLD_GRACE_MS = 360;
 const POINTER_STALE_MS = 260;
@@ -106,9 +105,6 @@ export class SearchScopeEngine {
       now,
     } = input;
 
-    const contentHeight = Math.max(0, size.height - outlineInset * 2);
-    const triggerCandidate = contentHeight - outlineInset - 2 + TRIGGER_MARGIN;
-    const triggerY = Math.max(0, Math.min(contentHeight - 2, triggerCandidate));
     const contentWidth = Math.max(0, size.width - outlineInset * 2);
     const menuWidth =
       Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
@@ -126,15 +122,22 @@ export class SearchScopeEngine {
     this.lastPointerY = pointer?.y ?? null;
     this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
 
+    const barBottom = position.top + size.height - outlineInset * 2;
+    const TRIGGER_ZONE_INSIDE = 6;
+    const TRIGGER_ZONE_BELOW = 24;
+
     const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
     const pointerWithinBandX =
       pointerAbs !== null &&
       pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
       pointerAbs.x <= anchorAbsX + horizontalBandHalf;
-    const pointerAbove = pointer !== null && pointer.y < triggerY - 18;
+    const pointerAbove =
+      pointerAbs !== null &&
+      pointerAbs.y < barBottom - TRIGGER_ZONE_INSIDE - 10;
     const pointerWithinBand =
-      pointer !== null &&
-      pointer.y >= triggerY - 12 &&
+      pointerAbs !== null &&
+      pointerAbs.y >= barBottom - TRIGGER_ZONE_INSIDE &&
+      pointerAbs.y <= barBottom + TRIGGER_ZONE_BELOW &&
       pointerWithinBandX;
 
     if (pointerWithinBand) {
@@ -142,7 +145,8 @@ export class SearchScopeEngine {
     }
     const bandRecent = this.lastBandAt !== null && now - this.lastBandAt < 260;
 
-    const pastTrigger = pointer !== null && pointer.y >= triggerY - 6;
+    const pastTrigger =
+      pointerAbs !== null && pointerAbs.y >= barBottom - 4;
     if (pastTrigger) {
       this.lastTriggerAt = now;
     }
@@ -202,9 +206,16 @@ export class SearchScopeEngine {
     const preSnapshot = this.actor.getSnapshot();
     const machineVisible = preSnapshot.matches("visible");
 
+    const pointerNearInteraction =
+      pointerAbs !== null &&
+      pointerAbs.x >= position.left - OUTSIDE_MARGIN &&
+      pointerAbs.x <= position.left + size.width + OUTSIDE_MARGIN &&
+      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
+      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
+
     const shouldHold =
       menuHover ||
-      (machineVisible && pointerWithinBarBounds) ||
+      (machineVisible && (pointerWithinBarBounds || pointerNearInteraction)) ||
       (pointerWithinBand && !pointerAbove) ||
       bandRecent;
     const recentlyVisible =
