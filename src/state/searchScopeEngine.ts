@@ -33,7 +33,7 @@ export type ScopeEngineSnapshot = {
 const HORIZONTAL_MARGIN = 160;
 const MENU_HEIGHT_ESTIMATE = 140;
 const OUTSIDE_MARGIN = 48;
-export const SHOW_DELAY_MS = 350;
+export const SHOW_DELAY_MS = 200;
 
 export class SearchScopeEngine {
   private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
