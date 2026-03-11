@@ -4,6 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
+packages = ["chromium", "nss", "atk", "at-spi2-atk", "cups", "libdrm", "gtk3", "pango", "cairo", "alsa-lib", "xorg.libXcomposite", "xorg.libXdamage", "xorg.libXrandr", "xorg.libxshmfence", "mesa", "dbus", "glib", "nspr", "expat", "chromium"]
 
 [workflows]
 runButton = "Project"
