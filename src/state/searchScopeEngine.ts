@@ -158,7 +158,7 @@ export class SearchScopeEngine {
     const preSnapshot = this.actor.getSnapshot();
     const machineVisible = preSnapshot.matches("visible");
 
-    const menuLeft = position.left + clampedLeft;
+    const menuLeft = clampedLeft;
     const menuRightEdge = menuLeft + menuWidth;
     const pointerNearMenu =
       pointerAbs !== null &&

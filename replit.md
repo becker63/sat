@@ -38,6 +38,13 @@ Serves on port 5000 at 0.0.0.0 (required for Replit preview).
 - No instrumentation.ts file present (nothing to disable)
 - No external API keys required
 
+## SearchScopeMenu Behavior
+- **Spawn zone**: bottom 14px inside bar (`TRIGGER_ZONE_INSIDE`) + 160px below bar (`TRIGGER_ZONE_BELOW`)
+- **Show delay**: 200ms dwell in spawn zone (`SHOW_DELAY_MS`)
+- **Segment centering**: on menu spawn, the hover segment animates to center over the menu box using `findClosestPerimeterLength` + `getPointAtLength` correction
+- **Key atoms**: `searchBarContainerAtom`, `searchBarPathAtom` expose SVG refs for cross-component perimeter calculations
+- **Dismiss**: uses `pointerNearMenu` scoped to menu width (not full bar width)
+
 ## E2E Tests
 - **SearchBar** (`src/components/SearchBar/SearchBar.e2e.spec.ts`): 7 tests — all passing
 - **SearchScopeMenu** (`src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts`): 12 tests + 5 alignment contract tests — all passing
