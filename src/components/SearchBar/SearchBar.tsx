@@ -12,6 +12,7 @@ import { Input, Button } from "@/components/ui";
 import { useSearchBar } from "./useSearchBar";
 import { SearchScopeMenu } from "../SearchScopeMenu/SearchScopeMenu";
 import { flowDraggingAtom } from "@/state/searchbar";
+import { reactFlowTheme } from "@/theme/react-flow";
 import {
   outlineHoverClass,
   searchBarHiddenClass,
@@ -33,7 +34,7 @@ const MotionRect = motion.rect;
 const OUTLINE_INSET = 8;
 // Match the SearchBar shell radius (var(--radii-l3) = 6px)
 const OUTLINE_RADIUS = 6;
-const OUTLINE_COLOR = "#fff";
+const OUTLINE_COLOR = reactFlowTheme.edge.stroke;
 /* hover segment length controls scope menu width */
 export const HOVER_SEGMENT_LENGTH = 400;
 export const OUTLINE_INSET_PX = OUTLINE_INSET;

@@ -20,11 +20,11 @@ export function collide() {
       const ny2 = node.y + radius;
 
       tree.visit((quad, x1, y1, x2, y2) => {
-        if (!quad.length) {
-          let q = quad;
+        if (!("length" in quad)) {
+          let q: any = quad;
           do {
-            const data = q.data as SimNode;
-            if (data !== node) {
+            const data = q.data as SimNode | undefined;
+            if (data && data !== node) {
               const otherRadius = (data.measured?.width ?? data.width ?? 0) / 2;
               const r = radius + otherRadius;
               let x = node.x - data.x;

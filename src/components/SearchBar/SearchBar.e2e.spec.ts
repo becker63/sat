@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { reactFlowTheme } from "@/theme/react-flow";
+
+const SEGMENT_STROKE = reactFlowTheme.edge.stroke;
 
 test.describe("SearchBar outline (playwright)", () => {
   test("hover segment stays stable when pointer pauses", async ({ page }) => {
@@ -88,7 +91,7 @@ test.describe("SearchBar outline (playwright)", () => {
     expect(range).toBeLessThanOrEqual(0.01);
   });
 
-  test("draws a visible hover segment with the token stroke color", async ({
+  test("draws a visible hover segment with the graph stroke color", async ({
     page,
   }) => {
     await page.goto("/");
@@ -108,19 +111,21 @@ test.describe("SearchBar outline (playwright)", () => {
     const outline = page.getByTestId("searchbar-outline-hover");
     await expect(outline).toBeVisible();
 
-    const { stroke, tokenStroke } = await outline.evaluate(() => {
-      const elementStroke = getComputedStyle(
-        document.querySelector('[data-testid="searchbar-outline-hover"]') as SVGElement,
-      ).stroke;
+    const { stroke, expectedStroke } = await outline.evaluate((strokeVar) => {
+      const outlineElement = document.querySelector(
+        '[data-testid="searchbar-outline-hover"]',
+      ) as SVGElement | null;
+      if (!outlineElement) throw new Error("hover outline not found");
+      const elementStroke = getComputedStyle(outlineElement).stroke;
       const probe = document.createElement("div");
-      probe.style.color = "var(--colors-vercel-text-primary)";
+      probe.style.color = strokeVar;
       document.body.appendChild(probe);
-      const tokenColor = getComputedStyle(probe).color;
+      const resolvedColor = getComputedStyle(probe).color;
       probe.remove();
-      return { stroke: elementStroke, tokenStroke: tokenColor };
-    });
+      return { stroke: elementStroke, expectedStroke: resolvedColor };
+    }, SEGMENT_STROKE);
 
-    expect(stroke).toBe(tokenStroke);
+    expect(stroke).toBe(expectedStroke);
     expect(stroke).not.toBe("transparent");
     expect(stroke).not.toBe("rgba(0, 0, 0, 0)");
   });
@@ -244,7 +249,7 @@ test.describe("SearchBar outline (playwright)", () => {
     expect(debugSizes.dashArray).toBeTruthy();
   });
 
-  test("focus outline matches hover geometry and uses token stroke", async ({
+  test("focus outline matches hover geometry and uses graph stroke", async ({
     page,
   }) => {
     await page.goto("/");
@@ -305,15 +310,15 @@ test.describe("SearchBar outline (playwright)", () => {
       const s = getComputedStyle(el as HTMLElement);
       return s.stroke;
     });
-    const tokenStroke = await page.evaluate(() => {
+    const expectedStroke = await page.evaluate((strokeVar) => {
       const probe = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      probe.setAttribute("stroke", "var(--colors-vercel-text-primary)");
+      probe.setAttribute("stroke", strokeVar);
       document.body.appendChild(probe);
       const color = getComputedStyle(probe).stroke;
       probe.remove();
       return color;
-    });
-    expect(stroke).toBe(tokenStroke);
+    }, SEGMENT_STROKE);
+    expect(stroke).toBe(expectedStroke);
   });
 
   test("hover outline matches bar geometry (bounds alignment)", async ({

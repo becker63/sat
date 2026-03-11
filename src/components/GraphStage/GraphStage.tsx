@@ -7,6 +7,8 @@ import {
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  type Edge,
+  type Node,
 } from "@xyflow/react";
 
 import { GraphBackground, ThemedReactFlow, graphStageBackgroundClass } from "@/components/ui";
@@ -29,8 +31,8 @@ function GraphStageInner() {
   const initialEdges = useAtomValue(graphInitialEdgesAtom);
   const setFlowDragging = useSetAtom(flowDraggingAtom);
   const draggingNodeRef = useRef<SimNode | null>(null);
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, , onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, , onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const dragEvents = useForceLayout(simulation, draggingNodeRef);
 
   const handleDragStart = useCallback(() => {
