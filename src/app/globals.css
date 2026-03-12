@@ -1,0 +1,15 @@
+/* Elastic edge styling during spring impulse */
+.edge-elastic path {
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  animation: edgeSpring 0.5s linear infinite;
+}
+
+@keyframes edgeSpring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 12;
+  }
+}

@@ -23,6 +23,9 @@ import {
   searchInputClass,
 } from "@/components/ui";
 import { fixturePromptAtom } from "@/state/fixturePromptAtom";
+import { graphPlayingAtom } from "@/state/graphPlayback";
+import { useAtom } from "jotai";
+import { useSearchScopeMenu } from "../SearchScopeMenu/useSearchScopeMenu";
 
 type Props = {
   onReplay?: (query?: string) => void;
@@ -44,6 +47,11 @@ export const OUTLINE_INSET_PX = OUTLINE_INSET;
 export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
   const flowDragging = useAtomValue(flowDraggingAtom);
   const prompt = useAtomValue(fixturePromptAtom);
+  const [playing, setPlaying] = useAtom(graphPlayingAtom);
+  const menuState = useSearchScopeMenu({
+    outlineInset: OUTLINE_INSET,
+    segmentLength: HOVER_SEGMENT_LENGTH,
+  });
   const {
     containerRef,
     focusOrigin,
@@ -66,6 +74,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
     outlineInset: OUTLINE_INSET,
     outlineLockDelay: outlineLockDelayMs,
     onReplay,
+    menuState,
   });
 
   const hidden = flowDragging;
@@ -233,10 +242,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         </svg>
       )}
 
-      <SearchScopeMenu
-        outlineInset={OUTLINE_INSET}
-        segmentLength={HOVER_SEGMENT_LENGTH}
-      />
+      <SearchScopeMenu state={menuState} />
 
       <Input
         ref={inputRef}
@@ -257,10 +263,8 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
 
       <MotionButton
         variant="surface"
-        onClick={triggerReplay}
-        whileHover={{
-          scale: 1.02,
-        }}
+        onClick={() => setPlaying((p) => !p)}
+        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
         transition={{
           type: "spring",
@@ -269,7 +273,7 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         }}
         className={searchButtonClass}
       >
-        Replay
+        {playing ? "Pause" : "Play"}
       </MotionButton>
     </MotionStack>
   );

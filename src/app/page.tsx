@@ -17,11 +17,7 @@ export default function Home() {
         p="5"
         pointerEvents="none"
       >
-        <Box
-          pointerEvents="auto"
-          w="100%"
-          h="72px"
-        >
+        <Box pointerEvents="auto" w="100%" h="72px">
           <SearchBar />
         </Box>
       </Box>

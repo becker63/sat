@@ -1,5 +1,4 @@
 This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
-The content has been processed where content has been compressed (code blocks are separated by ⋮---- delimiter).
 
 <file_summary>
 This section contains a summary of this file.
@@ -33,18 +32,15 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Files matching these patterns are excluded: theme
+- Files matching these patterns are excluded: **/*.spec.tsx, **/*.e2e.spec.ts, src/components/ui/**, eslint/**, styled-system/**, src/theme/**
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
-- Content has been compressed - code blocks are separated by ⋮---- delimiter
 - Files are sorted by Git change count (files with more changes are at the bottom)
 </notes>
 
 </file_summary>
 
 <directory_structure>
-eslint/
-  style-firewall.mjs
 public/
   file.svg
   globe.svg
@@ -61,81 +57,67 @@ src/
     page.tsx
   components/
     GraphStage/
-      config.ts
-      forces.ts
       GraphStage.tsx
       index.ts
-      random.ts
-      types.ts
-      useForceLayout.ts
+      layoutGraph.ts
+      useFollowNode.ts
     SearchBar/
       idea.md
       index.ts
       perimeter.ts
-      SearchBar.e2e.spec.ts
-      SearchBar.spec.tsx
       SearchBar.tsx
       useSearchBar.ts
     SearchScopeMenu/
-      SearchScopeMenu.e2e.spec.ts
-      SearchScopeMenu.spec.tsx
       SearchScopeMenu.tsx
       useSearchScopeMenu.ts
-    ui/
-      absolute-center.tsx
-      button.tsx
-      checkbox.tsx
-      field.tsx
-      graph-background.tsx
-      group.tsx
-      index.ts
-      input.tsx
-      loader.tsx
-      search-styles.ts
-      span.tsx
-      spinner.tsx
-      themed-react-flow.tsx
     ClientConsoleBridge.tsx
+  graph/
+    events.ts
+    fixtures.ts
+    graphStream.ts
+    reducer.ts
   lib/
     clientLogger.ts
   state/
+    fixtureAtom.ts
+    fixturePromptAtom.ts
+    graphPlayback.ts
     graphStage.ts
+    graphStreamAtom.ts
     searchbar.ts
     searchScopeEngine.ts
     searchScopeMachine.ts
-  theme/
-    colors/
-      green.ts
-      red.ts
-      slate.ts
-      vercel.ts
-    recipes/
-      absolute-center.ts
-      button.ts
-      checkbox.ts
-      field.ts
-      group.ts
-      index.ts
-      input.ts
-      spinner.ts
-    tokens/
-      colors.ts
-      durations.ts
-      shadows.ts
-      z-index.ts
-    animation-styles.ts
-    capture-react-flow.mjs
-    conditions.ts
-    global-css.ts
-    keyframes.ts
-    layer-styles.ts
-    react-flow.ts
-    text-styles.ts
   types/
     d3-quadtree.d.ts
 test-results/
-  src-theme-theme-screenshot-248b3-tures-current-graph-styling/
-    react-flow-theme.png
+  SearchBar-SearchBar.e2e-Se-15d87-with-the-graph-stroke-color/
+    error-context.md
+  SearchBar-SearchBar.e2e-Se-81aa7-y-and-matches-segment-width/
+    error-context.md
+  SearchBar-SearchBar.e2e-Se-8d4e6-leaving-the-scope-menu-span/
+    error-context.md
+  SearchScopeMenu-SearchScop-1d137-segment-left-edge-at-center/
+    error-context.md
+  SearchScopeMenu-SearchScop-53b96--width-and-follows-movement/
+    error-context.md
+  SearchScopeMenu-SearchScop-553b5-hen-leaving-the-menu-bounds/
+    error-context.md
+  SearchScopeMenu-SearchScop-56ef8-he-hover-segment-is-present/
+    error-context.md
+  SearchScopeMenu-SearchScop-736b3-ally-with-the-hover-segment/
+    error-context.md
+  SearchScopeMenu-SearchScop-86b54-he-top-left-on-first-render/
+    error-context.md
+  SearchScopeMenu-SearchScop-9dc53-repositions-after-it-spawns/
+    error-context.md
+  SearchScopeMenu-SearchScop-c9864-ft-edge-at-varied-positions/
+    error-context.md
+  SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/
+    error-context.md
+  SearchScopeMenu-SearchScop-e069a-d-menu-share-the-same-width/
+    error-context.md
+  SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band/
+    error-context.md
   .last-run.json
 .gitignore
 components.json
@@ -155,117 +137,288 @@ vitest.setup.ts
 <files>
 This section contains the contents of the repository's files.
 
-<file path="eslint/style-firewall.mjs">
-const GEOMETRY_KEYS = new Set(["left", "top", "transform", "width", "height"]);
-const COLOR_PROPS = new Set([
-⋮----
-const SURFACE_PROPS = new Set([
-⋮----
-const STYLING_PROPS = new Set([
-⋮----
-function normalizeFileName(filename) {
-⋮----
-return path.normalize(filename);
-⋮----
-function isInAllowedPath(filename, allowList) {
-const normalized = normalizeFileName(filename);
-return allowList.some((entry) => normalized.includes(path.normalize(entry)));
-⋮----
-function getAttrName(attribute) {
-⋮----
-function getPropertyName(property) {
-⋮----
-if (property.key.type === "Literal") return String(property.key.value);
-⋮----
-function getLiteralText(node) {
-⋮----
-return String(node.value);
-⋮----
-return node.quasis.map((q) => q.value.raw).join("");
-⋮----
-function isMotionElement(openingElement) {
-⋮----
-nameNode.name.startsWith("motion.") || nameNode.name.startsWith("Motion")
-⋮----
-function getElementName(attribute) {
-⋮----
-function isInsideTokenDefinition(context, node) {
-const ancestors = context.sourceCode.getAncestors(node);
-return ancestors.some((ancestor) => {
-⋮----
-].includes(ancestor.callee.name);
-⋮----
-["defineTokens", "defineSemanticTokens"].includes(
-⋮----
-["defineTokens", "defineSemanticTokens"].includes(calleeObject)
-⋮----
-create(context) {
-⋮----
-JSXAttribute(node) {
-const name = getAttrName(node);
-⋮----
-const motionElement = isMotionElement(node.parent);
-⋮----
-const keyName = getPropertyName(prop);
-if (keyName && !GEOMETRY_KEYS.has(keyName)) {
-invalidKeys.push(keyName);
-⋮----
-invalidKeys.push("spread");
-⋮----
-context.report({
-⋮----
-].join(", ")}); found ${invalidKeys.join(", ")}.`,
-⋮----
-function reportIfColor(valueNode) {
-if (isInsideTokenDefinition(context, valueNode)) return;
-const text = getLiteralText(valueNode);
-if (text && COLOR_PATTERN.test(text)) {
-⋮----
-if (!COLOR_PROPS.has(name)) return;
-⋮----
-reportIfColor(
-⋮----
-Property(node) {
-const keyName = getPropertyName(node);
-if (!keyName || !COLOR_PROPS.has(keyName)) return;
-reportIfColor(node.value);
-⋮----
-function reportIfShadow(valueNode) {
-⋮----
-if (text && BOX_SHADOW_PATTERN.test(text)) {
-⋮----
-reportIfShadow(
-⋮----
-reportIfShadow(node.value);
-⋮----
-function reportIfRadius(valueNode) {
-⋮----
-if (RADIUS_UNIT_PATTERN.test(text) || /^\d+(\.\d+)?$/.test(text)) {
-⋮----
-reportIfRadius(
-⋮----
-reportIfRadius(node.value);
-⋮----
-const filename = context.getFilename();
-if (isInAllowedPath(filename, allow)) {
-⋮----
-if (!name || !STYLING_PROPS.has(name)) return;
-⋮----
-if (isInsideTokenDefinition(context, node)) return;
-⋮----
-const hasNonGeometry = expression.properties.some((prop) => {
-⋮----
-return keyName && !GEOMETRY_KEYS.has(keyName);
-⋮----
-const elementName = getElementName(node);
-⋮----
-CallExpression(node) {
-⋮----
-if (!name || !SURFACE_PROPS.has(name)) return;
-⋮----
-if (!keyName || !SURFACE_PROPS.has(keyName)) return;
-⋮----
-if (typeof value.value === "string" && value.value.trim().length) {
+<file path="src/components/GraphStage/layoutGraph.ts">
+import ELK from "elkjs/lib/elk.bundled.js";
+import type { Node, Edge } from "@xyflow/react";
+
+const elk = new ELK();
+
+const layoutOptions = {
+  "elk.algorithm": "layered",
+  "elk.direction": "DOWN",
+  "elk.layered.incremental": "true",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "180",
+  "elk.spacing.nodeNode": "120",
+};
+
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 40;
+
+export async function layoutGraph(nodes: Node[], edges: Edge[]) {
+  const graph = {
+    id: "root",
+    layoutOptions,
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+      x: node.position.x,
+      y: node.position.y,
+    })),
+    edges: edges.map((edge) => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
+
+  const layout = await elk.layout(graph);
+
+  return nodes.map((node) => {
+    const elkNode = layout.children?.find((n) => n.id === node.id);
+
+    return {
+      ...node,
+      position: {
+        x: elkNode?.x ?? 0,
+        y: elkNode?.y ?? 0,
+      },
+    };
+  });
+}
+</file>
+
+<file path="src/components/GraphStage/useFollowNode.ts">
+import { useCallback } from "react";
+import { useReactFlow, type Node } from "@xyflow/react";
+
+const NODE_WIDTH = 180;
+const NODE_HEIGHT = 40;
+
+export function useFollowNode(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  zoom: number,
+) {
+  const rf = useReactFlow();
+
+  return useCallback(
+    (node: Node) => {
+      if (!containerRef.current) return;
+
+      const rect = containerRef.current.getBoundingClientRect();
+
+      const width = rect.width;
+      const height = rect.height;
+
+      const nodeCenter = {
+        x: node.position.x + NODE_WIDTH / 2,
+        y: node.position.y + NODE_HEIGHT / 2,
+      };
+
+      const screen = rf.flowToScreenPosition(nodeCenter);
+
+      const marginX = width * 0.25;
+      const marginY = height * 0.25;
+
+      let dx = 0;
+      let dy = 0;
+
+      if (screen.x < marginX) {
+        dx = screen.x - marginX;
+      } else if (screen.x > width - marginX) {
+        dx = screen.x - (width - marginX);
+      }
+
+      if (screen.y < marginY) {
+        dy = screen.y - marginY;
+      } else if (screen.y > height - marginY) {
+        dy = screen.y - (height - marginY);
+      }
+
+      if (dx === 0 && dy === 0) return;
+
+      const viewport = rf.getViewport();
+
+      rf.setViewport(
+        {
+          x: viewport.x - dx,
+          y: viewport.y - dy,
+          zoom,
+        },
+        { duration: 450 },
+      );
+    },
+    [rf, zoom, containerRef],
+  );
+}
+</file>
+
+<file path="src/state/graphPlayback.ts">
+import { atom } from "jotai";
+
+export const graphPlayingAtom = atom(false);
+</file>
+
+<file path="test-results/SearchBar-SearchBar.e2e-Se-15d87-with-the-graph-stroke-color/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-1d137-segment-left-edge-at-center/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-53b96--width-and-follows-movement/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-553b5-hen-leaving-the-menu-bounds/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-736b3-ally-with-the-hover-segment/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-86b54-he-top-left-on-first-render/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-9dc53-repositions-after-it-spawns/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-c9864-ft-edge-at-varied-positions/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
+</file>
+
+<file path="test-results/SearchScopeMenu-SearchScop-e069a-d-menu-share-the-same-width/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
 </file>
 
 <file path="public/file.svg">
@@ -289,69 +442,43 @@ if (typeof value.value === "string" && value.value.trim().length) {
 </file>
 
 <file path="src/app/api/log/route.ts">
-export async function POST(req: Request)
-⋮----
-// absolutely never throw here or the logger loops
-</file>
+let renderCounter = 0;
 
-<file path="src/components/GraphStage/config.ts">
-import { forceLink, forceManyBody, forceSimulation, forceX, forceY } from "d3-force";
-⋮----
-import { collide } from "./forces";
-import type { SimNode } from "./types";
-⋮----
-settleSpeed: 0.04, // lower = slower motion; adjust to taste
-⋮----
-export function createSimulation()
+export async function POST(req: Request) {
+  try {
+    const text = await req.text();
+    const data = JSON.parse(text);
+
+    const ts = new Date(data.ts).toISOString();
+    const msg = String(data.args?.[0] ?? "");
+
+    if (msg.includes("[HMR] connected")) {
+      renderCounter++;
+
+      console.log(
+        "\n\n" +
+          "══════════════════════════════════════════════\n" +
+          `   PAGE RENDER #${renderCounter}\n` +
+          `   ${ts}\n` +
+          "══════════════════════════════════════════════\n\n",
+      );
+    }
+
+    const level = data.type.replace("console.", "").toUpperCase();
+
+    console.log("\n\n    [CLIENT " + level + "]", ...data.args, "\n\n");
+
+    return new Response(null, { status: 204 });
+  } catch (err) {
+    // absolutely never throw here or the logger loops
+    console.log("\n[LOGGER ERROR]", err);
+    return new Response(null, { status: 204 });
+  }
+}
 </file>
 
 <file path="src/components/GraphStage/index.ts">
-
-</file>
-
-<file path="src/components/GraphStage/random.ts">
-export function createRng(seed: number)
-</file>
-
-<file path="src/components/GraphStage/types.ts">
-import type { Node } from "@xyflow/react";
-⋮----
-export type SimNode = Node & {
-  x: number;
-  y: number;
-  fx?: number;
-  fy?: number;
-  vx?: number;
-  vy?: number;
-  width?: number;
-  height?: number;
-  measured?: { width?: number; height?: number };
-};
-⋮----
-export type DragEvents = {
-  start: (event: any, node: Node) => void;
-  drag: (event: any, node: Node) => void;
-  stop: () => void;
-};
-</file>
-
-<file path="src/components/GraphStage/useForceLayout.ts">
-import { useEffect, useMemo } from "react";
-import { forceLink, type Simulation } from "d3-force";
-import { useNodesInitialized, useReactFlow } from "@xyflow/react";
-⋮----
-import { SIM_CONFIG } from "./config";
-import { createRng } from "./random";
-import type { DragEvents, SimNode } from "./types";
-⋮----
-export function useForceLayout(
-  sim: Simulation<SimNode, any>,
-  draggingNodeRef: React.MutableRefObject<SimNode | null>,
-): DragEvents
-⋮----
-const lerp = (a: number, b: number, t: number)
-⋮----
-const tick = (startTime: number) =>
+export { default } from "./GraphStage";
 </file>
 
 <file path="src/components/SearchBar/idea.md">
@@ -543,391 +670,653 @@ Also: Make the repo selector width match the search bar exactly.
 </file>
 
 <file path="src/components/SearchBar/index.ts">
-
-</file>
-
-<file path="src/components/ui/absolute-center.tsx">
-import { ark } from '@ark-ui/react/factory'
-import type { ComponentProps } from 'react'
-import { styled } from 'styled-system/jsx'
-import { absoluteCenter } from 'styled-system/recipes'
-⋮----
-export type AbsoluteCenterProps = ComponentProps<typeof AbsoluteCenter>
-</file>
-
-<file path="src/components/ui/button.tsx">
-import { ark } from '@ark-ui/react/factory'
-import { createContext, mergeProps } from '@ark-ui/react/utils'
-import { type ComponentProps, forwardRef, useMemo } from 'react'
-import { styled } from 'styled-system/jsx'
-import { type ButtonVariantProps, button } from 'styled-system/recipes'
-import { Group, type GroupProps } from './group'
-import { Loader } from './loader'
-⋮----
-interface ButtonLoadingProps {
-  /**
-   * If `true`, the button will show a loading spinner.
-   * @default false
-   */
-  loading?: boolean | undefined
-  /**
-   * The text to show while loading.
-   */
-  loadingText?: React.ReactNode | undefined
-  /**
-   * The spinner to show while loading.
-   */
-  spinner?: React.ReactNode | undefined
-  /**
-   * The placement of the spinner
-   * @default "start"
-   */
-  spinnerPlacement?: 'start' | 'end' | undefined
-}
-⋮----
-/**
-   * If `true`, the button will show a loading spinner.
-   * @default false
-   */
-⋮----
-/**
-   * The text to show while loading.
-   */
-⋮----
-/**
-   * The spinner to show while loading.
-   */
-⋮----
-/**
-   * The placement of the spinner
-   * @default "start"
-   */
-⋮----
-type BaseButtonProps = ComponentProps<typeof BaseButton>
-⋮----
-export interface ButtonProps extends BaseButtonProps, ButtonLoadingProps {}
-⋮----
-export interface ButtonGroupProps extends GroupProps, ButtonVariantProps {}
-</file>
-
-<file path="src/components/ui/checkbox.tsx">
-import { Checkbox, useCheckboxContext } from '@ark-ui/react/checkbox'
-import { type ComponentProps, forwardRef } from 'react'
-import { createStyleContext, styled } from 'styled-system/jsx'
-import { checkbox } from 'styled-system/recipes'
-import type { HTMLStyledProps } from 'styled-system/types'
-⋮----
-export type RootProps = ComponentProps<typeof Root>
-export type HiddenInputProps = ComponentProps<typeof HiddenInput>
-</file>
-
-<file path="src/components/ui/field.tsx">
-import { Field } from '@ark-ui/react/field'
-import type { ComponentProps } from 'react'
-import { createStyleContext } from 'styled-system/jsx'
-import { field } from 'styled-system/recipes'
-⋮----
-export type RootProps = ComponentProps<typeof Root>
-</file>
-
-<file path="src/components/ui/graph-background.tsx">
-import { Background, type BackgroundProps } from "@xyflow/react";
-import { reactFlowTheme } from "@/theme/react-flow";
-⋮----
-type Props = Omit<BackgroundProps, "color" | "bgColor">;
-⋮----
-export function GraphBackground(props: Props)
-</file>
-
-<file path="src/components/ui/group.tsx">
-import { ark } from '@ark-ui/react'
-import type { ComponentProps } from 'react'
-import { styled } from 'styled-system/jsx'
-import { group } from 'styled-system/recipes'
-⋮----
-export type GroupProps = ComponentProps<typeof Group>
-</file>
-
-<file path="src/components/ui/input.tsx">
-import { Field } from '@ark-ui/react/field'
-import type { ComponentProps } from 'react'
-import { styled } from 'styled-system/jsx'
-import { input } from 'styled-system/recipes'
-⋮----
-export type InputProps = ComponentProps<typeof Input>
-</file>
-
-<file path="src/components/ui/loader.tsx">
-import { forwardRef } from 'react'
-import type { HTMLStyledProps } from 'styled-system/jsx'
-import { AbsoluteCenter } from './absolute-center'
-import { Span } from './span'
-import { Spinner } from './spinner'
-⋮----
-export interface LoaderProps extends HTMLStyledProps<'span'> {
-  /**
-   * Whether the loader is visible
-   * @default true
-   */
-  visible?: boolean | undefined
-  /**
-   * The spinner to display when loading
-   */
-  spinner?: React.ReactNode | undefined
-  /**
-   * The placement of the spinner
-   * @default "start"
-   */
-  spinnerPlacement?: 'start' | 'end' | undefined
-  /**
-   * The text to display when loading
-   */
-  text?: React.ReactNode | undefined
-
-  children?: React.ReactNode
-}
-⋮----
-/**
-   * Whether the loader is visible
-   * @default true
-   */
-⋮----
-/**
-   * The spinner to display when loading
-   */
-⋮----
-/**
-   * The placement of the spinner
-   * @default "start"
-   */
-⋮----
-/**
-   * The text to display when loading
-   */
-</file>
-
-<file path="src/components/ui/span.tsx">
-import type { ComponentProps } from 'react'
-import { styled } from 'styled-system/jsx'
-⋮----
-export type SpanProps = ComponentProps<typeof Span>
-</file>
-
-<file path="src/components/ui/spinner.tsx">
-import { ark } from '@ark-ui/react/factory'
-import type { ComponentProps } from 'react'
-import { styled } from 'styled-system/jsx'
-import { spinner } from 'styled-system/recipes'
-⋮----
-export type SpinnerProps = ComponentProps<typeof Spinner>
-</file>
-
-<file path="src/components/ui/themed-react-flow.tsx">
-import { ReactFlow } from "@xyflow/react";
-import { cx } from "../../../styled-system/css";
-import {
-  reactFlowCanvasClass,
-  reactFlowHandleColorsClass,
-  reactFlowVarsClass,
-} from "./search-styles";
-⋮----
-type Props = React.ComponentProps<typeof ReactFlow>;
+export { default } from "./SearchBar";
 </file>
 
 <file path="src/components/ClientConsoleBridge.tsx">
+"use client";
+
 import { mirrorConsole } from "@/lib/clientLogger";
-⋮----
-export default function ClientConsoleBridge()
+
+mirrorConsole();
+
+export default function ClientConsoleBridge() {
+  return null;
+}
+</file>
+
+<file path="src/graph/events.ts">
+export type GraphNode = {
+  id: string;
+  label?: string;
+  kind: "symbol" | "function" | "file" | "type";
+  state: "anchor" | "pending" | "resolved";
+  tokens?: number;
+};
+
+export type GraphEdge = {
+  source: string;
+  target: string;
+  kind: "calls" | "imports" | "references";
+};
+
+export type GraphEvent =
+  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
+  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
+  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
+  | { type: "setContext"; nodes: string[] }
+  | { type: "iteration"; step: number };
+</file>
+
+<file path="src/graph/fixtures.ts">
+import type { GraphEvent } from "./events";
+import type { Observable } from "rxjs";
+import { from } from "rxjs";
+
+export type Fixture = {
+  id: string;
+  label: string;
+  prompt: string;
+  events$: () => Observable<GraphEvent>;
+};
+
+/**
+ * Fixtures now only define events.
+ * No playback timing here.
+ */
+
+const tanstackEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:useQuery",
+        label: "useQuery",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+    reason: "User query entrypoint",
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:QueryObserver",
+        label: "QueryObserver",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+    reason: "useQuery delegates to QueryObserver",
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:useQuery",
+        target: "function:QueryObserver",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:QueryClient",
+        label: "QueryClient",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:notifyManager",
+        label: "notifyManager",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+    reason: "Observer interacts with QueryClient and scheduling",
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:QueryObserver",
+        target: "function:QueryClient",
+        kind: "references",
+      },
+      {
+        source: "function:QueryObserver",
+        target: "function:notifyManager",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:Query",
+        label: "Query",
+        kind: "type",
+        state: "pending",
+      },
+      {
+        id: "function:Retryer",
+        label: "Retryer",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:QueryClient",
+        target: "function:Query",
+        kind: "references",
+      },
+      {
+        source: "function:Query",
+        target: "function:Retryer",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 4 },
+
+  {
+    type: "updateNode",
+    id: "function:QueryObserver",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:QueryClient",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:Query",
+    patch: { state: "resolved" },
+  },
+];
+
+const reduxEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createSlice",
+        label: "createSlice",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createReducer",
+        label: "createReducer",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:createAction",
+        label: "createAction",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "function:createReducer",
+        kind: "calls",
+      },
+      {
+        source: "function:createSlice",
+        target: "function:createAction",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:Slice",
+        label: "Slice",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "type:Slice",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:createReducer",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:createAction",
+    patch: { state: "resolved" },
+  },
+];
+
+const zustandEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createStore",
+        label: "createStore",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:setState",
+        label: "setState",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:subscribe",
+        label: "subscribe",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "function:setState",
+        kind: "calls",
+      },
+      {
+        source: "function:createStore",
+        target: "function:subscribe",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:StoreApi",
+        label: "StoreApi",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "type:StoreApi",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:setState",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:subscribe",
+    patch: { state: "resolved" },
+  },
+];
+
+const tanstackFixture = {
+  id: "tanstack",
+  label: "TanStack Query",
+  prompt: "How does useQuery work internally in TanStack Query?",
+  events$: () => from(tanstackEvents),
+} as const satisfies Fixture;
+
+const reduxFixture = {
+  id: "redux",
+  label: "Redux Toolkit",
+  prompt: "How does createSlice generate reducers in Redux Toolkit?",
+  events$: () => from(reduxEvents),
+} as const satisfies Fixture;
+
+const zustandFixture = {
+  id: "zustand",
+  label: "Zustand",
+  prompt: "How does Zustand create and update store state?",
+  events$: () => from(zustandEvents),
+} as const satisfies Fixture;
+
+export const fixtureRegistry = {
+  tanstack: tanstackFixture,
+  redux: reduxFixture,
+  zustand: zustandFixture,
+} as const satisfies Record<string, Fixture>;
+</file>
+
+<file path="src/graph/graphStream.ts">
+import { Observable, concatMap, delay, of, filter, take, startWith } from "rxjs";
+import { scan, shareReplay, tap } from "rxjs/operators";
+import { applyGraphEvent, initialGraphState } from "./reducer";
+import type { GraphEvent } from "./events";
+
+const EVENT_DELAY_MS = 700;
+
+export function createGraphState$(
+  events$: Observable<GraphEvent>,
+  playing$: Observable<boolean>,
+) {
+  const gatedEvents$ = events$.pipe(
+    // Each event waits until play is true before continuing; pausing halts the next step.
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        concatMap(() => of(event).pipe(delay(EVENT_DELAY_MS))),
+      ),
+    ),
+  );
+
+  return gatedEvents$.pipe(
+    tap((event) => {
+      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
+      console.log(event);
+      console.groupEnd();
+    }),
+
+    scan(applyGraphEvent, initialGraphState),
+
+    tap((state) => {
+      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
+      console.log(state);
+      console.groupEnd();
+    }),
+
+    startWith(initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+}
+</file>
+
+<file path="src/graph/reducer.ts">
+import type { GraphEvent, GraphNode, GraphEdge } from "./events";
+
+export type GraphState = {
+  nodes: Record<string, GraphNode>;
+  edges: GraphEdge[];
+  context: Set<string>;
+  iteration: number;
+};
+
+export const initialGraphState: GraphState = {
+  nodes: {},
+  edges: [],
+  context: new Set(),
+  iteration: 0,
+};
+
+export function applyGraphEvent(
+  state: GraphState,
+  event: GraphEvent,
+): GraphState {
+  switch (event.type) {
+    case "addNodes": {
+      const nodes = { ...state.nodes };
+      for (const n of event.nodes) nodes[n.id] = n;
+      return { ...state, nodes };
+    }
+
+    case "addEdges":
+      return { ...state, edges: [...state.edges, ...event.edges] };
+
+    case "updateNode":
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [event.id]: {
+            ...state.nodes[event.id],
+            ...event.patch,
+          },
+        },
+      };
+
+    case "setContext":
+      return { ...state, context: new Set(event.nodes) };
+
+    case "iteration":
+      return { ...state, iteration: event.step };
+
+    default:
+      return state;
+  }
+}
 </file>
 
 <file path="src/lib/clientLogger.ts">
-export function mirrorConsole()
-⋮----
-if (installed) return; // prevent Fast Refresh duplication
-⋮----
-const send = (type: string, args: unknown[]) =>
-⋮----
-// never log logger errors
+let sending = false;
+let installed = false;
+
+export function mirrorConsole() {
+  if (typeof window === "undefined") return;
+  if (installed) return; // prevent Fast Refresh duplication
+  installed = true;
+
+  const send = (type: string, args: unknown[]) => {
+    if (sending) return;
+
+    try {
+      sending = true;
+
+      const payload = JSON.stringify({
+        type,
+        args,
+        ts: Date.now(),
+        path: window.location.pathname,
+      });
+
+      navigator.sendBeacon(
+        "/api/log",
+        new Blob([payload], { type: "application/json" }),
+      );
+    } catch {
+      // never log logger errors
+    } finally {
+      sending = false;
+    }
+  };
+
+  const methods = ["error", "warn", "log", "info", "debug"] as const;
+
+  for (const method of methods) {
+    const original = console[method];
+
+    console[method] = (...args: unknown[]) => {
+      send(`console.${method}`, args);
+      original.apply(console, args);
+    };
+  }
+
+  window.addEventListener("error", (event) => {
+    if (String(event.filename ?? "").includes("/api/log")) return;
+
+    send("window.error", [
+      event.message,
+      event.filename,
+      event.lineno,
+      event.colno,
+      event.error?.stack,
+    ]);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const msg = String(event.reason ?? "");
+    if (msg.includes("/api/log")) return;
+
+    send("unhandledrejection", [event.reason]);
+  });
+}
+</file>
+
+<file path="src/state/fixtureAtom.ts">
+import { atom } from "jotai";
+import { fixtureRegistry } from "@/graph/fixtures";
+
+export type FixtureKey = keyof typeof fixtureRegistry;
+
+export const selectedFixtureAtom = atom<FixtureKey | null>(null);
+</file>
+
+<file path="src/state/fixturePromptAtom.ts">
+import { atom } from "jotai";
+import { selectedFixtureAtom } from "./fixtureAtom";
+import { fixtureRegistry } from "@/graph/fixtures";
+
+export const fixturePromptAtom = atom((get) => {
+  const key = get(selectedFixtureAtom);
+
+  if (!key) return "";
+
+  return fixtureRegistry[key].prompt;
+});
 </file>
 
 <file path="src/state/graphStage.ts">
 import { atom } from "jotai";
 import type { Edge, Node } from "@xyflow/react";
-⋮----
-import { reactFlowNodeStyle } from "@/theme/react-flow";
+
+export const graphInitialNodesAtom = atom<Node[]>([]);
+
+export const graphInitialEdgesAtom = atom<Edge[]>([]);
 </file>
 
-<file path="src/theme/colors/green.ts">
-import { defineSemanticTokens } from '@pandacss/dev'
-</file>
+<file path="src/state/graphStreamAtom.ts">
+import { atomWithObservable } from "jotai/utils";
+import { selectedFixtureAtom } from "./fixtureAtom";
+import { fixtureRegistry } from "@/graph/fixtures";
+import { createGraphState$ } from "@/graph/graphStream";
+import { graphPlayingAtom } from "./graphPlayback";
+import { of } from "rxjs";
+import { initialGraphState } from "@/graph/reducer";
 
-<file path="src/theme/colors/red.ts">
-import { defineSemanticTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/colors/slate.ts">
-import { defineSemanticTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/colors/vercel.ts">
-import { defineSemanticTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/absolute-center.ts">
-import { defineRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/button.ts">
-import { defineRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/checkbox.ts">
-import { checkboxAnatomy } from '@ark-ui/react/anatomy'
-import { defineSlotRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/field.ts">
-import { fieldAnatomy } from '@ark-ui/react/anatomy'
-import { defineSlotRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/group.ts">
-import { defineRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/recipes/spinner.ts">
-import { defineRecipe } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/tokens/colors.ts">
-import { defineTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/tokens/durations.ts">
-import { defineTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/tokens/z-index.ts">
-import { defineTokens } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/animation-styles.ts">
-import { defineAnimationStyles } from '@pandacss/dev'
-</file>
-
-<file path="src/theme/capture-react-flow.mjs">
 /**
- * Capture screenshots of the current React Flow view and its visible parents.
+ * Cache for GraphState streams.
  *
- * Assumes the dev server is already running (default: http://127.0.0.1:5000).
- * Usage: npm run shot:theme
- *
- * Outputs are written to src/theme/theme-shots/<timestamp>/.
+ * Each fixture's GraphState observable is created once and reused.
  */
-async function main() {
-⋮----
-await waitForServer(baseURL);
-⋮----
-const themeDir = path.dirname(new URL(import.meta.url).pathname);
-const outDir = path.join(themeDir, "theme-shots");
-const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-const outFile = path.join(outDir, `${timestamp}.json`);
-const screenshotFile = path.join(outDir, `${timestamp}.png`);
-await fs.mkdir(outDir, { recursive: true });
-const browser = await chromium.launch({
-⋮----
-const page = await browser.newPage({
-⋮----
-await page.goto(baseURL, { waitUntil: "domcontentloaded" });
-⋮----
-const flow = page.locator(".react-flow");
-await flow.waitFor({ state: "visible", timeout: 8_000 });
-await page.waitForTimeout(120);
-⋮----
-const snapshot = await page.evaluate(() => {
-const root = document.querySelector(".react-flow");
-const nodeEl = document.querySelector(".react-flow__node");
-const edgeEl = document.querySelector(".react-flow__edge-path");
-const handleEl = document.querySelector(".react-flow__handle");
-const background = document.querySelector(".react-flow__background");
-⋮----
-function readVars(el, names) {
-⋮----
-const style = getComputedStyle(el);
-⋮----
-const value = style.getPropertyValue(name).trim();
-if (value) entries.push([name, value]);
-⋮----
-return Object.fromEntries(entries);
-⋮----
-cssVars: readVars(root, [
-⋮----
-canvas: root ? getComputedStyle(root).backgroundColor : null,
-⋮----
-background: getComputedStyle(nodeEl).backgroundColor,
-borderColor: getComputedStyle(nodeEl).borderColor,
-color: getComputedStyle(nodeEl).color,
-boxShadow: getComputedStyle(nodeEl).boxShadow,
-⋮----
-stroke: getComputedStyle(edgeEl).stroke,
-strokeWidth: getComputedStyle(edgeEl).strokeWidth,
-⋮----
-? { background: getComputedStyle(handleEl).backgroundColor }
-⋮----
-stroke: getComputedStyle(background).stroke,
-fill: getComputedStyle(background).fill,
-⋮----
-await fs.writeFile(outFile, JSON.stringify(snapshot, null, 2), "utf-8");
-await page.screenshot({ path: screenshotFile, fullPage: true });
-⋮----
-await browser.close();
-console.log(`Saved theme snapshot for ${baseURL} -> ${outFile}`);
-console.log(`Saved full-page screenshot -> ${screenshotFile}`);
-⋮----
-async function waitForServer(url, timeoutMs = 5_000) {
-const deadline = Date.now() + timeoutMs;
-while (Date.now() < deadline) {
-⋮----
-const res = await fetch(url, { method: "HEAD" });
-⋮----
-// ignore and retry
-⋮----
-await new Promise((resolve) => setTimeout(resolve, 250));
-⋮----
-throw new Error(`Server not responding at ${url} within ${timeoutMs}ms`);
-⋮----
-main().catch((error) => {
-console.error(error);
-</file>
+const graphStreamCache = new Map();
 
-<file path="src/theme/conditions.ts">
+/**
+ * Prewarm the cache so pipelines are constructed at startup.
+ */
+for (const [key, fixture] of Object.entries(fixtureRegistry)) {
+  const events$ = fixture.events$();
 
-</file>
+  // temporary idle stream until playback begins
+  const graphState$ = createGraphState$(events$, of(false));
 
-<file path="src/theme/keyframes.ts">
-import { defineKeyframes } from '@pandacss/dev'
-⋮----
-// collapse
-⋮----
-// fade
-⋮----
-// slide from (full)
-⋮----
-// slide to (full)
-⋮----
-// slide from
-⋮----
-// slide to
-⋮----
-// scale
-</file>
+  graphStreamCache.set(key, graphState$);
+}
 
-<file path="src/theme/text-styles.ts">
-import { defineTextStyles } from '@pandacss/dev'
+/**
+ * graphStateAtom
+ *
+ * Bridges RxJS → Jotai.
+ *
+ * This atom rebuilds the observable whenever:
+ *
+ * • the selected fixture changes
+ * • playback state changes
+ */
+export const graphStateAtom = atomWithObservable((get) => {
+  const key = get(selectedFixtureAtom);
+  const playing = get(graphPlayingAtom);
+
+  if (!key) {
+    return of(initialGraphState);
+  }
+
+  const events$ = fixtureRegistry[key].events$();
+
+  // convert playback state to observable
+  return createGraphState$(events$, of(playing));
+});
 </file>
 
 <file path="src/types/d3-quadtree.d.ts">
-export type QuadtreeNode<T> =
+declare module "d3-quadtree" {
+  export type QuadtreeNode<T> =
     | { data: T; next?: QuadtreeNode<T>; length?: undefined }
     | {
         length: number;
@@ -936,22 +1325,19 @@ export type QuadtreeNode<T> =
         2?: QuadtreeNode<T>;
         3?: QuadtreeNode<T>;
       };
-⋮----
-export interface Quadtree<T> {
+
+  export interface Quadtree<T> {
     visit(
       callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
     ): this;
   }
-⋮----
-visit(
-      callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
-    ): this;
-⋮----
-export function quadtree<T>(
+
+  export function quadtree<T>(
     data?: T[],
     x?: (d: T) => number,
     y?: (d: T) => number,
   ): Quadtree<T>;
+}
 </file>
 
 <file path="components.json">
@@ -973,7 +1359,76 @@ export function quadtree<T>(
 </file>
 
 <file path="eslint.config.mjs">
+import tsParser from "@typescript-eslint/parser";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+import styleFirewall from "./eslint/style-firewall.mjs";
 
+export default [
+  {
+    ignores: [
+      "**/.next/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/styled-system/**",
+      "**/playwright/**",
+      "**/test-results/**",
+    ],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    plugins: {
+      react,
+      "react-hooks": reactHooks,
+      "style-firewall": styleFirewall,
+    },
+    settings: {
+      react: { version: "detect" },
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "style-firewall/no-inline-style-except-geometry": "error",
+      "style-firewall/no-raw-colors": "error",
+      "style-firewall/no-raw-box-shadow": "error",
+      "style-firewall/no-raw-border-radius": "error",
+      "style-firewall/no-styling-outside-ui": [
+        "error",
+        {
+          allow: ["src/components/ui", "src/theme", "src/styled-system"],
+        },
+      ],
+      "style-firewall/no-surface-props-outside-recipes": [
+        "error",
+        {
+          allow: ["src/theme", "src/components/ui"],
+        },
+      ],
+      "style-firewall/prefer-panda-css": "error",
+    },
+  },
+  {
+    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.e2e.spec.ts"],
+    rules: {
+      "style-firewall/no-inline-style-except-geometry": "off",
+      "style-firewall/no-raw-colors": "off",
+      "style-firewall/no-raw-box-shadow": "off",
+      "style-firewall/no-raw-border-radius": "off",
+      "style-firewall/no-styling-outside-ui": "off",
+      "style-firewall/no-surface-props-outside-recipes": "off",
+      "style-firewall/prefer-panda-css": "off",
+    },
+  },
+];
 </file>
 
 <file path="flake.lock">
@@ -1116,57 +1571,252 @@ export function quadtree<T>(
 
 <file path="next.config.ts">
 import type { NextConfig } from "next";
-⋮----
-/* config options here */
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
 </file>
 
 <file path="vitest.setup.ts">
-class ResizeObserver
-⋮----
-observe()
-unobserve()
-disconnect()
-⋮----
-// ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
+import "@testing-library/jest-dom/vitest";
+
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+if (!globalThis.ResizeObserver) {
+  // ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
+  globalThis.ResizeObserver = ResizeObserver;
+}
 </file>
 
-<file path="src/components/GraphStage/forces.ts">
-import { quadtree } from "d3-quadtree";
-⋮----
-import type { SimNode } from "./types";
-⋮----
-export function collide()
-⋮----
-const force = (alpha: number) =>
+<file path="src/app/globals.css">
+/* Elastic edge styling during spring impulse */
+.edge-elastic path {
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  animation: edgeSpring 0.5s linear infinite;
+}
+
+@keyframes edgeSpring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 12;
+  }
+}
 </file>
 
 <file path="src/components/GraphStage/GraphStage.tsx">
-import { useCallback, useEffect, useRef } from "react";
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import {
   BackgroundVariant,
   ReactFlowProvider,
+  useReactFlow,
   useEdgesState,
   useNodesState,
+  Controls,
   type Edge,
   type Node,
 } from "@xyflow/react";
-⋮----
-import { GraphBackground, ThemedReactFlow, graphStageBackgroundClass } from "@/components/ui";
+
+import {
+  GraphBackground,
+  ThemedReactFlow,
+  graphStageBackgroundClass,
+  reactFlowCanvasClass,
+} from "@/components/ui";
+
 import { flowDraggingAtom } from "@/state/searchbar";
-import { graphInitialEdgesAtom, graphInitialNodesAtom } from "@/state/graphStage";
+
+import {
+  graphInitialEdgesAtom,
+  graphInitialNodesAtom,
+} from "@/state/graphStage";
+
 import { reactFlowTheme } from "@/theme/react-flow";
-⋮----
-import { createSimulation } from "./config";
-import { useForceLayout } from "./useForceLayout";
-import type { SimNode } from "./types";
+import { layoutGraph } from "./layoutGraph";
+
+import { useFollowNode } from "./useFollowNode";
+
+import "@xyflow/react/dist/style.css";
+
+import { graphStateAtom } from "@/state/graphStreamAtom";
+
+const nodeTypes = {};
+const edgeTypes = {};
+const INITIAL_ZOOM = 2;
+
+function GraphStageInner() {
+  const rf = useReactFlow();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
+
+  const initialNodes = useAtomValue(graphInitialNodesAtom);
+  const initialEdges = useAtomValue(graphInitialEdgesAtom);
+
+  const graphState = useAtomValue(graphStateAtom);
+
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+
+  const [layoutReady, setLayoutReady] = useState(false);
+
+  const prevNodeIdsRef = useRef<Set<string>>(new Set());
+
+  /**
+   * Rebuild graph whenever stream updates
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function runLayout() {
+      setLayoutReady(false);
+
+      const ids = Object.keys(graphState.nodes);
+
+      const prevIds = prevNodeIdsRef.current;
+      const addedId = ids.find((id) => !prevIds.has(id));
+
+      prevNodeIdsRef.current = new Set(ids);
+
+      const baseNodes: Node[] = ids.map((id) => {
+        const n = graphState.nodes[id];
+
+        return {
+          id: n.id,
+          data: { label: n.label ?? n.id },
+          position: { x: 0, y: 0 },
+          style: {
+            transition: "transform 0.45s cubic-bezier(.22,1,.36,1)",
+          },
+        };
+      });
+
+      const baseEdges: Edge[] = graphState.edges.map((e, index) => ({
+        id: `${e.source}-${e.target}-${index}`,
+        source: e.source,
+        target: e.target,
+        animated: true,
+        label: e.kind,
+        data: { kind: e.kind },
+      }));
+
+      const layoutedNodes = await layoutGraph(baseNodes, baseEdges);
+
+      if (cancelled) return;
+
+      setNodes(layoutedNodes);
+      setEdges(baseEdges);
+
+      setLayoutReady(true);
+
+      const lowestNode = layoutedNodes.reduce((best, n) => {
+        if (!best) return n;
+        return n.position.y > best.position.y ? n : best;
+      }, layoutedNodes[0]);
+
+      if (lowestNode) {
+        requestAnimationFrame(() => {
+          followNode(lowestNode);
+        });
+      }
+    }
+
+    runLayout();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [graphState, rf, setNodes, setEdges, followNode]);
+
+  /**
+   * Drag state (used by SearchBar system)
+   */
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={graphStageBackgroundClass}
+      suppressHydrationWarning
+    >
+      <ThemedReactFlow
+        className={reactFlowCanvasClass}
+        defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
+        minZoom={0.25}
+        maxZoom={4}
+        zoomOnScroll
+        zoomOnPinch
+        zoomOnDoubleClick
+        panOnDrag
+        nodes={layoutReady ? nodes : []}
+        edges={layoutReady ? edges : []}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
+        defaultEdgeOptions={{
+          type: "default",
+          style: {
+            stroke: reactFlowTheme.edge.stroke,
+            strokeWidth: 1,
+          },
+          markerEnd: {
+            type: "arrowclosed",
+            color: reactFlowTheme.edge.stroke,
+            width: 10,
+            height: 6,
+          },
+        }}
+      >
+        <Controls position="bottom-right" />
+        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
+      </ThemedReactFlow>
+    </div>
+  );
+}
+
+export default function GraphStage() {
+  return (
+    <ReactFlowProvider>
+      <GraphStageInner />
+    </ReactFlowProvider>
+  );
+}
 </file>
 
 <file path="src/components/SearchBar/perimeter.ts">
 type Point = { x: number; y: number };
-⋮----
+
 type Segment = { start: Point; end: Point; length: number };
-⋮----
+
 type ClosestLengthInput = {
   container: HTMLElement | null;
   path: SVGRectElement | null;
@@ -1174,29 +1824,105 @@ type ClosestLengthInput = {
   clientY: number;
   inset: number;
 };
-⋮----
-const toPoint = (x: number, y: number): Point => (
-⋮----
-const segmentLength = (segment: Segment)
-⋮----
-const makeSegments = (width: number, height: number): Segment[] =>
-⋮----
-const build = (start: Point, end: Point): Segment => (
-⋮----
-const closestOnSegment = (point: Point, segment: Segment) =>
-⋮----
+
+const toPoint = (x: number, y: number): Point => ({ x, y });
+
+const segmentLength = (segment: Segment) => segment.length;
+
+const makeSegments = (width: number, height: number): Segment[] => {
+  const p1 = toPoint(0, 0);
+  const p2 = toPoint(width, 0);
+  const p3 = toPoint(width, height);
+  const p4 = toPoint(0, height);
+
+  const build = (start: Point, end: Point): Segment => ({
+    start,
+    end,
+    length: Math.hypot(end.x - start.x, end.y - start.y),
+  });
+
+  return [build(p1, p2), build(p2, p3), build(p3, p4), build(p4, p1)];
+};
+
+const closestOnSegment = (point: Point, segment: Segment) => {
+  const vx = segment.end.x - segment.start.x;
+  const vy = segment.end.y - segment.start.y;
+  const wx = point.x - segment.start.x;
+  const wy = point.y - segment.start.y;
+
+  const segLenSq = vx * vx + vy * vy;
+  if (segLenSq === 0) return { closest: segment.start, distanceSq: 0, t: 0 };
+
+  const t = Math.max(0, Math.min(1, (wx * vx + wy * vy) / segLenSq));
+  const closest = toPoint(segment.start.x + vx * t, segment.start.y + vy * t);
+  const dx = point.x - closest.x;
+  const dy = point.y - closest.y;
+
+  return { closest, distanceSq: dx * dx + dy * dy, t };
+};
+
 export function findClosestPerimeterLength({
   container,
   path,
   clientX,
   clientY,
   inset,
-}: ClosestLengthInput)
+}: ClosestLengthInput) {
+  if (!container || !path) return null;
+
+  const containerRect = container.getBoundingClientRect();
+  const svgX = clientX - containerRect.left + inset;
+  const svgY = clientY - containerRect.top + inset;
+
+  const originX = path.x?.baseVal?.value ?? 0;
+  const originY = path.y?.baseVal?.value ?? 0;
+  const width = path.width?.baseVal?.value ?? 0;
+  const height = path.height?.baseVal?.value ?? 0;
+
+  if (width <= 0 || height <= 0) return null;
+
+  const pointer = toPoint(svgX - originX, svgY - originY);
+  const segments = makeSegments(width, height);
+  const perimeterSimple = segments.reduce(
+    (total, segment) => total + segmentLength(segment),
+    0,
+  );
+
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let bestLengthSimple = 0;
+  let traversed = 0;
+
+  for (const segment of segments) {
+    const { distanceSq, t } = closestOnSegment(pointer, segment);
+    if (distanceSq < bestDistance) {
+      bestDistance = distanceSq;
+      bestLengthSimple = traversed + segment.length * t;
+    }
+    traversed += segment.length;
+  }
+
+  const total =
+    typeof path.getTotalLength === "function"
+      ? path.getTotalLength()
+      : perimeterSimple;
+
+  if (!Number.isFinite(total) || total <= 0) return null;
+
+  const scaledLength =
+    perimeterSimple > 0 ? (bestLengthSimple / perimeterSimple) * total : 0;
+
+  const point =
+    typeof path.getPointAtLength === "function"
+      ? path.getPointAtLength(scaledLength)
+      : { x: 0, y: 0 };
+
+  return { bestLength: scaledLength, total, point };
+}
 </file>
 
 <file path="src/state/searchScopeMachine.ts">
 import { assign, setup } from "xstate";
-⋮----
+
 type UpdateEvent = {
   type: "UPDATE";
   visible: boolean;
@@ -1204,11 +1930,11 @@ type UpdateEvent = {
   top: number;
   width: number;
 };
-⋮----
+
 type HideEvent = { type: "FORCE_HIDE" };
-⋮----
+
 type Events = UpdateEvent | HideEvent;
-⋮----
+
 type Context = {
   visible: boolean;
   latchedLeft: number | null;
@@ -1216,38 +1942,168 @@ type Context = {
   top: number;
   width: number;
 };
-⋮----
-export const createSearchScopeMachine = ()
+
+export const createSearchScopeMachine = () =>
+  setup({
+    types: {} as {
+      context: Context;
+      events: Events;
+    },
+      actions: {
+        assignFromUpdate: assign({
+        visible: ({ event }) => (event.type === "UPDATE" ? event.visible : false),
+        lastLeft: ({ event, context }) => {
+          if (event.type !== "UPDATE") return context.lastLeft;
+          if (context.visible) return context.lastLeft;
+          return event.left;
+        },
+        top: ({ event, context }) =>
+          event.type === "UPDATE" ? event.top : context.top,
+        width: ({ event, context }) =>
+          event.type === "UPDATE" ? event.width : context.width,
+        latchedLeft: ({ context, event }) => {
+          if (event.type !== "UPDATE") return null;
+          if (!event.visible) return null;
+          return context.latchedLeft ?? event.left;
+        },
+      }),
+      clearLatch: assign({
+        latchedLeft: () => null,
+        visible: () => false,
+      }),
+    },
+  }).createMachine({
+    id: "searchScopeMenu",
+    initial: "hidden",
+    context: {
+      visible: false,
+      latchedLeft: null,
+      lastLeft: null,
+      top: 0,
+      width: 0,
+    },
+    states: {
+      hidden: {
+        on: {
+          UPDATE: [
+            {
+              guard: ({ event }) => event.visible,
+              target: "visible",
+              actions: ["assignFromUpdate"],
+            },
+            {
+              actions: ["assignFromUpdate", "clearLatch"],
+            },
+          ],
+        },
+      },
+      visible: {
+        entry: ["assignFromUpdate"],
+        on: {
+          UPDATE: [
+            {
+              guard: ({ event }) => event.visible,
+              actions: ["assignFromUpdate"],
+            },
+            {
+              target: "hidden",
+              actions: ["clearLatch"],
+            },
+          ],
+          FORCE_HIDE: {
+            target: "hidden",
+            actions: ["clearLatch"],
+          },
+        },
+      },
+    },
+  });
 </file>
 
-<file path="src/theme/recipes/index.ts">
-import { checkbox } from "./checkbox";
-import { field } from "./field";
-import { input } from "./input";
-import { spinner } from "./spinner";
-import { absoluteCenter } from "./absolute-center";
-import { group } from "./group";
-import { button } from "./button";
+<file path="test-results/SearchBar-SearchBar.e2e-Se-81aa7-y-and-matches-segment-width/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
 </file>
 
-<file path="src/theme/recipes/input.ts">
-import type { RecipeConfig } from '@pandacss/dev'
+<file path="test-results/SearchBar-SearchBar.e2e-Se-8d4e6-leaving-the-scope-menu-span/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
 </file>
 
-<file path="src/theme/tokens/shadows.ts">
-import { defineSemanticTokens } from '@pandacss/dev'
+<file path="test-results/SearchScopeMenu-SearchScop-56ef8-he-hover-segment-is-present/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
 </file>
 
-<file path="src/theme/global-css.ts">
-import { reactFlowCssVars } from "./react-flow";
-</file>
+<file path="test-results/SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band/error-context.md">
+# Page snapshot
 
-<file path="src/theme/layer-styles.ts">
-import { defineLayerStyles } from "@pandacss/dev";
-</file>
-
-<file path="src/theme/react-flow.ts">
-const imp = (value: string) => `$
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+  - generic [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e29]: Corpus
+      - generic [ref=e30]: Scope
+    - generic [ref=e31]:
+      - generic [ref=e33] [cursor=pointer]:
+        - checkbox "TanStack Query" [ref=e34]
+        - generic [ref=e36]: TanStack Query
+      - generic [ref=e38] [cursor=pointer]:
+        - checkbox "Redux Toolkit" [ref=e39]
+        - generic [ref=e41]: Redux Toolkit
+      - generic [ref=e43] [cursor=pointer]:
+        - checkbox "Zustand" [ref=e44]
+        - generic [ref=e46]: Zustand
+```
 </file>
 
 <file path=".gitignore">
@@ -1408,38 +2264,30 @@ Note: temporary lint exclusions for theme and test files are only to unblock the
 import { defineConfig } from "vitest/config";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-⋮----
-// ⭐ THIS FIXES YOUR ERROR
-</file>
 
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.spec.tsx">
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import { Provider, createStore } from "jotai";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { SearchScopeMenu } from "./SearchScopeMenu";
-import {
-  hoverOffsetAtom,
-  hoverAnchorAtom,
-  pointerPositionAtom,
-  scopeMenuHoverAtom,
-  searchBarSizeAtom,
-  searchBarPositionAtom,
-} from "@/state/searchbar";
-⋮----
-for (const [atom, value] of entries)
-store.set(atom, value);
-⋮----
-// nudge to trigger recalculation after the delay window
-</file>
+const root = fileURLToPath(new URL(".", import.meta.url));
+const srcDir = path.join(root, "src");
 
-<file path="src/components/ui/index.ts">
+export default defineConfig({
+  test: {
+    environment: "happy-dom",
+    globals: true,
+    setupFiles: "./vitest.setup.ts",
+    css: true,
+    include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+    exclude: ["**/*.e2e.*"],
 
-</file>
+    alias: {
+      "@": srcDir,
+      "@/components": path.join(srcDir, "components"),
+      "@/lib": path.join(srcDir, "lib"),
+      "@/theme": path.join(srcDir, "theme"),
 
-<file path="src/components/ui/search-styles.ts">
-import { css, cx } from "../../../styled-system/css";
-import { reactFlowCssVars } from "@/theme/react-flow";
-import type { SystemStyleObject } from "../../../styled-system/types";
+      // ⭐ THIS FIXES YOUR ERROR
+      "styled-system": path.join(root, "styled-system"),
+    },
+  },
+});
 </file>
 
 <file path="panda.config.ts">
@@ -1459,6 +2307,95 @@ import { globalCss } from "@/theme/global-css";
 import { conditions } from "@/theme/conditions";
 import { slotRecipes, recipes } from "@/theme/recipes";
 import { defineConfig } from "@pandacss/dev";
+
+export default defineConfig({
+  preflight: true,
+  include: ["./src/**/*.{js,jsx,ts,tsx}"],
+  jsxFramework: "react",
+  outdir: "styled-system",
+
+  theme: {
+    extend: {
+      animationStyles: animationStyles,
+      recipes: recipes,
+      slotRecipes: slotRecipes,
+      keyframes: keyframes,
+      layerStyles: layerStyles,
+      textStyles: textStyles,
+
+      tokens: {
+        colors: colors,
+        durations: durations,
+        zIndex: zIndex
+      },
+
+      semanticTokens: {
+        colors: {
+          fg: {
+            default: {
+              value: {
+                _light: "{colors.gray.12}",
+                _dark: "{colors.gray.12}"
+              }
+            },
+
+            muted: {
+              value: {
+                _light: "{colors.gray.11}",
+                _dark: "{colors.gray.11}"
+              }
+            },
+
+            subtle: {
+              value: {
+                _light: "{colors.gray.10}",
+                _dark: "{colors.gray.10}"
+              }
+            }
+          },
+
+          border: {
+            value: {
+              _light: "{colors.gray.4}",
+              _dark: "{colors.gray.4}"
+            }
+          },
+
+          error: {
+            value: {
+              _light: "{colors.red.9}",
+              _dark: "{colors.red.9}"
+            }
+          },
+
+          gray: slate,
+          red: red,
+          green: green,
+          vercel: vercel
+        },
+
+        shadows: shadows,
+
+        radii: {
+          l1: {
+            value: "{radii.xs}"
+          },
+
+          l2: {
+            value: "{radii.sm}"
+          },
+
+          l3: {
+            value: "{radii.md}"
+          }
+        }
+      }
+    },
+  },
+
+  globalCss: globalCss,
+  conditions: conditions
+});
 </file>
 
 <file path="tsconfig.json">
@@ -1501,42 +2438,80 @@ import { defineConfig } from "@pandacss/dev";
 </file>
 
 <file path="src/app/layout.tsx">
+import "../../styled-system/styles.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-⋮----
+import "./globals.css";
 import ClientConsoleBridge from "@/components/ClientConsoleBridge";
-⋮----
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "SAT",
+  description: "Constraint solving UI",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-})
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ClientConsoleBridge />
+        {children}
+      </body>
+    </html>
+  );
+}
 </file>
 
 <file path="src/app/page.tsx">
 import { Box } from "../../styled-system/jsx";
 import GraphStage from "@/components/GraphStage";
 import SearchBar from "@/components/SearchBar";
-⋮----
-export default function Home()
+
+export default function Home() {
+  return (
+    <Box position="relative" h="100vh" w="100vw">
+      <GraphStage />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        p="5"
+        pointerEvents="none"
+      >
+        <Box pointerEvents="auto" w="100%" h="72px">
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 </file>
 
 <file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-⋮----
+import * as Checkbox from "@/components/ui/checkbox";
 import { VStack, HStack } from "../../../styled-system/jsx";
-import { useSearchScopeMenu } from "./useSearchScopeMenu";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  hoverAnchorAtom,
-  hoverOffsetAtom,
-  flowDraggingAtom,
-  pointerPositionAtom,
-  scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-} from "@/state/searchbar";
-import { useMemo } from "react";
+import { flowDraggingAtom, scopeMenuHoverAtom } from "@/state/searchbar";
+import { useEffect, useMemo } from "react";
 import {
   menuContainerClass,
   menuControlClass,
@@ -1546,66 +2521,184 @@ import {
   menuLabelClass,
   menuSubLabelClass,
 } from "@/components/ui";
-⋮----
-type Props = {
-  outlineInset: number;
-  segmentLength?: number;
-};
-</file>
 
-<file path="src/components/SearchBar/SearchBar.spec.tsx">
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { type ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { Provider, createStore } from "jotai";
-import SearchBar from "@/components/SearchBar";
-⋮----
-import { flowDraggingAtom } from "@/state/searchbar";
-⋮----
-const movePointer = (element: HTMLElement, x: number, y: number) =>
-⋮----
-const getContainer = ()
-⋮----
-const renderSearchBar = (props?: ComponentProps<typeof SearchBar>) =>
-⋮----
-const mockRect = (width = 320, height = 64, left = 0, top = 0) =>
+import { fixtureRegistry } from "@/graph/fixtures";
+import { selectedFixtureAtom } from "@/state/fixtureAtom";
+import type { SearchScopeMenuState } from "./useSearchScopeMenu";
+
+type Props = {
+  state: SearchScopeMenuState;
+};
+
+const MotionBox = motion.create(VStack);
+
+export function SearchScopeMenu({ state }: Props) {
+  const flowDragging = useAtomValue(flowDraggingAtom);
+
+  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
+
+  const setFixture = useSetAtom(selectedFixtureAtom);
+  const fixtureState = useAtomValue(selectedFixtureAtom);
+
+  const items = useMemo(() => Object.values(fixtureRegistry), []);
+
+  useEffect(() => {
+    console.log("Fixture changed:", fixtureState);
+  }, [fixtureState]);
+
+  const visible = state.visible;
+  const width = state.width;
+  const offsetLeft = state.offsetLeft;
+  const offsetTop = state.offsetTop;
+
+  const content = (
+    <AnimatePresence>
+      {visible && (
+        <MotionBox
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
+          position="absolute"
+          top={`${offsetTop}px`}
+          left={`${offsetLeft}px`}
+          mt="0"
+          w={`${Math.max(0, Math.min(480, width))}px`}
+          px="18px"
+          py="16px"
+          gap="14px"
+          data-testid="searchscope-menu"
+          data-left={`${offsetLeft}`}
+          data-top={`${offsetTop}`}
+          data-width={`${Math.max(0, width)}`}
+          zIndex={1000}
+          className={menuContainerClass}
+          style={{
+            width: `${Math.max(0, Math.min(480, width))}px`,
+            left: `${offsetLeft}px`,
+            top: `${offsetTop}px`,
+          }}
+          onPointerEnter={() => setMenuHover(true)}
+          onPointerLeave={() => {
+            setMenuHover(false);
+          }}
+        >
+          <VStack gap="16px" alignItems="flex-start" width="100%">
+            <HStack
+              justify="space-between"
+              fontSize="14px"
+              w="100%"
+              className={menuHeaderClass}
+              lineHeight="1.3"
+              px="6px"
+            >
+              <span>Corpus</span>
+              <span className={menuSubLabelClass}>Scope</span>
+            </HStack>
+
+            <VStack alignItems="flex-start" gap="12px" w="100%">
+              {items.map((fixture) => (
+                <motion.div
+                  key={fixture.id}
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1 }}
+                  style={{ width: "100%" }}
+                >
+                  <Checkbox.Root
+                    checked={fixtureState === fixture.id}
+                    onCheckedChange={() => {
+                      setFixture(
+                        fixtureState === fixture.id ? null : fixture.id,
+                      );
+                    }}
+                    className={menuItemClass}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control className={menuControlClass}>
+                      <Checkbox.Indicator className={menuIndicatorClass} />
+                    </Checkbox.Control>
+
+                    <Checkbox.Label className={menuLabelClass}>
+                      {fixture.label}
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                </motion.div>
+              ))}
+            </VStack>
+          </VStack>
+        </MotionBox>
+      )}
+    </AnimatePresence>
+  );
+
+  if (flowDragging) return null;
+  if (typeof document === "undefined") return null;
+
+  return createPortal(content, document.body);
+}
 </file>
 
 <file path="src/state/searchbar.ts">
 import { atom } from "jotai";
-⋮----
+
 export type SearchBarSize = { width: number; height: number };
 export type SearchBarPosition = { left: number; top: number };
+
+export const queryAtom = atom("");
+export const searchFocusedAtom = atom(false);
+export const outlineLockedAtom = atom(false);
+export const hoverOffsetAtom = atom<number | null>(null);
+export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
+export const focusOriginAtom = atom(0);
+export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
+export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
+export const perimeterAtom = atom(0);
+export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
+export const scopeMenuHoverAtom = atom(false);
+export const flowDraggingAtom = atom(false);
+export const searchBarContainerAtom = atom<HTMLElement | null>(null);
+export const searchBarPathAtom = atom<SVGRectElement | null>(null);
 </file>
 
 <file path="playwright.config.ts">
 import { defineConfig } from "@playwright/test";
-</file>
 
-<file path="src/components/SearchBar/SearchBar.e2e.spec.ts">
-import { expect, test } from "@playwright/test";
-import { reactFlowTheme } from "@/theme/react-flow";
-⋮----
-const sample = () =>
-⋮----
-// Failing guard: segment should stay in one place; any horizontal drift signals jitter.
-⋮----
-// Drag downward past the bar to trigger the menu.
-⋮----
-// Ensure there is a visible gap between the outline and the input content box using the full outline box.
-⋮----
-// Ensure the stroke draws a segment (non-empty dash length).
-⋮----
-// The rendered svg box should wrap the bar with the inset applied.
-⋮----
-const readSegmentX = async ()
+const isReplit = !!process.env.REPL_ID;
+const basePort = isReplit ? 5000 : 5173;
+
+export default defineConfig({
+  testDir: "./src/components",
+  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
+  timeout: 30_000,
+  workers: process.env.CI ? 4 : 8,
+  use: {
+    headless: true,
+    baseURL: `http://127.0.0.1:${basePort}`,
+    browserName: "chromium",
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
+  },
+  webServer: isReplit
+    ? undefined
+    : {
+        command:
+          'npx panda cssgen "./src/**/*.{ts,tsx}" && npx next dev --hostname 127.0.0.1 --port 5173',
+        url: "http://127.0.0.1:5173",
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+      },
+});
 </file>
 
 <file path="src/components/SearchBar/SearchBar.tsx">
+"use client";
+
 import { useHover } from "@use-gesture/react";
 import { motion } from "framer-motion";
 import {
+  useEffect,
   type ComponentType,
   type PointerEvent as ReactPointerEvent,
 } from "react";
@@ -1624,15 +2717,262 @@ import {
   searchButtonClass,
   searchInputClass,
 } from "@/components/ui";
-⋮----
+import { fixturePromptAtom } from "@/state/fixturePromptAtom";
+import { graphPlayingAtom } from "@/state/graphPlayback";
+import { useAtom } from "jotai";
+import { useSearchScopeMenu } from "../SearchScopeMenu/useSearchScopeMenu";
+
 type Props = {
   onReplay?: (query?: string) => void;
   outlineLockDelayMs?: number;
 };
-⋮----
+
+const MotionStack = motion.create(HStack as ComponentType<any>);
+const MotionButton = motion.create(Button);
+const MotionRect = motion.rect;
+
+const OUTLINE_INSET = 8;
 // Match the SearchBar shell radius (var(--radii-l3) = 6px)
-⋮----
+const OUTLINE_RADIUS = 6;
+const OUTLINE_COLOR = reactFlowTheme.edge.stroke;
 /* hover segment length controls scope menu width */
+export const HOVER_SEGMENT_LENGTH = 400;
+export const OUTLINE_INSET_PX = OUTLINE_INSET;
+
+export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
+  const flowDragging = useAtomValue(flowDraggingAtom);
+  const prompt = useAtomValue(fixturePromptAtom);
+  const [playing, setPlaying] = useAtom(graphPlayingAtom);
+  const menuState = useSearchScopeMenu({
+    outlineInset: OUTLINE_INSET,
+    segmentLength: HOVER_SEGMENT_LENGTH,
+  });
+  const {
+    containerRef,
+    focusOrigin,
+    focused,
+    handleBlur,
+    handleFocus,
+    handlePointerLeave,
+    handlePointerMove,
+    hoverOffset,
+    hoverPathRef,
+    inputRef,
+    outlineLocked,
+    perimeter,
+    size,
+    triggerReplay,
+    setValue,
+    value,
+  } = useSearchBar({
+    hoverSegmentLength: HOVER_SEGMENT_LENGTH,
+    outlineInset: OUTLINE_INSET,
+    outlineLockDelay: outlineLockDelayMs,
+    onReplay,
+    menuState,
+  });
+
+  const hidden = flowDragging;
+
+  const svgWidth = size.width;
+  const svgHeight = size.height;
+  const contentWidth = Math.max(0, svgWidth - OUTLINE_INSET_PX * 2);
+  const contentHeight = Math.max(0, svgHeight - OUTLINE_INSET_PX * 2);
+  const segmentLength = Math.min(
+    HOVER_SEGMENT_LENGTH,
+    contentWidth || HOVER_SEGMENT_LENGTH,
+  );
+  const dashGap = Math.max(
+    1,
+    Math.max(perimeter - segmentLength, segmentLength),
+  );
+
+  const bindHover = useHover(({ hovering, event }) => {
+    if (hovering) {
+      handlePointerMove({
+        clientX: event.clientX,
+        clientY: event.clientY,
+      });
+    } else {
+      handlePointerLeave();
+    }
+  });
+
+  useEffect(() => {
+    setValue(prompt);
+  }, [prompt, setValue]);
+
+  return (
+    <MotionStack
+      ref={containerRef}
+      {...bindHover()}
+      data-focused={focused}
+      data-hidden={hidden}
+      data-testid="searchbar"
+      className={
+        hidden
+          ? [searchBarShellClass, searchBarHiddenClass]
+              .filter(Boolean)
+              .join(" ")
+          : searchBarShellClass
+      }
+      onPointerMove={(event: ReactPointerEvent<HTMLDivElement>) =>
+        handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
+      }
+      onPointerEnter={(event: ReactPointerEvent<HTMLDivElement>) =>
+        handlePointerMove({ clientX: event.clientX, clientY: event.clientY })
+      }
+      onPointerLeave={handlePointerLeave}
+      animate={{}}
+      transition={{
+        type: "spring",
+        stiffness: 200,
+        damping: 28,
+      }}
+    >
+      {svgWidth > 0 && svgHeight > 0 && (
+        <svg
+          width={svgWidth}
+          height={svgHeight}
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          className={searchBarSvgClass}
+          style={{
+            top: -OUTLINE_INSET,
+            left: -OUTLINE_INSET,
+          }}
+          shapeRendering="geometricPrecision"
+        >
+          <rect
+            ref={hoverPathRef}
+            x="0.5"
+            y="0.5"
+            width={Math.max(0, svgWidth - 1)}
+            height={Math.max(0, svgHeight - 1)}
+            rx={OUTLINE_RADIUS}
+            ry={OUTLINE_RADIUS}
+            fill="none"
+            stroke="transparent"
+            strokeWidth="1"
+          />
+
+          {!focused && hoverOffset !== null && (
+            <MotionRect
+              data-testid="searchbar-outline-hover"
+              data-variant="hover"
+              data-offset={hoverOffset}
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke={OUTLINE_COLOR}
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray={`${segmentLength} ${dashGap}`}
+              initial={{ opacity: 0, strokeDashoffset: -hoverOffset }}
+              animate={{
+                opacity: 1,
+                strokeDashoffset: -hoverOffset,
+              }}
+              transition={{
+                opacity: { duration: 0.08 },
+                strokeDashoffset: {
+                  type: "spring",
+                  stiffness: 180,
+                  damping: 30,
+                },
+              }}
+              className={outlineHoverClass}
+            />
+          )}
+
+          {focused && !outlineLocked && (
+            <MotionRect
+              data-testid="searchbar-outline-focus"
+              data-variant="focus"
+              data-focus-origin={focusOrigin}
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke={OUTLINE_COLOR}
+              strokeWidth="1.8"
+              vectorEffect="non-scaling-stroke"
+              initial={{
+                pathLength: 0,
+                pathOffset: focusOrigin,
+              }}
+              animate={{
+                pathLength: 1,
+                pathOffset: 0,
+              }}
+              transition={{
+                duration: 0.28,
+                ease: "easeOut",
+              }}
+            />
+          )}
+
+          {outlineLocked && (
+            <rect
+              data-testid="searchbar-outline-locked"
+              data-variant="locked"
+              x="0.5"
+              y="0.5"
+              width={Math.max(0, svgWidth - 1)}
+              height={Math.max(0, svgHeight - 1)}
+              rx={OUTLINE_RADIUS}
+              ry={OUTLINE_RADIUS}
+              fill="none"
+              stroke={OUTLINE_COLOR}
+              strokeWidth="1.8"
+            />
+          )}
+        </svg>
+      )}
+
+      <SearchScopeMenu state={menuState} />
+
+      <Input
+        ref={inputRef}
+        value={value}
+        placeholder="Search symbol..."
+        onFocus={() => {
+          handleFocus();
+        }}
+        onBlur={() => {
+          handleBlur();
+        }}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") triggerReplay();
+        }}
+        className={searchInputClass}
+      />
+
+      <MotionButton
+        variant="surface"
+        onClick={() => setPlaying((p) => !p)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{
+          type: "spring",
+          stiffness: 300,
+          damping: 25,
+        }}
+        className={searchButtonClass}
+      >
+        {playing ? "Pause" : "Play"}
+      </MotionButton>
+    </MotionStack>
+  );
+}
 </file>
 
 <file path="package.json">
@@ -1662,6 +3002,7 @@ type Props = {
     "@xyflow/react": "^12.10.1",
     "d3-force": "^3.0.0",
     "dagre": "^0.8.5",
+    "elkjs": "^0.11.1",
     "flatten-js": "^0.6.9",
     "framer-motion": "^12.35.0",
     "jotai": "^2.18.0",
@@ -1669,6 +3010,7 @@ type Props = {
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "rxjs": "^7.8.2",
     "xstate": "^5.28.0"
   },
   "devDependencies": {
@@ -1704,9 +3046,9 @@ type Props = {
 </file>
 
 <file path="src/components/SearchBar/useSearchBar.ts">
-import { useEffect, useRef, type PointerEvent } from "react";
+import { useEffect, useRef, useCallback, type PointerEvent } from "react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
-⋮----
+
 import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
 import {
   focusOriginAtom,
@@ -1720,145 +3062,499 @@ import {
   searchBarPositionAtom,
   searchFocusedAtom,
   scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-  scopeDwellingAtom,
   flowDraggingAtom,
   searchBarContainerAtom,
   searchBarPathAtom,
 } from "@/state/searchbar";
-⋮----
+
+const MENU_HOLD_MARGIN = 24;
+const MENU_HORIZONTAL_MARGIN = 200;
+
 type UseSearchBarOptions = {
   outlineInset: number;
   hoverSegmentLength: number;
   outlineLockDelay?: number;
   onReplay?: (query?: string) => void;
+  menuState?: {
+    visible: boolean;
+    dwelling: boolean;
+  };
 };
-⋮----
+
 export function useSearchBar({
   outlineInset,
   hoverSegmentLength,
   outlineLockDelay = 300,
   onReplay,
-}: UseSearchBarOptions)
-⋮----
-const update = () =>
-⋮----
-const triggerReplay = () =>
-⋮----
-const processPointerMove = ({
+  menuState,
+}: UseSearchBarOptions) {
+  const [value, setValue] = useAtom(queryAtom);
+  const [focused, setFocused] = useAtom(searchFocusedAtom);
+  const [outlineLocked, setOutlineLocked] = useAtom(outlineLockedAtom);
+  const [size, setSize] = useAtom(searchBarSizeAtom);
+  const [, setPosition] = useAtom(searchBarPositionAtom);
+  const [hoverOffset, setHoverOffset] = useAtom(hoverOffsetAtom);
+  const [hoverAnchor, setHoverAnchor] = useAtom(hoverAnchorAtom);
+  const [focusOrigin, setFocusOrigin] = useAtom(focusOriginAtom);
+  const [perimeter, setPerimeter] = useAtom(perimeterAtom);
+  const [pointerPosition, setPointerPosition] = useAtom(pointerPositionAtom);
+  const [menuHover, setMenuHover] = useAtom(scopeMenuHoverAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
+  const setBarContainer = useSetAtom(searchBarContainerAtom);
+  const setBarPath = useSetAtom(searchBarPathAtom);
+
+  const menuVisible = menuState?.visible ?? false;
+  const dwelling = menuState?.dwelling ?? false;
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const hoverPathRef = useRef<SVGRectElement>(null);
+  const lastWithinBandAt = useRef<number | null>(null);
+  const pendingPointer = useRef<{ clientX: number; clientY: number } | null>(
+    null,
+  );
+  const pointerFrame = useRef<number | null>(null);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingBandClear = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const disposedRef = useRef(false);
+  useEffect(
+    () => () => {
+      disposedRef.current = true;
+      if (lockTimer.current) clearTimeout(lockTimer.current);
+      if (pointerFrame.current !== null)
+        cancelAnimationFrame(pointerFrame.current);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const update = () => {
+      const rect = node.getBoundingClientRect();
+
+      setSize({
+        width: rect.width + outlineInset * 2,
+        height: rect.height + outlineInset * 2,
+      });
+      setPosition({ left: rect.left, top: rect.top });
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(node);
+
+    return () => ro.disconnect();
+  }, [outlineInset, setPosition, setSize]);
+
+  useEffect(() => {
+    setBarContainer(containerRef.current);
+    setBarPath(hoverPathRef.current);
+  }, [setBarContainer, setBarPath, size]);
+
+  useEffect(() => {
+    const path = hoverPathRef.current;
+    if (!path) return;
+
+    setPerimeter(path.getTotalLength());
+  }, [setPerimeter, size]);
+
+  const safeSetPointerPosition = useCallback(
+    (value: { x: number; y: number } | null) => {
+      if (disposedRef.current) return;
+      setPointerPosition(value);
+    },
+    [setPointerPosition],
+  );
+
+  const triggerReplay = () => {
+    if (!onReplay) return;
+
+    onReplay(value);
+    setValue("");
+
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+  };
+
+  const processPointerMove = ({
     clientX,
     clientY,
   }: {
     clientX: number;
     clientY: number;
-}) =>
-⋮----
-// While the menu is owning the interaction, keep the segment fixed and only
-// update the pointer projection for the engine.
-⋮----
-const handlePointerMove = ({
+  }) => {
+    if (focused || flowDragging) return;
+
+    const container = containerRef.current;
+    const path = hoverPathRef.current;
+    if (!container || !path) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const menuWidth =
+      Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
+    const anchorAbsX = hoverAnchor?.x ?? containerRect.left + contentWidth / 2;
+    const horizontalBandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
+    const pointerWithinBand =
+      clientX >= anchorAbsX - horizontalBandHalf &&
+      clientX <= anchorAbsX + horizontalBandHalf;
+
+    const now =
+      typeof performance !== "undefined" && performance.now
+        ? performance.now()
+        : Date.now();
+    if (pointerWithinBand) {
+      lastWithinBandAt.current = now;
+    }
+
+    const recentlyWithinBand =
+      lastWithinBandAt.current !== null && now - lastWithinBandAt.current < 140;
+
+    const nextPointer = {
+      x: clientX - containerRect.left,
+      y: clientY - containerRect.top,
+    };
+
+    if (menuVisible && (pointerWithinBand || recentlyWithinBand)) {
+      // While the menu is owning the interaction, keep the segment fixed and only
+      // update the pointer projection for the engine.
+      safeSetPointerPosition(nextPointer);
+      return;
+    }
+
+    safeSetPointerPosition(nextPointer);
+
+    const result = findClosestPerimeterLength({
+      container,
+      path,
+      clientX,
+      clientY,
+      inset: outlineInset,
+    });
+    if (!result) return;
+
+    const { bestLength, total, point } = result;
+    if (!Number.isFinite(total) || total <= 0) return;
+
+    const centered = bestLength - hoverSegmentLength / 2;
+    const normalized = ((centered % total) + total) % total;
+
+    setHoverOffset(normalized);
+    if (point && !menuVisible) {
+      const anchorX = containerRect.left - outlineInset + point.x;
+      const anchorY = containerRect.top - outlineInset + point.y;
+      setHoverAnchor({
+        x: anchorX,
+        y: anchorY,
+      });
+    }
+  };
+
+  const handlePointerMove = ({
     clientX,
     clientY,
   }: {
     clientX: number;
     clientY: number;
-}) =>
-⋮----
-const handlePointerLeave = () =>
-⋮----
-// Always clear the projected pointer when leaving the bar so the engine
-// can fall back to global pointer coordinates.
-⋮----
-const handleFocus = () =>
-⋮----
-const handleBlur = () =>
-⋮----
-const handleWindowBlur = () =>
-⋮----
-const onPointerMove = (event: PointerEvent | MouseEvent) =>
+  }) => {
+    pendingPointer.current = { clientX, clientY };
+    if (pointerFrame.current !== null) return;
+
+    pointerFrame.current = requestAnimationFrame(() => {
+      pointerFrame.current = null;
+      const next = pendingPointer.current;
+      pendingPointer.current = null;
+      if (!next) return;
+      processPointerMove(next);
+    });
+  };
+
+  const handlePointerLeave = () => {
+    if (flowDragging) return;
+
+    const container = containerRef.current;
+    const containerRect = container?.getBoundingClientRect();
+
+    // Always clear the projected pointer when leaving the bar so the engine
+    // can fall back to global pointer coordinates.
+    safeSetPointerPosition(null);
+
+    if (menuVisible || dwelling) return;
+
+    const nearBottom =
+      pointerPosition !== null &&
+      pointerPosition.y >= size.height - outlineInset - MENU_HOLD_MARGIN;
+
+    if (!focused && !menuHover && !nearBottom) {
+      setHoverOffset(null);
+      safeSetPointerPosition(null);
+    }
+
+    if (!menuVisible) {
+      safeSetPointerPosition(null);
+    }
+  };
+
+  const handleFocus = () => {
+    if (flowDragging) return;
+
+    setFocused(true);
+    setOutlineLocked(false);
+    setMenuHover(false);
+
+    const origin =
+      hoverOffset !== null && perimeter > 0 ? hoverOffset / perimeter : 0;
+
+    setFocusOrigin(origin);
+    setHoverOffset(null);
+    safeSetPointerPosition(null);
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+
+    lockTimer.current = setTimeout(() => {
+      setOutlineLocked(true);
+    }, outlineLockDelay);
+  };
+
+  const handleBlur = () => {
+    setFocused(false);
+    setOutlineLocked(false);
+    setHoverOffset(null);
+    setHoverAnchor(null);
+    safeSetPointerPosition(null);
+    setMenuHover(false);
+
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+  };
+
+  useEffect(() => {
+    const handleWindowBlur = () => {
+      setFocused(false);
+      setOutlineLocked(false);
+      setHoverOffset(null);
+      setHoverAnchor(null);
+      safeSetPointerPosition(null);
+      setMenuHover(false);
+
+      if (lockTimer.current) clearTimeout(lockTimer.current);
+    };
+
+    window.addEventListener("blur", handleWindowBlur);
+
+    return () => window.removeEventListener("blur", handleWindowBlur);
+  }, [
+    setFocused,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    setOutlineLocked,
+    safeSetPointerPosition,
+  ]);
+
+  useEffect(() => {
+    if (!menuVisible && hoverOffset === null) return;
+
+    const onPointerMove = (event: PointerEvent | MouseEvent) => {
+      if (menuVisible || menuHover) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      safeSetPointerPosition({
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      });
+      const contentWidth = Math.max(0, size.width - outlineInset * 2);
+      const menuWidth =
+        Math.min(Math.max(0, hoverSegmentLength), contentWidth) || contentWidth;
+      const anchorAbsX = hoverAnchor?.x ?? rect.left + contentWidth / 2;
+      const bandHalf = menuWidth / 2 + MENU_HORIZONTAL_MARGIN;
+
+      const withinX =
+        event.clientX >= anchorAbsX - bandHalf &&
+        event.clientX <= anchorAbsX + bandHalf;
+
+      const now =
+        typeof performance !== "undefined" && performance.now
+          ? performance.now()
+          : Date.now();
+
+      if (withinX) {
+        lastWithinBandAt.current = now;
+        if (pendingBandClear.current) {
+          clearTimeout(pendingBandClear.current);
+          pendingBandClear.current = null;
+        }
+      }
+
+      const recentlyWithinBand =
+        lastWithinBandAt.current !== null &&
+        now - lastWithinBandAt.current < 140;
+
+      if (!withinX && recentlyWithinBand) {
+        return;
+      }
+
+      if (!withinX && !menuVisible && !dwelling) {
+        if (typeof window !== "undefined") {
+          const log =
+            ((window as any).__scopeBandLog as
+              | Array<{ x: number; min: number; max: number; t: number }>
+              | undefined) ?? [];
+          const timestamp =
+            typeof performance !== "undefined" && performance.now
+              ? performance.now()
+              : Date.now();
+          (window as any).__scopeBandLog = [
+            ...log,
+            {
+              x: event.clientX,
+              min: anchorAbsX - bandHalf,
+              max: anchorAbsX + bandHalf,
+              t: timestamp,
+            },
+          ];
+        }
+        setMenuHover(false);
+        setHoverOffset(null);
+        setHoverAnchor(null);
+        safeSetPointerPosition(null);
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("mousemove", onPointerMove);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("mousemove", onPointerMove);
+      if (pendingBandClear.current) {
+        clearTimeout(pendingBandClear.current);
+        pendingBandClear.current = null;
+      }
+    };
+  }, [
+    dwelling,
+    hoverAnchor?.x,
+    hoverOffset,
+    hoverSegmentLength,
+    menuHover,
+    menuVisible,
+    outlineInset,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    safeSetPointerPosition,
+    size.width,
+  ]);
+
+  useEffect(() => {
+    const onPointerMove = (event: PointerEvent | MouseEvent) => {
+      if (menuVisible || menuHover || dwelling) return;
+
+      const container = containerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const margin = 48;
+      const outside =
+        event.clientX < rect.left - margin ||
+        event.clientX > rect.right + margin ||
+        event.clientY < rect.top - margin ||
+        event.clientY > rect.bottom + margin;
+      if (outside) {
+        safeSetPointerPosition(null);
+        setHoverOffset(null);
+        setHoverAnchor(null);
+        setMenuHover(false);
+      }
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("mousemove", onPointerMove);
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("mousemove", onPointerMove);
+    };
+  }, [
+    dwelling,
+    menuHover,
+    menuVisible,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    safeSetPointerPosition,
+  ]);
+
+  useEffect(() => {
+    if (!flowDragging) return;
+
+    setFocused(false);
+    setOutlineLocked(false);
+    setHoverOffset(null);
+    setHoverAnchor(null);
+    safeSetPointerPosition(null);
+    setMenuHover(false);
+    inputRef.current?.blur();
+  }, [
+    flowDragging,
+    setFocused,
+    setHoverAnchor,
+    setHoverOffset,
+    setMenuHover,
+    setOutlineLocked,
+    safeSetPointerPosition,
+  ]);
+
+  return {
+    containerRef,
+    focusOrigin,
+    focused,
+    handleBlur,
+    handleFocus,
+    handlePointerLeave,
+    handlePointerMove,
+    hoverOffset,
+    hoverPathRef,
+    inputRef,
+    outlineLocked,
+    perimeter,
+    size,
+    triggerReplay,
+    setValue,
+    value,
+  };
+}
 </file>
 
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.e2e.spec.ts">
-import { expect, test, type Page } from "@playwright/test";
-⋮----
-const installMachineObserver = async (page: Page) =>
-⋮----
-const observer = (payload: unknown) =>
-⋮----
-const gotoAndInstall = async (page: Page) =>
-⋮----
-const descendIntoBand = async (
-    page: Page,
-    x: number,
-    startY: number,
-    endY: number,
-    durationMs = 320,
-) =>
-⋮----
-const logRects = async (label: string) =>
-⋮----
-const record = (menu: HTMLElement) =>
-⋮----
-const sample = () =>
-⋮----
-// Allow the initial mount but no remounts/unmounts once visible.
-⋮----
-// Pseudo-random but deterministic jitter to vary arcs mid-flight.
-⋮----
-const rand = () =>
-⋮----
-// Finish with a clean downward pass through the center of the segment.
-⋮----
-type Scenario = {
-      label: string;
-      fn: (t: number) => { x: number; y: number };
-      steps?: number;
-      dwell?: number;
-    };
-⋮----
-// Reset hover state away from the bar between runs.
-⋮----
-// Move across the band horizontally without descending: menu should stay hidden.
-⋮----
-// Now descend through the band; menu should appear promptly.
-⋮----
-// Move upward above the bar; menu should disappear once we leave the bar surface.
-⋮----
-// Prime hover and show the menu.
-⋮----
-// Start sampling menu visibility each frame.
-⋮----
-// Wait for sampler to finish.
-⋮----
-// Enter the menu to assert hover state sticks.
-⋮----
-// Move away from both bar and menu; the menu should disappear quickly.
-⋮----
-// Move laterally outside the hover point while staying near the bar height.
-⋮----
-// Remove hover by moving well outside the bar; segment should vanish and menu should follow.
-⋮----
-// Move across the bar to places that normally shift the hover segment; menu
-// should not translate at all once mounted.
-⋮----
-const dismissMenu = async (page: Page, barBox:
-⋮----
-const spawnMenuAt = async (
-    page: Page,
-    x: number,
-    barBox: { x: number; y: number; width: number; height: number },
-    menu: ReturnType<Page["getByTestId"]>,
-) =>
-⋮----
-const getSegmentEdgesPageX = async (outline: ReturnType<Page["getByTestId"]>) =>
+<file path="test-results/SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/error-context.md">
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - application [ref=e4]:
+      - img
+    - generic [ref=e10]:
+      - img [ref=e11]
+      - textbox "Search symbol..." [ref=e14]
+      - button "Play" [ref=e15]
+  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
+    - img [ref=e22]
+  - alert [ref=e25]
+```
 </file>
 
 <file path="src/state/searchScopeEngine.ts">
 import { createActor, type ActorRefFrom } from "xstate";
 import { createSearchScopeMachine } from "./searchScopeMachine";
-⋮----
+
 type Vec2 = { x: number; y: number };
-⋮----
+
 export type ScopeEngineInput = {
   pointer: Vec2 | null;
   pointerAbs: Vec2 | null;
@@ -1874,7 +3570,7 @@ export type ScopeEngineInput = {
   now: number;
   menuShown: boolean;
 };
-⋮----
+
 export type ScopeEngineSnapshot = {
   visible: boolean;
   offsetLeft: number;
@@ -1885,65 +3581,353 @@ export type ScopeEngineSnapshot = {
   pointerAbove: boolean;
   dwelling: boolean;
 };
-⋮----
-export class SearchScopeEngine
-⋮----
-private ensureLogBuffers()
-⋮----
-private log(payload: unknown)
-⋮----
-// ignore observer errors
-⋮----
-constructor()
-⋮----
-forceHide()
-⋮----
-getLastPointerAt()
-⋮----
-stop()
-⋮----
-update(input: ScopeEngineInput): ScopeEngineSnapshot
+
+const HORIZONTAL_MARGIN = 160;
+const MENU_HEIGHT_ESTIMATE = 140;
+const OUTSIDE_MARGIN = 48;
+export const SHOW_DELAY_MS = 200;
+
+export class SearchScopeEngine {
+  private actor: ActorRefFrom<ReturnType<typeof createSearchScopeMachine>>;
+
+  private lastPointerAt: number | null = null;
+  private spawnZoneEnteredAt: number | null = null;
+
+  private ensureLogBuffers() {
+    if (typeof window === "undefined") return null;
+    const w = window as any;
+    w.__scopeMachineLog = w.__scopeMachineLog ?? [];
+    w.__scopeObserverLog = w.__scopeObserverLog ?? [];
+    w.__scopeMachineObservers = w.__scopeMachineObservers ?? [];
+    return w;
+  }
+
+  private log(payload: unknown) {
+    const w = this.ensureLogBuffers();
+    if (!w) return;
+    const entry = payload as any;
+    w.__scopeMachineLog.push(entry);
+    w.__scopeObserverLog.push(entry);
+    const observers = w.__scopeMachineObservers;
+    if (Array.isArray(observers)) {
+      for (const obs of observers) {
+        try {
+          obs(entry);
+        } catch {
+          // ignore observer errors
+        }
+      }
+    }
+  }
+
+  constructor() {
+    this.actor = createActor(createSearchScopeMachine());
+    this.actor.start();
+  }
+
+  forceHide() {
+    this.actor.send({ type: "FORCE_HIDE" });
+  }
+
+  getLastPointerAt() {
+    return this.lastPointerAt;
+  }
+
+  stop() {
+    this.actor.stop();
+  }
+
+  update(input: ScopeEngineInput): ScopeEngineSnapshot {
+    const {
+      pointer,
+      pointerAbs,
+      anchorLocalX,
+      anchorAbsX,
+      position,
+      size,
+      outlineInset,
+      segmentLength,
+      menuHover,
+      hoverEngaged,
+      flowDragging,
+      now,
+      menuShown,
+    } = input;
+
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const menuWidth =
+      Math.min(Math.max(0, segmentLength ?? contentWidth), contentWidth) ||
+      contentWidth;
+
+    this.lastPointerAt = pointer !== null ? now : this.lastPointerAt;
+
+    const barBottom = position.top + size.height - outlineInset * 2;
+    const TRIGGER_ZONE_INSIDE = 14;
+    const TRIGGER_ZONE_BELOW = 160;
+
+    const horizontalBandHalf = menuWidth / 2 + HORIZONTAL_MARGIN;
+    const pointerWithinBandX =
+      pointerAbs !== null &&
+      pointerAbs.x >= anchorAbsX - horizontalBandHalf &&
+      pointerAbs.x <= anchorAbsX + horizontalBandHalf;
+
+    const pointerAbove =
+      pointerAbs !== null &&
+      pointerAbs.y < barBottom - TRIGGER_ZONE_INSIDE - 10;
+
+    const pointerInSpawnZone =
+      pointerAbs !== null &&
+      pointerAbs.y >= barBottom - TRIGGER_ZONE_INSIDE &&
+      pointerAbs.y <= barBottom + TRIGGER_ZONE_BELOW &&
+      pointerWithinBandX;
+
+    if (pointerInSpawnZone && hoverEngaged) {
+      if (this.spawnZoneEnteredAt === null) {
+        this.spawnZoneEnteredAt = now;
+      }
+    } else {
+      this.spawnZoneEnteredAt = null;
+    }
+
+    const dwellTime =
+      this.spawnZoneEnteredAt !== null ? now - this.spawnZoneEnteredAt : 0;
+    const dwellReady = dwellTime >= SHOW_DELAY_MS;
+
+    const viewportWidth =
+      typeof window !== "undefined" && window.innerWidth
+        ? window.innerWidth
+        : size.width;
+
+    const anchorAbsXClamped = anchorAbsX;
+    const desiredLeft = anchorAbsXClamped - menuWidth / 2;
+    const clampedLeft = Math.max(
+      0,
+      Math.min(desiredLeft, viewportWidth - menuWidth),
+    );
+    const top = position.top + size.height - outlineInset + 8;
+    const menuBottom = top + MENU_HEIGHT_ESTIMATE;
+
+    const preSnapshot = this.actor.getSnapshot();
+    const machineVisible = preSnapshot.matches("visible");
+
+    const menuLeft = clampedLeft;
+    const menuRightEdge = menuLeft + menuWidth;
+    const pointerNearMenu =
+      pointerAbs !== null &&
+      pointerAbs.x >= menuLeft - OUTSIDE_MARGIN &&
+      pointerAbs.x <= menuRightEdge + OUTSIDE_MARGIN &&
+      pointerAbs.y >= position.top - OUTSIDE_MARGIN &&
+      pointerAbs.y <= menuBottom + OUTSIDE_MARGIN;
+
+    const pointerWithinBarBounds =
+      pointer !== null &&
+      pointer.y >= 0 &&
+      pointer.y <= size.height &&
+      pointerAbs !== null &&
+      pointerAbs.x >= position.left &&
+      pointerAbs.x <= position.left + size.width;
+
+    const wantShow = hoverEngaged && dwellReady && !flowDragging;
+
+    const exitTriggered =
+      !flowDragging &&
+      machineVisible &&
+      !menuHover &&
+      !pointerWithinBarBounds &&
+      !pointerNearMenu &&
+      !pointerInSpawnZone;
+
+    const desiredVisible = machineVisible
+      ? !exitTriggered
+      : wantShow || menuHover;
+
+    this.log({
+      t: now,
+      phase: "event",
+      event: {
+        type: "UPDATE",
+        visible: desiredVisible,
+        left: clampedLeft,
+        top,
+        width: menuWidth,
+      },
+      state: preSnapshot.value,
+      context: preSnapshot.context,
+    });
+
+    this.actor.send({
+      type: "UPDATE",
+      visible: desiredVisible,
+      left: clampedLeft,
+      top,
+      width: menuWidth,
+    });
+
+    const actorSnapshot = this.actor.getSnapshot();
+    this.log({
+      t: now,
+      phase: "transition",
+      state: actorSnapshot.value,
+      context: actorSnapshot.context,
+    });
+    const visible = actorSnapshot.matches("visible");
+    const latchedLeft =
+      actorSnapshot.context.latchedLeft ?? actorSnapshot.context.lastLeft ?? clampedLeft;
+
+    const dwelling = this.spawnZoneEnteredAt !== null && !dwellReady && hoverEngaged;
+
+    return {
+      visible,
+      offsetLeft: latchedLeft,
+      offsetTop: top,
+      width: menuWidth,
+      exitTriggered,
+      pointerWithinBand: pointerInSpawnZone,
+      pointerAbove,
+      dwelling,
+    };
+  }
+}
 </file>
 
 <file path="test-results/.last-run.json">
 {
-  "status": "passed",
-  "failedTests": []
+  "status": "interrupted",
+  "failedTests": [
+    "b6f1f85988d2cbda2913-f524f11ffdc506fcfb1a",
+    "b6f1f85988d2cbda2913-23ee1086283bcaf9b75e",
+    "b6f1f85988d2cbda2913-4043f5b4962981995d16",
+    "b89b6e7344509afb616c-b48c0dc85597412e47c2",
+    "b89b6e7344509afb616c-983fa4e6d7a369d22382",
+    "b89b6e7344509afb616c-defc1631d4bdbe1e45ac",
+    "b89b6e7344509afb616c-e736235aa3523d12c0ed",
+    "b89b6e7344509afb616c-132e31e1aeaaf6935e32",
+    "b89b6e7344509afb616c-40cbddd98a2f7f68d23b",
+    "b89b6e7344509afb616c-8a54a6af2d7d2187031e",
+    "b89b6e7344509afb616c-936d5d250b65f37e10b5",
+    "b89b6e7344509afb616c-dd80d503021a5687f5b6",
+    "b89b6e7344509afb616c-c6b670fc48f3b8a46d22",
+    "b89b6e7344509afb616c-07905f130792158577e8"
+  ]
 }
 </file>
 
 <file path="src/components/SearchScopeMenu/useSearchScopeMenu.ts">
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
-⋮----
+import { useAtomValue } from "jotai";
+import { useEffect, useMemo, useRef } from "react";
+
 import {
   hoverOffsetAtom,
   hoverAnchorAtom,
   pointerPositionAtom,
   searchBarSizeAtom,
   searchBarPositionAtom,
-  perimeterAtom,
   scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-  scopeDwellingAtom,
   flowDraggingAtom,
-  searchBarContainerAtom,
-  searchBarPathAtom,
 } from "@/state/searchbar";
-import { SearchScopeEngine } from "@/state/searchScopeEngine";
-import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
-⋮----
+import { SearchScopeEngine, type ScopeEngineSnapshot } from "@/state/searchScopeEngine";
+
 type Options = {
   outlineInset: number;
   segmentLength?: number;
 };
-⋮----
+
+export type SearchScopeMenuState = Pick<
+  ScopeEngineSnapshot,
+  "visible" | "width" | "offsetLeft" | "offsetTop" | "dwelling"
+>;
+
 export function useSearchScopeMenu({
   outlineInset,
   segmentLength,
-}: Options)
-⋮----
-const handler = (event: MouseEvent | PointerEvent) =>
+}: Options): SearchScopeMenuState {
+  const hoverOffset = useAtomValue(hoverOffsetAtom);
+  const pointer = useAtomValue(pointerPositionAtom);
+  const size = useAtomValue(searchBarSizeAtom);
+  const anchor = useAtomValue(hoverAnchorAtom);
+  const menuHover = useAtomValue(scopeMenuHoverAtom);
+  const position = useAtomValue(searchBarPositionAtom);
+  const flowDragging = useAtomValue(flowDraggingAtom);
+
+  const engineRef = useRef<SearchScopeEngine | null>(null);
+
+  if (engineRef.current === null) {
+    engineRef.current = new SearchScopeEngine();
+  }
+
+  useEffect(() => {
+    return () => {
+      engineRef.current?.stop();
+    };
+  }, []);
+
+  const snapshot = useMemo(() => {
+    const engine = engineRef.current;
+    const pointerAbs =
+      pointer === null
+        ? null
+        : {
+            x: position.left + pointer.x,
+            y: position.top + pointer.y,
+          };
+
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const anchorAbsX =
+      anchor?.x ??
+      (pointer ? position.left + pointer.x : position.left + contentWidth / 2);
+    const anchorLocalX = anchorAbsX - position.left;
+
+    const now =
+      typeof performance !== "undefined" && performance.now
+        ? performance.now()
+        : Date.now();
+
+    return engine
+      ? engine.update({
+          pointer,
+          pointerAbs,
+          anchorLocalX,
+          anchorAbsX,
+          position,
+          size,
+          outlineInset,
+          segmentLength,
+          menuHover,
+          hoverEngaged: hoverOffset !== null,
+          flowDragging,
+          now,
+          menuShown: false,
+        })
+      : {
+          visible: false,
+          width: 0,
+          offsetLeft: 0,
+          offsetTop: 0,
+          exitTriggered: false,
+          pointerWithinBand: false,
+          pointerAbove: false,
+          dwelling: false,
+        };
+  }, [
+    anchor?.x,
+    flowDragging,
+    hoverOffset,
+    menuHover,
+    outlineInset,
+    pointer,
+    position,
+    segmentLength,
+    size,
+  ]);
+
+  return {
+    visible: snapshot.visible,
+    width: snapshot.width,
+    offsetLeft: snapshot.offsetLeft,
+    offsetTop: snapshot.offsetTop,
+    dwelling: snapshot.dwelling,
+  };
+}
 </file>
 
 </files>

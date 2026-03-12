@@ -2,16 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
 import * as Checkbox from "@/components/ui/checkbox";
 import { VStack, HStack } from "../../../styled-system/jsx";
-import { useSearchScopeMenu } from "./useSearchScopeMenu";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-  hoverAnchorAtom,
-  hoverOffsetAtom,
-  flowDraggingAtom,
-  pointerPositionAtom,
-  scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-} from "@/state/searchbar";
+import { flowDraggingAtom, scopeMenuHoverAtom } from "@/state/searchbar";
 import { useEffect, useMemo } from "react";
 import {
   menuContainerClass,
@@ -25,27 +17,18 @@ import {
 
 import { fixtureRegistry } from "@/graph/fixtures";
 import { selectedFixtureAtom } from "@/state/fixtureAtom";
+import type { SearchScopeMenuState } from "./useSearchScopeMenu";
 
 type Props = {
-  outlineInset: number;
-  segmentLength?: number;
+  state: SearchScopeMenuState;
 };
 
 const MotionBox = motion.create(VStack);
 
-export function SearchScopeMenu({ outlineInset, segmentLength }: Props) {
-  const { visible, width, offsetLeft, offsetTop } = useSearchScopeMenu({
-    outlineInset,
-    segmentLength,
-  });
-
+export function SearchScopeMenu({ state }: Props) {
   const flowDragging = useAtomValue(flowDraggingAtom);
 
   const setMenuHover = useSetAtom(scopeMenuHoverAtom);
-  const setMenuVisible = useSetAtom(scopeMenuVisibleAtom);
-  const setHover = useSetAtom(hoverOffsetAtom);
-  const setAnchor = useSetAtom(hoverAnchorAtom);
-  const setPointer = useSetAtom(pointerPositionAtom);
 
   const setFixture = useSetAtom(selectedFixtureAtom);
   const fixtureState = useAtomValue(selectedFixtureAtom);
@@ -55,6 +38,11 @@ export function SearchScopeMenu({ outlineInset, segmentLength }: Props) {
   useEffect(() => {
     console.log("Fixture changed:", fixtureState);
   }, [fixtureState]);
+
+  const visible = state.visible;
+  const width = state.width;
+  const offsetLeft = state.offsetLeft;
+  const offsetTop = state.offsetTop;
 
   const content = (
     <AnimatePresence>
@@ -76,7 +64,7 @@ export function SearchScopeMenu({ outlineInset, segmentLength }: Props) {
           data-left={`${offsetLeft}`}
           data-top={`${offsetTop}`}
           data-width={`${Math.max(0, width)}`}
-          zIndex={1}
+          zIndex={1000}
           className={menuContainerClass}
           style={{
             width: `${Math.max(0, Math.min(480, width))}px`,

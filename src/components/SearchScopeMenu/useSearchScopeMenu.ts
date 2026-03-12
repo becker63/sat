@@ -1,5 +1,5 @@
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { useAtomValue } from "jotai";
+import { useEffect, useMemo, useRef } from "react";
 
 import {
   hoverOffsetAtom,
@@ -7,231 +7,109 @@ import {
   pointerPositionAtom,
   searchBarSizeAtom,
   searchBarPositionAtom,
-  perimeterAtom,
   scopeMenuHoverAtom,
-  scopeMenuVisibleAtom,
-  scopeDwellingAtom,
   flowDraggingAtom,
-  searchBarContainerAtom,
-  searchBarPathAtom,
 } from "@/state/searchbar";
-import { SearchScopeEngine } from "@/state/searchScopeEngine";
-import { findClosestPerimeterLength } from "@/components/SearchBar/perimeter";
+import { SearchScopeEngine, type ScopeEngineSnapshot } from "@/state/searchScopeEngine";
 
 type Options = {
   outlineInset: number;
   segmentLength?: number;
 };
 
+export type SearchScopeMenuState = Pick<
+  ScopeEngineSnapshot,
+  "visible" | "width" | "offsetLeft" | "offsetTop" | "dwelling"
+>;
+
 export function useSearchScopeMenu({
   outlineInset,
   segmentLength,
-}: Options) {
+}: Options): SearchScopeMenuState {
   const hoverOffset = useAtomValue(hoverOffsetAtom);
-  const setHoverOffset = useSetAtom(hoverOffsetAtom);
-  const setHoverAnchor = useSetAtom(hoverAnchorAtom);
-  const setPointerPosition = useSetAtom(pointerPositionAtom);
   const pointer = useAtomValue(pointerPositionAtom);
   const size = useAtomValue(searchBarSizeAtom);
   const anchor = useAtomValue(hoverAnchorAtom);
   const menuHover = useAtomValue(scopeMenuHoverAtom);
   const position = useAtomValue(searchBarPositionAtom);
-  const [menuVisible, setMenuVisible] = useAtom(scopeMenuVisibleAtom);
-  const setDwelling = useSetAtom(scopeDwellingAtom);
-  const perimeter = useAtomValue(perimeterAtom);
-  const barContainer = useAtomValue(searchBarContainerAtom);
-  const barPath = useAtomValue(searchBarPathAtom);
   const flowDragging = useAtomValue(flowDraggingAtom);
-  const fixedLeftRef = useRef<number | null>(null);
-  const globalPointerRef = useRef<{ x: number; y: number } | null>(null);
-  const [tick, setTick] = useState(0);
+
   const engineRef = useRef<SearchScopeEngine | null>(null);
-
-  const contentWidth = Math.max(0, size.width - outlineInset * 2);
-
-  const anchorAbsX =
-    anchor?.x ??
-    (pointer
-      ? position.left + pointer.x
-      : position.left + contentWidth / 2);
-  const anchorLocalX = anchorAbsX - position.left;
-
-  void tick;
-  const pointerAbs =
-    globalPointerRef.current ??
-    (pointer === null
-      ? null
-      : {
-          x: position.left + pointer.x,
-          y: position.top + pointer.y,
-        });
-
-  const pointerLocal =
-    pointerAbs != null
-      ? {
-          x: pointerAbs.x - position.left,
-          y: pointerAbs.y - position.top,
-        }
-      : pointer;
-
-  const now =
-    typeof performance !== "undefined" && performance.now
-      ? performance.now()
-      : Date.now();
 
   if (engineRef.current === null) {
     engineRef.current = new SearchScopeEngine();
   }
 
-  const engine = engineRef.current;
-
   useEffect(() => {
-    const handler = (event: MouseEvent | PointerEvent) => {
-      globalPointerRef.current = { x: event.clientX, y: event.clientY };
-    };
-    window.addEventListener("pointermove", handler, { passive: true });
-    window.addEventListener("mousemove", handler, { passive: true });
     return () => {
-      window.removeEventListener("pointermove", handler);
-      window.removeEventListener("mousemove", handler);
+      engineRef.current?.stop();
     };
   }, []);
 
-  useEffect(
-    () => () => {
-      engine.stop();
-    },
-    [engine],
-  );
+  const snapshot = useMemo(() => {
+    const engine = engineRef.current;
+    const pointerAbs =
+      pointer === null
+        ? null
+        : {
+            x: position.left + pointer.x,
+            y: position.top + pointer.y,
+          };
 
-  const snapshot = engine.update({
-    pointer: pointerLocal,
-    pointerAbs,
-    anchorLocalX,
-    anchorAbsX,
-    position,
-    size,
-    outlineInset,
-    segmentLength,
-    menuHover,
-    hoverEngaged: hoverOffset !== null,
-    flowDragging,
-    now,
-    menuShown: menuVisible,
-  });
+    const contentWidth = Math.max(0, size.width - outlineInset * 2);
+    const anchorAbsX =
+      anchor?.x ??
+      (pointer ? position.left + pointer.x : position.left + contentWidth / 2);
+    const anchorLocalX = anchorAbsX - position.left;
 
-  useEffect(() => {
-    if (!menuVisible && !snapshot.visible && hoverOffset === null) return;
-    const id = setInterval(() => setTick((t) => t + 1), 80);
-    return () => clearInterval(id);
-  }, [menuVisible, snapshot.visible, hoverOffset]);
-
-  useEffect(() => {
-    setDwelling(snapshot.dwelling);
-  }, [setDwelling, snapshot.dwelling]);
-
-  useEffect(() => {
-    setMenuVisible(snapshot.visible);
-    if (!snapshot.visible && snapshot.exitTriggered) {
-      setHoverOffset(null);
-      setHoverAnchor(null);
-      setPointerPosition(null);
-      fixedLeftRef.current = null;
-    }
-  }, [
-    setMenuVisible,
-    setHoverOffset,
-    setHoverAnchor,
-    setPointerPosition,
-    snapshot.visible,
-    snapshot.exitTriggered,
-  ]);
-
-  useEffect(() => {
-    if (snapshot.visible && fixedLeftRef.current === null) {
-      fixedLeftRef.current = snapshot.offsetLeft;
-    }
-    if (!snapshot.visible) {
-      fixedLeftRef.current = null;
-    }
-  }, [snapshot.visible, snapshot.offsetLeft]);
-
-  const hasCenteredRef = useRef(false);
-  useEffect(() => {
-    if (snapshot.visible && barContainer && barPath && segmentLength && !hasCenteredRef.current) {
-      hasCenteredRef.current = true;
-      const menuLeft = fixedLeftRef.current ?? snapshot.offsetLeft;
-      const menuCenterAbs = menuLeft + snapshot.width / 2;
-      const containerRect = barContainer.getBoundingClientRect();
-      const bottomY = containerRect.bottom;
-
-      const result = findClosestPerimeterLength({
-        container: barContainer,
-        path: barPath,
-        clientX: menuCenterAbs,
-        clientY: bottomY,
-        inset: outlineInset,
-      });
-
-      if (result) {
-        const centered = result.bestLength - segmentLength / 2;
-        const normalized = ((centered % result.total) + result.total) % result.total;
-
-        const segCenterPerimeter = normalized + segmentLength / 2;
-        const segCenterPt = barPath.getPointAtLength(segCenterPerimeter % result.total);
-        const svgRect = barContainer.getBoundingClientRect();
-        const segCenterScreenX = svgRect.left - outlineInset + segCenterPt.x;
-        const deltaX = menuCenterAbs - segCenterScreenX;
-        const corrected = normalized - deltaX;
-        const correctedNorm = ((corrected % result.total) + result.total) % result.total;
-        setHoverOffset(correctedNorm);
-      }
-    }
-    if (!snapshot.visible) {
-      hasCenteredRef.current = false;
-    }
-  }, [snapshot.visible, barContainer, barPath, segmentLength, snapshot.width, snapshot.offsetLeft, outlineInset, setHoverOffset]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const existing =
-      ((window as any).__scopeVisibleLog as
-        | Array<{
-            t: number;
-            visible: boolean;
-            hoverOffset: number | null;
-            pointer: typeof pointer;
-            pointerWithinBand: boolean;
-            wantShow: boolean;
-            holdWhileInside: boolean;
-            hoverEngaged: boolean;
-            menuVisibleState: boolean;
-          }>
-        | undefined) ?? [];
-    const timestamp =
+    const now =
       typeof performance !== "undefined" && performance.now
         ? performance.now()
         : Date.now();
-    (window as any).__scopeVisibleLog = [
-      ...existing,
-      {
-        t: timestamp,
-        visible: snapshot.visible,
-        hoverOffset,
-        pointer,
-        pointerWithinBand: snapshot.pointerWithinBand,
-        wantShow: snapshot.visible,
-        holdWhileInside: snapshot.visible,
-        hoverEngaged: hoverOffset !== null,
-        menuVisibleState: menuVisible,
-      },
-    ];
-  }, [hoverOffset, menuVisible, pointer, snapshot.pointerWithinBand, snapshot.visible]);
+
+    return engine
+      ? engine.update({
+          pointer,
+          pointerAbs,
+          anchorLocalX,
+          anchorAbsX,
+          position,
+          size,
+          outlineInset,
+          segmentLength,
+          menuHover,
+          hoverEngaged: hoverOffset !== null,
+          flowDragging,
+          now,
+          menuShown: false,
+        })
+      : {
+          visible: false,
+          width: 0,
+          offsetLeft: 0,
+          offsetTop: 0,
+          exitTriggered: false,
+          pointerWithinBand: false,
+          pointerAbove: false,
+          dwelling: false,
+        };
+  }, [
+    anchor?.x,
+    flowDragging,
+    hoverOffset,
+    menuHover,
+    outlineInset,
+    pointer,
+    position,
+    segmentLength,
+    size,
+  ]);
 
   return {
     visible: snapshot.visible,
     width: snapshot.width,
     offsetLeft: snapshot.offsetLeft,
     offsetTop: snapshot.offsetTop,
+    dwelling: snapshot.dwelling,
   };
 }

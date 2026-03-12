@@ -22,7 +22,7 @@ export const searchBarShellClass = css({
 });
 
 export const searchBarHiddenClass = css({
-  pointerEvents: "none",
+  pointerEvents: "auto",
   visibility: "hidden",
 });
 
@@ -30,15 +30,20 @@ export const graphStageBackgroundClass = css({
   position: "absolute",
   inset: 0,
   zIndex: 0,
-  background: "var(--colors-vercel-surface-overlay)",
+  background:
+    "var(--colors-vercel-surface-overlay, var(--colors-vercel-canvas))",
 });
 
 export const reactFlowCanvasClass = css({
-  background: "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
+  background:
+    "var(--colors-vercel-canvas, var(--colors-vercel-surface-overlay))",
 });
 
 const reactFlowVarsWithImportant = Object.fromEntries(
-  Object.entries(reactFlowCssVars).map(([key, value]) => [key, `${value} !important`]),
+  Object.entries(reactFlowCssVars).map(([key, value]) => [
+    key,
+    `${value} !important`,
+  ]),
 ) as Record<string, string>;
 
 export const reactFlowVarsClass = css({
@@ -58,7 +63,7 @@ export const reactFlowHandleColorsClass = css({
 
 export const searchBarSvgClass = css({
   position: "absolute",
-  pointerEvents: "none",
+  pointerEvents: "auto",
   overflow: "visible",
   zIndex: 0,
 });

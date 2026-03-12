@@ -1,52 +1,50 @@
 import { atomWithObservable } from "jotai/utils";
-import { EMPTY } from "rxjs";
 import { selectedFixtureAtom } from "./fixtureAtom";
 import { fixtureRegistry } from "@/graph/fixtures";
 import { createGraphState$ } from "@/graph/graphStream";
+import { graphPlayingAtom } from "./graphPlayback";
+import { of } from "rxjs";
+import { initialGraphState } from "@/graph/reducer";
 
 /**
  * Cache for GraphState streams.
  *
- * Each fixture's graph stream is created only once and reused
- * whenever that fixture is selected again.
+ * Each fixture's GraphState observable is created once and reused.
  */
 const graphStreamCache = new Map();
 
 /**
+ * Prewarm the cache so pipelines are constructed at startup.
+ */
+for (const [key, fixture] of Object.entries(fixtureRegistry)) {
+  const events$ = fixture.events$();
+
+  // temporary idle stream until playback begins
+  const graphState$ = createGraphState$(events$, of(false));
+
+  graphStreamCache.set(key, graphState$);
+}
+
+/**
  * graphStateAtom
  *
- * This atom exposes our GraphState as a Jotai atom, but the underlying
- * state is actually produced by an RxJS stream.
+ * Bridges RxJS → Jotai.
  *
- * atomWithObservable lets us plug an RxJS Observable directly into Jotai.
- * Jotai will subscribe to the stream and update React whenever new values arrive.
+ * This atom rebuilds the observable whenever:
+ *
+ * • the selected fixture changes
+ * • playback state changes
  */
 export const graphStateAtom = atomWithObservable((get) => {
-  /**
-   * Read the currently selected fixture from Jotai state.
-   */
   const key = get(selectedFixtureAtom);
+  const playing = get(graphPlayingAtom);
 
-  /**
-   * If no fixture is selected we return an empty observable.
-   */
   if (!key) {
-    return EMPTY;
+    return of(initialGraphState);
   }
 
-  /**
-   * If we have not created a stream for this fixture yet,
-   * build it now and store it in the cache.
-   */
-  if (!graphStreamCache.has(key)) {
-    const events$ = fixtureRegistry[key].events$();
-    const graphState$ = createGraphState$(events$);
+  const events$ = fixtureRegistry[key].events$();
 
-    graphStreamCache.set(key, graphState$);
-  }
-
-  /**
-   * Return the cached GraphState stream for this fixture.
-   */
-  return graphStreamCache.get(key);
+  // convert playback state to observable
+  return createGraphState$(events$, of(playing));
 });
