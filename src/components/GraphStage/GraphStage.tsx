@@ -5,7 +5,6 @@ import { useAtomValue, useSetAtom } from "jotai";
 import {
   BackgroundVariant,
   ReactFlowProvider,
-  useReactFlow,
   useEdgesState,
   useNodesState,
   Controls,
@@ -28,21 +27,78 @@ import {
 } from "@/state/graphStage";
 
 import { reactFlowTheme } from "@/theme/react-flow";
-import { layoutGraph } from "./layoutGraph";
 
 import { useFollowNode } from "./useFollowNode";
+import { GraphNode } from "@/components/ui/GraphNode";
+import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
 
 import "@xyflow/react/dist/style.css";
 
 import { graphStateAtom } from "@/state/graphStreamAtom";
+import type { GraphState } from "@/graph/reducer";
 
-const nodeTypes = {};
-const edgeTypes = {};
+const nodeTypes = {
+  graph: GraphNode,
+};
+const edgeTypes = {
+  graph: AnimatedGraphEdge,
+};
 const INITIAL_ZOOM = 1.5;
 
-function GraphStageInner() {
-  const rf = useReactFlow();
+export function buildFlowElements(
+  graphState: GraphState,
+  prevIds: Set<string>,
+  prevEdgeIds: Set<string>,
+) {
+  const ids = Object.keys(graphState.nodes);
 
+  const nodes: Node[] = ids
+    .map((id) => {
+      const n = graphState.nodes[id];
+      const hasPrev = prevIds.has(id);
+
+      if (!n.positioned) return null;
+
+      return {
+        id: n.id,
+        type: "graph",
+        data: {
+          label: n.label ?? n.id,
+          state: n.state,
+          kind: n.kind,
+          tokens: n.tokens,
+        },
+        position: n.position,
+        selectable: false,
+        draggable: false,
+        style: {
+          transition: hasPrev
+            ? "transform 0.45s cubic-bezier(.22,1,.36,1)"
+            : "none",
+        },
+      };
+    })
+    .filter(Boolean) as Node[];
+
+  const edges: Edge[] = graphState.edges.map((e, index) => ({
+    id: `${e.source}-${e.target}-${index}`,
+    source: e.source,
+    target: e.target,
+    animated: false,
+    type: "graph",
+    label: e.kind,
+    data: { kind: e.kind, animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`) },
+  }));
+
+  return {
+    nodes,
+    edges,
+    renderedIds: nodes.map((n) => n.id),
+    renderedEdgeIds: edges.map((e) => e.id),
+  };
+}
+
+function GraphStageInner() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
@@ -58,68 +114,36 @@ function GraphStageInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
 
   const prevNodeIdsRef = useRef<Set<string>>(new Set());
+  const prevEdgeIdsRef = useRef<Set<string>>(new Set());
 
   /**
    * Rebuild graph whenever stream updates
    */
   useEffect(() => {
-    let cancelled = false;
+    const prevIds = prevNodeIdsRef.current;
 
-    async function runLayout() {
-      const ids = Object.keys(graphState.nodes);
+    const { nodes: mappedNodes, edges: mappedEdges, renderedIds, renderedEdgeIds } =
+      buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
 
-      const prevIds = prevNodeIdsRef.current;
-      const addedId = ids.find((id) => !prevIds.has(id));
+    prevNodeIdsRef.current = new Set(renderedIds);
+    prevEdgeIdsRef.current = new Set(renderedEdgeIds);
 
-      prevNodeIdsRef.current = new Set(ids);
+    setNodes(mappedNodes);
+    setEdges(mappedEdges);
 
-      const baseNodes: Node[] = ids.map((id) => {
-        const n = graphState.nodes[id];
-
-        return {
-          id: n.id,
-          data: { label: n.label ?? n.id },
-          position: { x: 0, y: 0 },
-          style: {
-            transition: "transform 0.45s cubic-bezier(.22,1,.36,1)",
-          },
-        };
-      });
-
-      const baseEdges: Edge[] = graphState.edges.map((e, index) => ({
-        id: `${e.source}-${e.target}-${index}`,
-        source: e.source,
-        target: e.target,
-        animated: true,
-        label: e.kind,
-        data: { kind: e.kind },
-      }));
-
-      const layoutedNodes = await layoutGraph(baseNodes, baseEdges);
-
-      if (cancelled) return;
-
-      setNodes(layoutedNodes);
-      setEdges(baseEdges);
-
-      const lowestNode = layoutedNodes.reduce((best, n) => {
+    const focusNode =
+      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
+      mappedNodes.reduce((best, n) => {
         if (!best) return n;
         return n.position.y > best.position.y ? n : best;
-      }, layoutedNodes[0]);
+      }, mappedNodes[0]);
 
-      if (lowestNode) {
-        requestAnimationFrame(() => {
-          followNode(lowestNode);
-        });
-      }
+    if (focusNode) {
+      requestAnimationFrame(() => {
+        followNode(focusNode);
+      });
     }
-
-    runLayout();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [graphState, rf, setNodes, setEdges, followNode]);
+  }, [graphState, setNodes, setEdges, followNode]);
 
   /**
    * Drag state (used by SearchBar system)
@@ -168,6 +192,7 @@ function GraphStageInner() {
           style: {
             stroke: reactFlowTheme.edge.stroke,
             strokeWidth: 1,
+            strokeDasharray: "6 6",
           },
           markerEnd: {
             type: "arrowclosed",

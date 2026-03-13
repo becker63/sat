@@ -9,4 +9,5 @@ export { Span, type SpanProps } from "./span";
 export { Spinner, type SpinnerProps } from "./spinner";
 export * from "./search-styles";
 export { GraphBackground } from "./graph-background";
+export { GraphNode, type GraphNodeData } from "./GraphNode";
 export { ThemedReactFlow } from "./themed-react-flow";
