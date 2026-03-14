@@ -1,3 +1,15 @@
+import {
+  coordGreedy,
+  decrossTwoLayer,
+  graphConnect,
+  layeringLongestPath,
+  sugiyama,
+  type Graph as DagGraph,
+  type MutGraphNode as DagMutGraphNode,
+  type SugiNode,
+} from "d3-dag";
+
+import type { GraphEdge } from "./events";
 import type { GraphState } from "./reducer";
 
 export const NODE_WIDTH = 300;
@@ -6,47 +18,110 @@ export const NODE_HEIGHT = 140;
 const VERTICAL_SPACING = 220;
 const HORIZONTAL_SPACING = 340;
 
+type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
+
+function buildDag(
+  state: GraphState,
+  discoveryIndex: Map<string, number>,
+): DagGraph<DagNodeDatum, GraphEdge> {
+  const nodeDatumForId = (id: string): DagNodeDatum => ({
+    ...state.nodes[id],
+    discoveryIndex: discoveryIndex.get(id) ?? Number.MAX_SAFE_INTEGER,
+  });
+
+  const builder = graphConnect<DagNodeDatum, GraphEdge>()
+    .sourceId(({ source }) => source)
+    .targetId(({ target }) => target)
+    .nodeDatum(nodeDatumForId);
+
+  const dag = builder(state.edges);
+  const dagNodesById = new Map<string, DagMutGraphNode<DagNodeDatum, GraphEdge>>();
+
+  for (const node of dag.nodes()) {
+    dagNodesById.set(node.data.id, node);
+  }
+
+  // Ensure isolated nodes are represented in the DAG
+  for (const node of Object.values(state.nodes)) {
+    if (!dagNodesById.has(node.id)) {
+      const dagNode = dag.node({
+        ...node,
+        discoveryIndex: discoveryIndex.get(node.id) ?? Number.MAX_SAFE_INTEGER,
+      });
+      dagNodesById.set(node.id, dagNode);
+    }
+  }
+
+  return dag;
+}
+
+const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
+  (
+    topLayer: SugiNode<DagNodeDatum, GraphEdge>[],
+    bottomLayer: SugiNode<DagNodeDatum, GraphEdge>[],
+    topDown: boolean,
+  ) => {
+    const layer = topDown ? bottomLayer : topLayer;
+
+    const valueForNode = (
+      node: DagGraphNode<DagNodeDatum, GraphEdge>,
+    ): number => {
+      if (node.data.role === "node") {
+        const id = node.data.node.data.id;
+        return discoveryIndex.get(id) ?? node.data.node.data.discoveryIndex ?? 0;
+      }
+
+      const sourceId = node.data.link.source.data.id;
+      const targetId = node.data.link.target.data.id;
+      const source = discoveryIndex.get(sourceId) ?? node.data.link.source.data.discoveryIndex ?? 0;
+      const target = discoveryIndex.get(targetId) ?? node.data.link.target.data.discoveryIndex ?? 0;
+      return (source + target) / 2;
+    };
+
+    layer.sort((a, b) => valueForNode(a) - valueForNode(b));
+  };
+
 export async function layoutGraph(state: GraphState): Promise<GraphState> {
   const nodes = Object.values(state.nodes);
   const newNodes = nodes.filter((n) => !n.positioned);
 
   if (!newNodes.length) return state;
 
+  const discoveryIndex = new Map<string, number>();
+  Object.keys(state.nodes).forEach((id, idx) => discoveryIndex.set(id, idx));
+
+  const dag = buildDag(state, discoveryIndex);
+
+  const layout = sugiyama<DagNodeDatum, GraphEdge>()
+    .layering(
+      layeringLongestPath<DagNodeDatum, GraphEdge>().rank((node) =>
+        node.data.state === "anchor" ? 0 : undefined,
+      ),
+    )
+    .decross(decrossTwoLayer<DagNodeDatum, GraphEdge>().order(orderByDiscovery(discoveryIndex)))
+    .coord(coordGreedy())
+    .nodeSize(() => [NODE_WIDTH, NODE_HEIGHT])
+    .gap([HORIZONTAL_SPACING, VERTICAL_SPACING]);
+
+  layout(dag);
+
   const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
-  const placedChildrenCount = new Map<string, number>();
-  let rootIndex = 0;
+  for (const dagNode of dag.nodes()) {
+    const nodeId = dagNode.data.id;
+    const existing = placed[nodeId];
 
-  for (const node of newNodes) {
-    const parentEdge = state.edges.find((e) => e.target === node.id);
-    const parent = parentEdge ? placed[parentEdge.source] : null;
+    if (!existing) continue;
 
-    let x = 0;
-    let y = 0;
+    const x = existing.positioned ? existing.position.x : dagNode.x;
+    const y =
+      existing.positioned && existing.state !== "anchor"
+        ? existing.position.y
+        : existing.state === "anchor"
+          ? 0
+          : dagNode.y;
 
-    if (!parent || !parent.positioned) {
-      // Root placement: stack vertically to avoid overlap
-      x = 0;
-      y = rootIndex * VERTICAL_SPACING;
-      rootIndex += 1;
-    } else {
-      const childCount = placedChildrenCount.get(parent.id) ?? 0;
-      placedChildrenCount.set(parent.id, childCount + 1);
-
-      if (childCount === 0) {
-        // Main causal chain: place directly below parent
-        x = parent.position.x;
-        y = parent.position.y + VERTICAL_SPACING;
-      } else {
-        // Branches: alternate left/right beside the parent
-        const offsetIndex = Math.ceil(childCount / 2);
-        const direction = childCount % 2 === 0 ? -1 : 1;
-        x = parent.position.x + direction * offsetIndex * HORIZONTAL_SPACING;
-        y = parent.position.y;
-      }
-    }
-
-    placed[node.id] = {
-      ...node,
+    placed[nodeId] = {
+      ...existing,
       positioned: true,
       position: { x, y },
     };

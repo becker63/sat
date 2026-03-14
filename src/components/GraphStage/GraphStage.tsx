@@ -10,7 +10,6 @@ import {
   Controls,
   type Edge,
   type Node,
-  useReactFlow,
 } from "@xyflow/react";
 
 import {
@@ -29,7 +28,7 @@ import {
 
 import { reactFlowTheme } from "@/theme/react-flow";
 
-import { useFollowNode } from "./useFollowNode";
+import { useFollowNodes } from "./useFollowNodes";
 import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
 import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
@@ -46,6 +45,8 @@ const edgeTypes = {
   graph: AnimatedGraphEdge,
 };
 const INITIAL_ZOOM = 1.5;
+
+const isNode = (n: Node | undefined): n is Node => Boolean(n);
 
 export function buildFlowElements(
   graphState: GraphState,
@@ -104,8 +105,7 @@ export function buildFlowElements(
 function GraphStageInner() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
-  const rf = useReactFlow();
+  const followNodes = useFollowNodes(containerRef, INITIAL_ZOOM);
 
   const initialNodes = useAtomValue(graphInitialNodesAtom);
   const initialEdges = useAtomValue(graphInitialEdgesAtom);
@@ -135,17 +135,46 @@ function GraphStageInner() {
     setNodes(mappedNodes);
     setEdges(mappedEdges);
 
-    const focusNode =
-      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
-      mappedNodes.find((n) => !prevIds.has(n.id));
+    const newNode = mappedNodes.find((n) => !prevIds.has(n.id));
 
-    if (focusNode) {
-      requestAnimationFrame(() => {
-        setTimeout(() => followNode(focusNode), 50);
-      });
+    const parentNodes =
+      newNode
+        ? graphState.edges
+            .filter((e) => e.target === newNode.id)
+            .map((e) => mappedNodes.find((n) => n.id === e.source))
+            .filter(isNode)
+        : [];
+
+    const siblingNodes =
+      newNode && parentNodes.length
+        ? graphState.edges
+            .filter((e) => parentNodes.some((p) => p?.id === e.source))
+            .filter((e) => e.target !== newNode.id)
+            .map((e) => mappedNodes.find((n) => n.id === e.target))
+            .filter(isNode)
+        : [];
+
+    const panTarget =
+      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
+      newNode ??
+      null;
+
+    const targets = [
+      ...(parentNodes as Node[]),
+      ...(siblingNodes as Node[]),
+      ...(newNode ? [newNode] : []),
+      ...(panTarget && !newNode ? [panTarget] : []),
+    ];
+
+    const uniqueTargets = Array.from(
+      new Map(targets.map((n) => [n.id, n])).values(),
+    );
+
+    if (uniqueTargets.length) {
+      requestAnimationFrame(() => followNodes(uniqueTargets));
     }
 
-  }, [graphState, setNodes, setEdges, followNode, rf]);
+  }, [graphState, setNodes, setEdges, followNodes]);
 
   /**
    * Drag state (used by SearchBar system)

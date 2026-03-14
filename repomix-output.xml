@@ -78,9 +78,9 @@ src/
     events.ts
     fixtures.ts
     graphStream.ts
+    layoutGraph.spec.ts
     layoutGraph.ts
     reducer.ts
-    relaxGraph.ts
   lib/
     clientLogger.ts
   state/
@@ -94,6 +94,8 @@ src/
     searchScopeMachine.ts
   types/
     d3-quadtree.d.ts
+test-results/
+  .last-run.json
 .gitignore
 components.json
 eslint.config.mjs
@@ -111,161 +113,6 @@ vitest.setup.ts
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/components/GraphEdgeStyles.ts">
-/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import { css } from "../../styled-system/css";
-import { reactFlowTheme } from "@/theme/react-flow";
-
-export const graphEdgeClass = css({
-  stroke: reactFlowTheme.edge.stroke,
-  strokeWidth: "1.5px",
-  strokeDasharray: "6 8",
-  strokeLinecap: "round",
-  fill: "none",
-});
-
-export const graphEdgeLabelClass = css({
-  position: "absolute",
-  fontSize: "11px",
-  color: reactFlowTheme.edge.stroke,
-  pointerEvents: "none",
-  background: "transparent",
-});
-</file>
-
-<file path="src/components/GraphNode.tsx">
-/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import {
-  Handle,
-  Position,
-  type NodeProps,
-  type Node as FlowNode,
-} from "@xyflow/react";
-import { css, cva, cx } from "../../styled-system/css";
-import type { GraphNode } from "@/graph/events";
-import { reactFlowTheme } from "@/theme/react-flow";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
-
-export type GraphNodeData = Pick<
-  GraphNode,
-  "label" | "state" | "kind" | "tokens"
->;
-
-const graphNodeClass = cva({
-  base: {
-    width: `${NODE_WIDTH}px`,
-    height: `${NODE_HEIGHT}px`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: "var(--radii-l3)",
-    fontSize: "14px",
-    fontWeight: 600,
-    lineHeight: 1.2,
-    letterSpacing: "0.01em",
-    transition: "all 0.25s ease",
-    boxShadow: "var(--shadows-panel)",
-    border: "1px solid var(--colors-vercel-surface-border)",
-    background: reactFlowTheme.node.background,
-    color: reactFlowTheme.node.color,
-    textAlign: "center",
-    padding: "10px",
-    gap: "8px",
-    userSelect: "none",
-  },
-
-  variants: {
-    state: {
-      anchor: {
-        background: "var(--colors-vercel-brand-9)",
-        borderColor: "var(--colors-vercel-brand-8)",
-        color: "var(--colors-vercel-surface-overlay)",
-        boxShadow: "var(--shadows-glow)",
-      },
-
-      pending: {
-        borderStyle: "dashed",
-        borderColor: "var(--colors-vercel-surface-outline)",
-        background: "transparent",
-        color: "var(--colors-vercel-text-muted)",
-        opacity: 0.85,
-      },
-
-      resolved: {
-        background:
-          "linear-gradient(135deg, var(--colors-vercel-brand-9), var(--colors-green-10))",
-        borderColor: "transparent",
-        color: "var(--colors-vercel-surface-overlay)",
-        boxShadow: "var(--shadows-glow)",
-      },
-    },
-
-    kind: {
-      symbol: {},
-      function: {},
-      file: {
-        fontStyle: "italic",
-      },
-      type: {
-        borderWidth: "2px",
-      },
-    },
-  },
-});
-
-const ghostClass = cva({
-  base: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "24px",
-    height: "24px",
-    borderRadius: "var(--radii-l3)",
-    background: "var(--colors-vercel-surface-muted)",
-    color: "var(--colors-vercel-text-subtle)",
-    fontSize: "16px",
-    border: "1px solid var(--colors-vercel-surface-border)",
-  },
-});
-
-const handleClass = css({
-  background: "transparent",
-  border: "none",
-});
-
-export function GraphNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as GraphNodeData;
-
-  return (
-    <div
-      className={cx(
-        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
-        selected && "is-selected",
-      )}
-      data-testid="graph-node"
-      data-node-id={id}
-      data-state={nodeData.state}
-      data-kind={nodeData.kind}
-    >
-      {nodeData.state === "pending" ? (
-        <span className={ghostClass()}>👻</span>
-      ) : (
-        nodeData.label
-      )}
-
-      <Handle type="target" position={Position.Top} className={handleClass} />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className={handleClass}
-      />
-    </div>
-  );
-}
-
-export type GraphFlowNode = FlowNode<GraphNodeData>;
-</file>
 
 <file path="public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
@@ -320,87 +167,6 @@ export async function POST(req: Request) {
     console.log("\n[LOGGER ERROR]", err);
     return new Response(null, { status: 204 });
   }
-}
-</file>
-
-<file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  getBezierPath,
-  type EdgeProps,
-  type XYPosition,
-} from "@xyflow/react";
-import { reactFlowTheme } from "@/theme/react-flow";
-import { useRef } from "react";
-import { motion } from "framer-motion";
-import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
-
-export function AnimatedGraphEdge({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  markerEnd,
-  data,
-}: EdgeProps) {
-  const animateOnMount = Boolean((data as any)?.animateOnMount);
-  const label = (data as any)?.kind ?? (data as any)?.label;
-  const hasAnimated = useRef(false);
-  const shouldAnimate = animateOnMount && !hasAnimated.current;
-  if (shouldAnimate) {
-    hasAnimated.current = true;
-  }
-
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-  });
-
-  return (
-    <g data-testid="graph-edge">
-      {shouldAnimate ? (
-        <motion.path
-          id={id}
-          d={edgePath}
-          className={graphEdgeClass}
-          markerEnd={markerEnd}
-          data-animate="true"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        />
-      ) : (
-        <BaseEdge
-          id={id}
-          path={edgePath}
-          className={graphEdgeClass}
-          markerEnd={markerEnd}
-          data-animate="false"
-        />
-      )}
-
-      {label ? (
-        <EdgeLabelRenderer>
-          <div
-            className={graphEdgeLabelClass}
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-          >
-            {label}
-          </div>
-        </EdgeLabelRenderer>
-      ) : null}
-    </g>
-  );
 }
 </file>
 
@@ -612,6 +378,220 @@ export default function ClientConsoleBridge() {
 }
 </file>
 
+<file path="src/components/GraphEdgeStyles.ts">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import { css } from "../../styled-system/css";
+import { reactFlowTheme } from "@/theme/react-flow";
+
+export const graphEdgeClass = css({
+  stroke: reactFlowTheme.edge.stroke,
+  strokeWidth: "1.5px",
+  strokeDasharray: "6 8",
+  strokeLinecap: "round",
+  fill: "none",
+});
+
+export const graphEdgeLabelClass = css({
+  position: "absolute",
+  fontSize: "11px",
+  color: reactFlowTheme.edge.stroke,
+  pointerEvents: "none",
+  background: "transparent",
+});
+</file>
+
+<file path="src/components/GraphNode.tsx">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import {
+  Handle,
+  Position,
+  type NodeProps,
+  type Node as FlowNode,
+} from "@xyflow/react";
+import { css, cva, cx } from "../../styled-system/css";
+import type { GraphNode } from "@/graph/events";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+
+export type GraphNodeData = Pick<
+  GraphNode,
+  "label" | "state" | "kind" | "tokens" | "evidence"
+>;
+
+const graphNodeClass = cva({
+  base: {
+    width: `${NODE_WIDTH}px`,
+    height: `${NODE_HEIGHT}px`,
+    display: "grid",
+    gridTemplateRows: "auto auto 1fr",
+    borderRadius: "var(--radii-l3)",
+    fontSize: "14px",
+    fontWeight: 600,
+    lineHeight: 1.2,
+    letterSpacing: "0.01em",
+    transition: "all 0.25s ease",
+    boxShadow: "var(--shadows-panel)",
+    border: "1px solid var(--colors-vercel-surface-border)",
+    background: reactFlowTheme.node.background,
+    color: reactFlowTheme.node.color,
+    padding: "12px",
+    gap: "8px",
+    userSelect: "none",
+  },
+
+  variants: {
+    state: {
+    anchor: {
+      borderColor: "var(--colors-vercel-brand-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
+
+    pending: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "transparent",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.85,
+    },
+
+    resolved: {
+      borderColor: "var(--colors-green-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
+  },
+
+    kind: {
+      symbol: {},
+      function: {},
+      file: {
+        fontStyle: "italic",
+      },
+      type: {
+        borderWidth: "2px",
+      },
+    },
+  },
+});
+
+const ghostClass = cva({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "28px",
+    height: "28px",
+    borderRadius: "var(--radii-l3)",
+    background: "var(--colors-vercel-surface-muted)",
+    color: "var(--colors-vercel-text-subtle)",
+    fontSize: "16px",
+    border: "1px solid var(--colors-vercel-surface-border)",
+  },
+});
+
+const handleClass = css({
+  background: "transparent",
+  border: "none",
+});
+
+const headerClass = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  justifyContent: "space-between",
+});
+
+const labelClass = css({
+  fontSize: "15px",
+  fontWeight: 700,
+  color: "var(--colors-vercel-text-strong)",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const metaClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-subtle)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+});
+
+const snippetClass = css({
+  fontFamily: "var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
+  fontSize: "12px",
+  lineHeight: 1.4,
+  background: "var(--colors-vercel-surface-50)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l2)",
+  padding: "8px",
+  whiteSpace: "pre-wrap",
+  overflowY: "hidden",
+  display: "block",
+  minHeight: "5em",
+  maxHeight: "7.5em",
+});
+
+const tokenBadgeClass = css({
+  fontSize: "11px",
+  color: "var(--colors-vercel-text-muted)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l3)",
+  padding: "2px 8px",
+});
+
+export function GraphNode({ id, data, selected }: NodeProps) {
+  const nodeData = data as GraphNodeData;
+  const snippet =
+    nodeData.evidence?.snippet ??
+    "// evidence unavailable\n// fixture did not include snippet";
+  const fileLabel = nodeData.evidence?.file ?? "unknown file";
+  const kindLabel = nodeData.kind;
+
+  return (
+    <div
+      className={cx(
+        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
+        selected && "is-selected",
+      )}
+      data-testid="graph-node"
+      data-node-id={id}
+      data-state={nodeData.state}
+      data-kind={nodeData.kind}
+    >
+      <div className={headerClass}>
+        <div className={labelClass}>{nodeData.label ?? id}</div>
+        <div className={tokenBadgeClass}>
+          {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
+        </div>
+      </div>
+
+      <div className={metaClass}>
+        <span>{kindLabel}</span>
+        <span>{fileLabel}</span>
+      </div>
+
+      <div className={snippetClass}>
+        {nodeData.state === "pending" ? (
+          <span className={ghostClass()}>?</span>
+        ) : (
+          snippet
+        )}
+      </div>
+
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={handleClass}
+      />
+    </div>
+  );
+}
+
+export type GraphFlowNode = FlowNode<GraphNodeData>;
+</file>
+
 <file path="src/components/TestControlsInstaller.tsx">
 "use client";
 
@@ -640,202 +620,136 @@ export function TestControlsInstaller() {
 }
 </file>
 
-<file path="src/graph/events.ts">
-export type GraphNode = {
-  id: string;
-  label?: string;
-  kind: "symbol" | "function" | "file" | "type";
-  state: "anchor" | "pending" | "resolved";
-  tokens?: number;
-};
-
-export type GraphEdge = {
-  source: string;
-  target: string;
-  kind: "calls" | "imports" | "references";
-};
-
-export type GraphEvent =
-  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
-  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
-  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
-  | { type: "setContext"; nodes: string[] }
-  | { type: "iteration"; step: number };
-</file>
-
-<file path="src/graph/layoutGraph.ts">
-import ELK from "elkjs/lib/elk.bundled.js";
+<file path="src/graph/layoutGraph.spec.ts">
+import { describe, expect, it } from "vitest";
+import { layoutGraph, NODE_HEIGHT, NODE_WIDTH } from "./layoutGraph";
 import type { GraphState } from "./reducer";
 
-/**
- * Single tuning knob for edge length / graph density.
- *
- * 1.0 = current spacing
- * 0.5 = roughly half-sized graph
- * 0.3 = very compact
- */
-export const EDGE_SCALE = 0.5;
-
-export const NODE_WIDTH = 180;
-export const NODE_HEIGHT = 40;
-
-const layoutOptions = {
-  "elk.algorithm": "layered",
-  "elk.direction": "DOWN",
-  "elk.layered.incremental": "true",
-  "elk.layered.considerModelOrder": "NODES_AND_EDGES",
-  "elk.randomSeed": "1",
-  "elk.layered.crossingMinimization.strategy": "INTERACTIVE",
-
-  // vertical spacing between layers
-  "elk.layered.spacing.nodeNodeBetweenLayers": String(180 * EDGE_SCALE),
-
-  // horizontal spacing between nodes
-  "elk.spacing.nodeNode": String(120 * EDGE_SCALE),
-};
-
-const elk = new ELK();
-
-export async function layoutGraph(state: GraphState): Promise<GraphState> {
-  const nodes = Object.values(state.nodes);
-
-  if (!nodes.length) return state;
-
-  const graph = {
-    id: "root",
-    layoutOptions,
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-      x: node.position.x,
-      y: node.position.y,
-    })),
-    edges: state.edges.map((edge, index) => ({
-      id: `${edge.source}-${edge.target}-${index}`,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
-
-  const layout = await elk.layout(graph);
-
-  const positionedNodes = { ...state.nodes };
-
-  const elkNodes = (layout.children ?? []).map((child) => ({
-    id: child.id,
-    x: child.x ?? 0,
-    y: child.y ?? 0,
-  }));
-
-  for (const child of elkNodes) {
-    const existing = state.nodes[child.id];
-
-    if (!existing) continue;
-
-    positionedNodes[child.id] = {
-      ...existing,
-      position: {
-        x: child.x ?? existing.position.x,
-        y: child.y ?? existing.position.y,
-      },
-      positioned: true,
-    };
-  }
-
+function baseState(nodes: GraphState["nodes"], edges: GraphState["edges"] = []): GraphState {
   return {
-    ...state,
-    nodes: positionedNodes,
+    nodes,
+    edges,
+    context: new Set(),
+    iteration: 0,
+    panTargetId: null,
+    panTick: 0,
   };
 }
-</file>
 
-<file path="src/graph/relaxGraph.ts">
-import {
-  forceCollide,
-  forceLink,
-  forceManyBody,
-  forceSimulation,
-  forceX,
-  forceY,
-} from "d3-force";
-import { timer, of } from "rxjs";
-import { finalize, map, take } from "rxjs/operators";
-import type { GraphState } from "./reducer";
-import { EDGE_SCALE, NODE_HEIGHT, NODE_WIDTH } from "./layoutGraph";
+describe("layoutGraph incremental positioning", () => {
+  it("does not move previously positioned nodes when new nodes are added", async () => {
+    const initial = baseState({
+      a: {
+        id: "a",
+        label: "A",
+        kind: "function",
+        state: "resolved",
+        positioned: true,
+        position: { x: 0, y: 0 },
+      },
+      b: {
+        id: "b",
+        label: "B",
+        kind: "function",
+        state: "pending",
+        positioned: false,
+        position: { x: 0, y: 0 },
+      },
+    }, [{ source: "a", target: "b", kind: "calls" }]);
 
-/**
- * Emits a handful of gentle force-sim frames to add subtle motion without
- * drifting away from the ELK skeleton.
- */
-export function relaxGraph(state: GraphState, frames = 24, intervalMs = 24) {
-  const nodes = Object.values(state.nodes);
-  if (nodes.length <= 1) return of(state);
+    const result = await layoutGraph(initial);
 
-  const linkDistance = 150 * EDGE_SCALE;
-  const collisionRadius = Math.max(NODE_WIDTH, NODE_HEIGHT) * 0.55;
-  const maxDelta = 10;
+    expect(result.nodes.a.position).toEqual({ x: 0, y: 0 });
+  });
 
-  const simulation = forceSimulation(
-    nodes.map((n) => ({
-      id: n.id,
-      x: n.position.x,
-      y: n.position.y,
-      vx: 0,
-      vy: 0,
-    })),
-  )
-    .force(
-      "link",
-      forceLink(
-        state.edges.map((edge) => ({
-          source: edge.source,
-          target: edge.target,
-        })),
-      )
-        .id((d: any) => d.id)
-        .distance(linkDistance),
-    )
-    .force("charge", forceManyBody().strength(-6))
-    .force("collision", forceCollide(collisionRadius))
-    .force("x", forceX((d: any) => d.x).strength(0.2))
-    .force("y", forceY((d: any) => d.y).strength(0.2))
-    .alpha(0.22)
-    .alphaDecay(0.06);
-
-  return timer(0, intervalMs).pipe(
-    take(frames),
-    map(() => {
-      simulation.tick();
-
-      const positionedNodes = { ...state.nodes };
-
-      simulation.nodes().forEach((node) => {
-        const existing = positionedNodes[node.id];
-        if (!existing) return;
-
-        positionedNodes[node.id] = {
-          ...existing,
-          position: {
-            x: clampDelta(existing.position.x, node.x ?? existing.position.x, maxDelta),
-            y: clampDelta(existing.position.y, node.y ?? existing.position.y, maxDelta),
-          },
+  it("places child nodes below their parent on the main chain", async () => {
+    const state = baseState(
+      {
+        a: {
+          id: "a",
+          label: "A",
+          kind: "function",
+          state: "resolved",
           positioned: true,
-        };
-      });
+          position: { x: 0, y: 0 },
+        },
+        b: {
+          id: "b",
+          label: "B",
+          kind: "function",
+          state: "pending",
+          positioned: false,
+          position: { x: 0, y: 0 },
+        },
+      },
+      [{ source: "a", target: "b", kind: "calls" }],
+    );
 
-      return {
-        ...state,
-        nodes: positionedNodes,
-      };
-    }),
-    finalize(() => simulation.stop()),
-  );
-}
+    const result = await layoutGraph(state);
 
-function clampDelta(origin: number, candidate: number, max: number) {
-  return Math.min(origin + max, Math.max(origin - max, candidate));
-}
+    expect(result.nodes.b.position.y).toBeGreaterThan(result.nodes.a.position.y);
+    expect(result.nodes.b.position.x).toBe(result.nodes.a.position.x);
+  });
+
+  it("places branch nodes horizontally beside parent", async () => {
+    const state = baseState(
+      {
+        a: {
+          id: "a",
+          label: "A",
+          kind: "function",
+          state: "resolved",
+          positioned: true,
+          position: { x: 0, y: 0 },
+        },
+        b: {
+          id: "b",
+          label: "B",
+          kind: "function",
+          state: "pending",
+          positioned: false,
+          position: { x: 0, y: 0 },
+        },
+        c: {
+          id: "c",
+          label: "C",
+          kind: "function",
+          state: "pending",
+          positioned: false,
+          position: { x: 0, y: 0 },
+        },
+      },
+      [
+        { source: "a", target: "b", kind: "references" },
+        { source: "a", target: "c", kind: "references" },
+      ],
+    );
+
+    const result = await layoutGraph(state);
+
+    expect(result.nodes.b.position.x).not.toBe(result.nodes.a.position.x);
+    expect(result.nodes.c.position.x).not.toBe(result.nodes.a.position.x);
+    expect(result.nodes.b.position.y).toBe(result.nodes.a.position.y);
+    expect(result.nodes.c.position.y).toBe(result.nodes.a.position.y);
+  });
+
+  it("does not recompute layout when no new nodes are added", async () => {
+    const state = baseState({
+      a: {
+        id: "a",
+        label: "A",
+        kind: "function",
+        state: "resolved",
+        positioned: true,
+        position: { x: 100, y: 200 },
+      },
+    });
+
+    const result = await layoutGraph(state);
+
+    expect(result.nodes.a.position).toEqual({ x: 100, y: 200 });
+  });
+});
 </file>
 
 <file path="src/lib/clientLogger.ts">
@@ -1212,30 +1126,83 @@ if (!globalThis.ResizeObserver) {
 }
 </file>
 
-<file path="src/components/GraphStage/useFollowNode.ts">
-import { useCallback } from "react";
-import { useReactFlow, type Node } from "@xyflow/react";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+<file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  type EdgeProps,
+  type XYPosition,
+} from "@xyflow/react";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { useRef } from "react";
+import { motion } from "framer-motion";
+import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
 
-export function useFollowNode(
-  containerRef: React.RefObject<HTMLDivElement | null>,
-  zoom: number,
-) {
-  const rf = useReactFlow();
+export function AnimatedGraphEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  markerEnd,
+  data,
+}: EdgeProps) {
+  const animateOnMount = Boolean((data as any)?.animateOnMount);
+  const label = (data as any)?.kind ?? (data as any)?.label;
+  const hasAnimated = useRef(false);
+  const shouldAnimate = animateOnMount && !hasAnimated.current;
+  if (shouldAnimate) {
+    hasAnimated.current = true;
+  }
 
-  return useCallback(
-    (node: Node) => {
-      if (!containerRef.current) return;
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
 
-      const nodeCenterX = node.position.x + NODE_WIDTH / 2;
-      const nodeCenterY = node.position.y + NODE_HEIGHT / 2;
+  return (
+    <g data-testid="graph-edge">
+      {shouldAnimate ? (
+        <motion.path
+          id={id}
+          d={edgePath}
+          className={graphEdgeClass}
+          markerEnd={markerEnd}
+          data-animate="true"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+        />
+      ) : (
+        <BaseEdge
+          id={id}
+          path={edgePath}
+          className={graphEdgeClass}
+          markerEnd={markerEnd}
+          data-animate="false"
+        />
+      )}
 
-      rf.setCenter(nodeCenterX, nodeCenterY, {
-        zoom,
-        duration: 500,
-      });
-    },
-    [rf, zoom, containerRef],
+      {label ? (
+        <EdgeLabelRenderer>
+          <div
+            className={graphEdgeLabelClass}
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            }}
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      ) : null}
+    </g>
   );
 }
 </file>
@@ -1348,361 +1315,94 @@ export function findClosestPerimeterLength({
 }
 </file>
 
-<file path="src/graph/fixtures.ts">
-import type { GraphEvent } from "./events";
-import type { Observable } from "rxjs";
-import { from } from "rxjs";
-
-export type Fixture = {
+<file path="src/graph/events.ts">
+export type GraphNode = {
   id: string;
-  label: string;
-  prompt: string;
-  events$: () => Observable<GraphEvent>;
+  label?: string;
+  kind: "symbol" | "function" | "file" | "type";
+  state: "anchor" | "pending" | "resolved";
+  tokens?: number;
+  evidence?: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
 };
 
-/**
- * Fixtures now only define events.
- * No playback timing here.
- */
+export type GraphEdge = {
+  source: string;
+  target: string;
+  kind: "calls" | "imports" | "references";
+};
 
-const tanstackEvents: GraphEvent[] = [
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:useQuery",
-        label: "useQuery",
-        kind: "function",
-        state: "anchor",
-      },
-    ],
-    reason: "User query entrypoint",
-  },
+export type GraphEvent =
+  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
+  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
+  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
+  | { type: "setContext"; nodes: string[] }
+  | { type: "iteration"; step: number };
+</file>
 
-  { type: "iteration", step: 1 },
+<file path="src/graph/layoutGraph.ts">
+import type { GraphState } from "./reducer";
 
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:QueryObserver",
-        label: "QueryObserver",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-    reason: "useQuery delegates to QueryObserver",
-  },
+export const NODE_WIDTH = 300;
+export const NODE_HEIGHT = 140;
 
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:useQuery",
-        target: "function:QueryObserver",
-        kind: "calls",
-      },
-    ],
-  },
+const VERTICAL_SPACING = 220;
+const HORIZONTAL_SPACING = 340;
 
-  { type: "iteration", step: 2 },
+export async function layoutGraph(state: GraphState): Promise<GraphState> {
+  const nodes = Object.values(state.nodes);
+  const newNodes = nodes.filter((n) => !n.positioned);
 
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:QueryClient",
-        label: "QueryClient",
-        kind: "function",
-        state: "pending",
-      },
-      {
-        id: "function:notifyManager",
-        label: "notifyManager",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-    reason: "Observer interacts with QueryClient and scheduling",
-  },
+  if (!newNodes.length) return state;
 
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:QueryObserver",
-        target: "function:QueryClient",
-        kind: "references",
-      },
-      {
-        source: "function:QueryObserver",
-        target: "function:notifyManager",
-        kind: "calls",
-      },
-    ],
-  },
+  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
+  const placedChildrenCount = new Map<string, number>();
+  let rootIndex = 0;
 
-  { type: "iteration", step: 3 },
+  for (const node of newNodes) {
+    const parentEdge = state.edges.find((e) => e.target === node.id);
+    const parent = parentEdge ? placed[parentEdge.source] : null;
 
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:Query",
-        label: "Query",
-        kind: "type",
-        state: "pending",
-      },
-      {
-        id: "function:Retryer",
-        label: "Retryer",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-  },
+    let x = 0;
+    let y = 0;
 
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:QueryClient",
-        target: "function:Query",
-        kind: "references",
-      },
-      {
-        source: "function:Query",
-        target: "function:Retryer",
-        kind: "calls",
-      },
-    ],
-  },
+    if (!parent || !parent.positioned) {
+      // Root placement: stack vertically to avoid overlap
+      x = 0;
+      y = rootIndex * VERTICAL_SPACING;
+      rootIndex += 1;
+    } else {
+      const childCount = placedChildrenCount.get(parent.id) ?? 0;
+      placedChildrenCount.set(parent.id, childCount + 1);
 
-  { type: "iteration", step: 4 },
+      if (childCount === 0) {
+        // Main causal chain: place directly below parent
+        x = parent.position.x;
+        y = parent.position.y + VERTICAL_SPACING;
+      } else {
+        // Branches: alternate left/right beside the parent
+        const offsetIndex = Math.ceil(childCount / 2);
+        const direction = childCount % 2 === 0 ? -1 : 1;
+        x = parent.position.x + direction * offsetIndex * HORIZONTAL_SPACING;
+        y = parent.position.y;
+      }
+    }
 
-  {
-    type: "updateNode",
-    id: "function:QueryObserver",
-    patch: { state: "resolved" },
-  },
+    placed[node.id] = {
+      ...node,
+      positioned: true,
+      position: { x, y },
+    };
+  }
 
-  {
-    type: "updateNode",
-    id: "function:QueryClient",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:Query",
-    patch: { state: "resolved" },
-  },
-];
-
-const reduxEvents: GraphEvent[] = [
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createSlice",
-        label: "createSlice",
-        kind: "function",
-        state: "anchor",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 1 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createReducer",
-        label: "createReducer",
-        kind: "function",
-        state: "pending",
-      },
-      {
-        id: "function:createAction",
-        label: "createAction",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createSlice",
-        target: "function:createReducer",
-        kind: "calls",
-      },
-      {
-        source: "function:createSlice",
-        target: "function:createAction",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 2 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "type:Slice",
-        label: "Slice",
-        kind: "type",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createSlice",
-        target: "type:Slice",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 3 },
-
-  {
-    type: "updateNode",
-    id: "function:createReducer",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:createAction",
-    patch: { state: "resolved" },
-  },
-];
-
-const zustandEvents: GraphEvent[] = [
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createStore",
-        label: "createStore",
-        kind: "function",
-        state: "anchor",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 1 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:setState",
-        label: "setState",
-        kind: "function",
-        state: "pending",
-      },
-      {
-        id: "function:subscribe",
-        label: "subscribe",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createStore",
-        target: "function:setState",
-        kind: "calls",
-      },
-      {
-        source: "function:createStore",
-        target: "function:subscribe",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 2 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "type:StoreApi",
-        label: "StoreApi",
-        kind: "type",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createStore",
-        target: "type:StoreApi",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 3 },
-
-  {
-    type: "updateNode",
-    id: "function:setState",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:subscribe",
-    patch: { state: "resolved" },
-  },
-];
-
-const tanstackFixture = {
-  id: "tanstack",
-  label: "TanStack Query",
-  prompt: "How does useQuery work internally in TanStack Query?",
-  events$: () => from(tanstackEvents),
-} as const satisfies Fixture;
-
-const reduxFixture = {
-  id: "redux",
-  label: "Redux Toolkit",
-  prompt: "How does createSlice generate reducers in Redux Toolkit?",
-  events$: () => from(reduxEvents),
-} as const satisfies Fixture;
-
-const zustandFixture = {
-  id: "zustand",
-  label: "Zustand",
-  prompt: "How does Zustand create and update store state?",
-  events$: () => from(zustandEvents),
-} as const satisfies Fixture;
-
-export const fixtureRegistry = {
-  tanstack: tanstackFixture,
-  redux: reduxFixture,
-  zustand: zustandFixture,
-} as const satisfies Record<string, Fixture>;
+  return {
+    ...state,
+    nodes: placed,
+  };
+}
 </file>
 
 <file path="src/graph/reducer.ts">
@@ -2143,100 +1843,560 @@ export default defineConfig({
 }
 </file>
 
-<file path="src/graph/graphStream.ts">
-import {
-  Observable,
-  concatMap,
-  delay,
-  of,
-  filter,
-  take,
-  startWith,
-  from,
-  withLatestFrom,
-  map,
-} from "rxjs";
-import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators";
-import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
-import type { GraphEvent } from "./events";
-import { layoutGraph } from "./layoutGraph";
-import { relaxGraph } from "./relaxGraph";
+<file path="src/components/GraphStage/useFollowNode.ts">
+import { useCallback } from "react";
+import { useReactFlow, type Node } from "@xyflow/react";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
-const EVENT_DELAY_MS = 700;
-
-export function createGraphState$(
-  events$: Observable<GraphEvent>,
-  playing$: Observable<boolean>,
-  eventDelayMs = EVENT_DELAY_MS,
+export function useFollowNode(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  zoom: number,
 ) {
-  const gatedEvents$ = events$.pipe(
-    // Each event waits until play is true before continuing; pausing halts the next step.
-    concatMap((event) =>
-      playing$.pipe(
-        filter(Boolean),
-        take(1),
-        concatMap(() => of(event).pipe(delay(eventDelayMs))),
-      ),
-    ),
-  );
+  const rf = useReactFlow();
 
-  const reduced$ = gatedEvents$.pipe(
-    tap((event) => {
-      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
-      console.log(event);
-      console.groupEnd();
-    }),
+  return useCallback(
+    (node: Node) => {
+      if (!containerRef.current) return;
 
-    scan(applyGraphEvent, initialGraphState),
-    shareReplay({ bufferSize: 1, refCount: false }),
-  );
+      const rect = containerRef.current.getBoundingClientRect();
+      const nodeCenterX = node.position.x + NODE_WIDTH / 2;
+      const nodeCenterY = node.position.y + NODE_HEIGHT / 2;
 
-  return gatedEvents$.pipe(
-    filter((event) => event.type === "iteration" || event.type === "updateNode"),
-    withLatestFrom(reduced$),
-    concatMap(([event, state]) =>
-      from(layoutGraph(state)).pipe(
-        rxConcatMap((layouted) => relaxGraph(layouted)),
-        map((s) => ({ state: s, event })),
-      ),
-    ),
-    map(({ state, event }) => addPanTarget(state, event)),
+      const targetZoom = Math.min(
+        1,
+        Math.max(0.8, rf.getViewport().zoom ?? zoom ?? 1),
+      );
 
-    tap((state) => {
-      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
-      console.log(state);
-      console.groupEnd();
-    }),
+      rf.setCenter(nodeCenterX, nodeCenterY, {
+        zoom: targetZoom,
+        duration: 450,
+      });
 
-    startWith(initialGraphState),
-    shareReplay({ bufferSize: 1, refCount: false }),
+      setTimeout(() => {
+        const screen = rf.flowToScreenPosition({ x: nodeCenterX, y: nodeCenterY });
+        const padding = 48;
+        let dx = 0;
+        let dy = 0;
+
+        if (screen.x < padding) dx = screen.x - padding;
+        else if (screen.x > rect.width - padding) dx = screen.x - (rect.width - padding);
+
+        if (screen.y < padding) dy = screen.y - padding;
+        else if (screen.y > rect.height - padding) dy = screen.y - (rect.height - padding);
+
+        if (dx !== 0 || dy !== 0) {
+          const viewport = rf.getViewport();
+          rf.setViewport(
+            { x: viewport.x - dx, y: viewport.y - dy, zoom: viewport.zoom },
+            { duration: 200 },
+          );
+        }
+      }, 480);
+    },
+    [rf, containerRef, zoom],
   );
 }
+</file>
 
-function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
-  const positionedNodes = Object.values(state.nodes).filter((n) => n.positioned);
+<file path="src/graph/fixtures.ts">
+import type { GraphEvent } from "./events";
+import type { Observable } from "rxjs";
+import { from } from "rxjs";
 
-  const pickDeepest = () =>
-    positionedNodes.reduce((best, node) => {
-      if (!best) return node;
-      return best.position.y > node.position.y ? best : node;
-    }, positionedNodes[0] ?? null);
+export type Fixture = {
+  id: string;
+  label: string;
+  prompt: string;
+  events$: () => Observable<GraphEvent>;
+};
 
-  const targetId =
-    event.type === "updateNode"
-      ? event.id
-      : event.type === "iteration"
-        ? pickDeepest()?.id ?? null
-        : null;
+/**
+ * Fixtures now only define events.
+ * No playback timing here.
+ */
 
-  if (!targetId) return state;
+const tanstackEvents: GraphEvent[] = [
+  /**
+   * Semantic anchor phase
+   */
 
-  return {
-    ...state,
-    panTargetId: targetId,
-    panTick: (state.panTick ?? 0) + 1,
-  };
-}
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:useQuery",
+        label: "useQuery",
+        kind: "function",
+        state: "anchor",
+        tokens: 42,
+        evidence: {
+          file: "react-query/useQuery.ts",
+          startLine: 15,
+          snippet: `export function useQuery(options) {
+   const client = useQueryClient()
+   const observer = new QueryObserver(client, options)
+   return observer.getOptimisticResult(options)
+ }`,
+        },
+      },
+
+      {
+        id: "function:useMutation",
+        label: "useMutation",
+        kind: "function",
+        state: "anchor",
+        tokens: 38,
+        evidence: {
+          file: "react-query/useMutation.ts",
+          startLine: 10,
+          snippet: `export function useMutation(options) {
+   const client = useQueryClient()
+   return new MutationObserver(client, options)
+ }`,
+        },
+      },
+
+      {
+        id: "function:QueryClient",
+        label: "QueryClient",
+        kind: "function",
+        state: "anchor",
+        tokens: 50,
+        evidence: {
+          file: "query-core/queryClient.ts",
+          startLine: 20,
+          snippet: `export class QueryClient {
+   constructor(config) {
+     this.queryCache = new QueryCache()
+   }
+ }`,
+        },
+      },
+    ],
+    reason: "Semantic anchors discovered from query",
+  },
+
+  { type: "iteration", step: 1 },
+
+  /**
+   * Solver begins exploring useQuery path
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:QueryObserver",
+        label: "QueryObserver",
+        kind: "function",
+        state: "pending",
+        tokens: 60,
+        evidence: {
+          file: "query-core/queryObserver.ts",
+          startLine: 40,
+          snippet: `export class QueryObserver {
+   constructor(client, options) {
+     this.client = client
+     this.options = options
+   }
+ }`,
+        },
+      },
+    ],
+    reason: "useQuery constructs a QueryObserver",
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:useQuery",
+        target: "function:QueryObserver",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  /**
+   * Branch nodes
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:notifyManager",
+        label: "notifyManager",
+        kind: "function",
+        state: "pending",
+        tokens: 30,
+        evidence: {
+          file: "query-core/notifyManager.ts",
+          startLine: 5,
+          snippet: `export const notifyManager = {
+   batch(fn) {
+     queueMicrotask(fn)
+   }
+ }`,
+        },
+      },
+
+      {
+        id: "function:focusManager",
+        label: "focusManager",
+        kind: "function",
+        state: "pending",
+        tokens: 28,
+        evidence: {
+          file: "query-core/focusManager.ts",
+          startLine: 10,
+          snippet: `export const focusManager = {
+   setFocused(focused) {
+     this.listeners.forEach(l => l(focused))
+   }
+ }`,
+        },
+      },
+    ],
+    reason: "QueryObserver integrates scheduling and focus events",
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:QueryObserver",
+        target: "function:notifyManager",
+        kind: "calls",
+      },
+      {
+        source: "function:QueryObserver",
+        target: "function:focusManager",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  /**
+   * Continue main causal path
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:Query",
+        label: "Query",
+        kind: "type",
+        state: "pending",
+        tokens: 65,
+        evidence: {
+          file: "query-core/query.ts",
+          startLine: 30,
+          snippet: `export class Query {
+   fetch() {
+     this.retryer = new Retryer(this.options)
+   }
+ }`,
+        },
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:QueryClient",
+        target: "type:Query",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 4 },
+
+  /**
+   * Final causal node
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:Retryer",
+        label: "Retryer",
+        kind: "function",
+        state: "pending",
+        tokens: 35,
+        evidence: {
+          file: "query-core/retryer.ts",
+          startLine: 10,
+          snippet: `export class Retryer {
+   constructor(config) {
+     this.retry = config.retry
+   }
+ }`,
+        },
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "type:Query",
+        target: "function:Retryer",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 5 },
+
+  /**
+   * Solver resolves nodes
+   */
+
+  {
+    type: "updateNode",
+    id: "function:QueryObserver",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "type:Query",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:Retryer",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "setContext",
+    nodes: [
+      "function:useQuery",
+      "function:QueryObserver",
+      "function:QueryClient",
+      "type:Query",
+      "function:Retryer",
+    ],
+  },
+];
+
+const reduxEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createSlice",
+        label: "createSlice",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createReducer",
+        label: "createReducer",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:createAction",
+        label: "createAction",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "function:createReducer",
+        kind: "calls",
+      },
+      {
+        source: "function:createSlice",
+        target: "function:createAction",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:Slice",
+        label: "Slice",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "type:Slice",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:createReducer",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:createAction",
+    patch: { state: "resolved" },
+  },
+];
+
+const zustandEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createStore",
+        label: "createStore",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:setState",
+        label: "setState",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:subscribe",
+        label: "subscribe",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "function:setState",
+        kind: "calls",
+      },
+      {
+        source: "function:createStore",
+        target: "function:subscribe",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:StoreApi",
+        label: "StoreApi",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "type:StoreApi",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:setState",
+    patch: { state: "resolved" },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:subscribe",
+    patch: { state: "resolved" },
+  },
+];
+
+const tanstackFixture = {
+  id: "tanstack",
+  label: "TanStack Query",
+  prompt: "How does useQuery work internally in TanStack Query?",
+  events$: () => from(tanstackEvents),
+} as const satisfies Fixture;
+
+const reduxFixture = {
+  id: "redux",
+  label: "Redux Toolkit",
+  prompt: "How does createSlice generate reducers in Redux Toolkit?",
+  events$: () => from(reduxEvents),
+} as const satisfies Fixture;
+
+const zustandFixture = {
+  id: "zustand",
+  label: "Zustand",
+  prompt: "How does Zustand create and update store state?",
+  events$: () => from(zustandEvents),
+} as const satisfies Fixture;
+
+export const fixtureRegistry = {
+  tanstack: tanstackFixture,
+  redux: reduxFixture,
+  zustand: zustandFixture,
+} as const satisfies Record<string, Fixture>;
 </file>
 
 <file path="panda.config.ts">
@@ -2424,6 +2584,102 @@ export default function RootLayout({
 }
 </file>
 
+<file path="src/graph/graphStream.ts">
+import {
+  Observable,
+  concatMap,
+  delay,
+  of,
+  filter,
+  take,
+  startWith,
+  from,
+  withLatestFrom,
+  map,
+} from "rxjs";
+import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators";
+import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
+import type { GraphEvent } from "./events";
+import { layoutGraph } from "./layoutGraph";
+
+const EVENT_DELAY_MS = 700;
+
+export function createGraphState$(
+  events$: Observable<GraphEvent>,
+  playing$: Observable<boolean>,
+  eventDelayMs = EVENT_DELAY_MS,
+) {
+  const gatedEvents$ = events$.pipe(
+    // Each event waits until play is true before continuing; pausing halts the next step.
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        concatMap(() => of(event).pipe(delay(eventDelayMs))),
+      ),
+    ),
+  );
+
+  const reduced$ = gatedEvents$.pipe(
+    tap((event) => {
+      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
+      console.log(event);
+      console.groupEnd();
+    }),
+
+    scan(applyGraphEvent, initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+
+  return gatedEvents$.pipe(
+    filter((event) => event.type === "iteration" || event.type === "updateNode"),
+    withLatestFrom(reduced$),
+    concatMap(([event, state]) =>
+      from(layoutGraph(state)).pipe(map((s) => ({ state: s, event }))),
+    ),
+    map(({ state, event }) => addPanTarget(state, event)),
+
+    tap((state) => {
+      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
+      console.log(state);
+      console.groupEnd();
+    }),
+
+    startWith(initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+}
+
+function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
+  const positionedNodes = Object.values(state.nodes).filter((n) => n.positioned);
+
+  const pickDeepest = () =>
+    positionedNodes.reduce((best, node) => {
+      if (!best) return node;
+      return best.position.y > node.position.y ? best : node;
+    }, positionedNodes[0] ?? null);
+
+  let targetId: string | null = null;
+
+  if (event.type === "iteration") {
+    targetId = pickDeepest()?.id ?? null;
+  } else if (event.type === "updateNode") {
+    const updated = state.nodes[event.id];
+    if (updated?.positioned && updated.state === "resolved") {
+      targetId = updated.id;
+    }
+  }
+
+  if (!targetId) return state;
+
+  return {
+    ...state,
+    panTargetId: targetId,
+    panTick: (state.panTick ?? 0) + 1,
+  };
+}
+</file>
+
 <file path="src/components/GraphStage/GraphStage.tsx">
 "use client";
 
@@ -2437,6 +2693,7 @@ import {
   Controls,
   type Edge,
   type Node,
+  useReactFlow,
 } from "@xyflow/react";
 
 import {
@@ -2458,6 +2715,7 @@ import { reactFlowTheme } from "@/theme/react-flow";
 import { useFollowNode } from "./useFollowNode";
 import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
 import "@xyflow/react/dist/style.css";
 
@@ -2494,6 +2752,7 @@ export function buildFlowElements(
           state: n.state,
           kind: n.kind,
           tokens: n.tokens,
+          evidence: n.evidence,
         },
         position: n.position,
         selectable: false,
@@ -2529,6 +2788,7 @@ function GraphStageInner() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
+  const rf = useReactFlow();
 
   const initialNodes = useAtomValue(graphInitialNodesAtom);
   const initialEdges = useAtomValue(graphInitialEdgesAtom);
@@ -2560,17 +2820,15 @@ function GraphStageInner() {
 
     const focusNode =
       mappedNodes.find((n) => n.id === graphState.panTargetId) ??
-      mappedNodes.reduce((best, n) => {
-        if (!best) return n;
-        return n.position.y > best.position.y ? n : best;
-      }, mappedNodes[0]);
+      mappedNodes.find((n) => !prevIds.has(n.id));
 
     if (focusNode) {
       requestAnimationFrame(() => {
-        followNode(focusNode);
+        setTimeout(() => followNode(focusNode), 50);
       });
     }
-  }, [graphState, setNodes, setEdges, followNode]);
+
+  }, [graphState, setNodes, setEdges, followNode, rf]);
 
   /**
    * Drag state (used by SearchBar system)
@@ -4063,6 +4321,13 @@ export function useSearchScopeMenu({
     offsetTop: snapshot.offsetTop,
     dwelling: snapshot.dwelling,
   };
+}
+</file>
+
+<file path="test-results/.last-run.json">
+{
+  "status": "passed",
+  "failedTests": []
 }
 </file>
 
