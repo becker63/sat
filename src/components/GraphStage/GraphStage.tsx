@@ -10,6 +10,7 @@ import {
   Controls,
   type Edge,
   type Node,
+  useReactFlow,
 } from "@xyflow/react";
 
 import {
@@ -29,8 +30,9 @@ import {
 import { reactFlowTheme } from "@/theme/react-flow";
 
 import { useFollowNode } from "./useFollowNode";
-import { GraphNode } from "@/components/ui/GraphNode";
+import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
 import "@xyflow/react/dist/style.css";
 
@@ -67,6 +69,7 @@ export function buildFlowElements(
           state: n.state,
           kind: n.kind,
           tokens: n.tokens,
+          evidence: n.evidence,
         },
         position: n.position,
         selectable: false,
@@ -102,6 +105,7 @@ function GraphStageInner() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
+  const rf = useReactFlow();
 
   const initialNodes = useAtomValue(graphInitialNodesAtom);
   const initialEdges = useAtomValue(graphInitialEdgesAtom);
@@ -133,17 +137,15 @@ function GraphStageInner() {
 
     const focusNode =
       mappedNodes.find((n) => n.id === graphState.panTargetId) ??
-      mappedNodes.reduce((best, n) => {
-        if (!best) return n;
-        return n.position.y > best.position.y ? n : best;
-      }, mappedNodes[0]);
+      mappedNodes.find((n) => !prevIds.has(n.id));
 
     if (focusNode) {
       requestAnimationFrame(() => {
-        followNode(focusNode);
+        setTimeout(() => followNode(focusNode), 50);
       });
     }
-  }, [graphState, setNodes, setEdges, followNode]);
+
+  }, [graphState, setNodes, setEdges, followNode, rf]);
 
   /**
    * Drag state (used by SearchBar system)

@@ -15,6 +15,10 @@ export type Fixture = {
  */
 
 const tanstackEvents: GraphEvent[] = [
+  /**
+   * Semantic anchor phase
+   */
+
   {
     type: "addNodes",
     nodes: [
@@ -23,12 +27,59 @@ const tanstackEvents: GraphEvent[] = [
         label: "useQuery",
         kind: "function",
         state: "anchor",
+        tokens: 42,
+        evidence: {
+          file: "react-query/useQuery.ts",
+          startLine: 15,
+          snippet: `export function useQuery(options) {
+   const client = useQueryClient()
+   const observer = new QueryObserver(client, options)
+   return observer.getOptimisticResult(options)
+ }`,
+        },
+      },
+
+      {
+        id: "function:useMutation",
+        label: "useMutation",
+        kind: "function",
+        state: "anchor",
+        tokens: 38,
+        evidence: {
+          file: "react-query/useMutation.ts",
+          startLine: 10,
+          snippet: `export function useMutation(options) {
+   const client = useQueryClient()
+   return new MutationObserver(client, options)
+ }`,
+        },
+      },
+
+      {
+        id: "function:QueryClient",
+        label: "QueryClient",
+        kind: "function",
+        state: "anchor",
+        tokens: 50,
+        evidence: {
+          file: "query-core/queryClient.ts",
+          startLine: 20,
+          snippet: `export class QueryClient {
+   constructor(config) {
+     this.queryCache = new QueryCache()
+   }
+ }`,
+        },
       },
     ],
-    reason: "User query entrypoint",
+    reason: "Semantic anchors discovered from query",
   },
 
   { type: "iteration", step: 1 },
+
+  /**
+   * Solver begins exploring useQuery path
+   */
 
   {
     type: "addNodes",
@@ -38,9 +89,20 @@ const tanstackEvents: GraphEvent[] = [
         label: "QueryObserver",
         kind: "function",
         state: "pending",
+        tokens: 60,
+        evidence: {
+          file: "query-core/queryObserver.ts",
+          startLine: 40,
+          snippet: `export class QueryObserver {
+   constructor(client, options) {
+     this.client = client
+     this.options = options
+   }
+ }`,
+        },
       },
     ],
-    reason: "useQuery delegates to QueryObserver",
+    reason: "useQuery constructs a QueryObserver",
   },
 
   {
@@ -56,23 +118,48 @@ const tanstackEvents: GraphEvent[] = [
 
   { type: "iteration", step: 2 },
 
+  /**
+   * Branch nodes
+   */
+
   {
     type: "addNodes",
     nodes: [
-      {
-        id: "function:QueryClient",
-        label: "QueryClient",
-        kind: "function",
-        state: "pending",
-      },
       {
         id: "function:notifyManager",
         label: "notifyManager",
         kind: "function",
         state: "pending",
+        tokens: 30,
+        evidence: {
+          file: "query-core/notifyManager.ts",
+          startLine: 5,
+          snippet: `export const notifyManager = {
+   batch(fn) {
+     queueMicrotask(fn)
+   }
+ }`,
+        },
+      },
+
+      {
+        id: "function:focusManager",
+        label: "focusManager",
+        kind: "function",
+        state: "pending",
+        tokens: 28,
+        evidence: {
+          file: "query-core/focusManager.ts",
+          startLine: 10,
+          snippet: `export const focusManager = {
+   setFocused(focused) {
+     this.listeners.forEach(l => l(focused))
+   }
+ }`,
+        },
       },
     ],
-    reason: "Observer interacts with QueryClient and scheduling",
+    reason: "QueryObserver integrates scheduling and focus events",
   },
 
   {
@@ -80,33 +167,41 @@ const tanstackEvents: GraphEvent[] = [
     edges: [
       {
         source: "function:QueryObserver",
-        target: "function:QueryClient",
-        kind: "references",
+        target: "function:notifyManager",
+        kind: "calls",
       },
       {
         source: "function:QueryObserver",
-        target: "function:notifyManager",
-        kind: "calls",
+        target: "function:focusManager",
+        kind: "references",
       },
     ],
   },
 
   { type: "iteration", step: 3 },
 
+  /**
+   * Continue main causal path
+   */
+
   {
     type: "addNodes",
     nodes: [
       {
-        id: "function:Query",
+        id: "type:Query",
         label: "Query",
         kind: "type",
         state: "pending",
-      },
-      {
-        id: "function:Retryer",
-        label: "Retryer",
-        kind: "function",
-        state: "pending",
+        tokens: 65,
+        evidence: {
+          file: "query-core/query.ts",
+          startLine: 30,
+          snippet: `export class Query {
+   fetch() {
+     this.retryer = new Retryer(this.options)
+   }
+ }`,
+        },
       },
     ],
   },
@@ -116,18 +211,56 @@ const tanstackEvents: GraphEvent[] = [
     edges: [
       {
         source: "function:QueryClient",
-        target: "function:Query",
+        target: "type:Query",
         kind: "references",
       },
+    ],
+  },
+
+  { type: "iteration", step: 4 },
+
+  /**
+   * Final causal node
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
       {
-        source: "function:Query",
+        id: "function:Retryer",
+        label: "Retryer",
+        kind: "function",
+        state: "pending",
+        tokens: 35,
+        evidence: {
+          file: "query-core/retryer.ts",
+          startLine: 10,
+          snippet: `export class Retryer {
+   constructor(config) {
+     this.retry = config.retry
+   }
+ }`,
+        },
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "type:Query",
         target: "function:Retryer",
         kind: "calls",
       },
     ],
   },
 
-  { type: "iteration", step: 4 },
+  { type: "iteration", step: 5 },
+
+  /**
+   * Solver resolves nodes
+   */
 
   {
     type: "updateNode",
@@ -137,14 +270,25 @@ const tanstackEvents: GraphEvent[] = [
 
   {
     type: "updateNode",
-    id: "function:QueryClient",
+    id: "type:Query",
     patch: { state: "resolved" },
   },
 
   {
     type: "updateNode",
-    id: "function:Query",
+    id: "function:Retryer",
     patch: { state: "resolved" },
+  },
+
+  {
+    type: "setContext",
+    nodes: [
+      "function:useQuery",
+      "function:QueryObserver",
+      "function:QueryClient",
+      "type:Query",
+      "function:Retryer",
+    ],
   },
 ];
 

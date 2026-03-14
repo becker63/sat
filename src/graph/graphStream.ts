@@ -14,7 +14,6 @@ import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators
 import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
 import type { GraphEvent } from "./events";
 import { layoutGraph } from "./layoutGraph";
-import { relaxGraph } from "./relaxGraph";
 
 const EVENT_DELAY_MS = 700;
 
@@ -49,10 +48,7 @@ export function createGraphState$(
     filter((event) => event.type === "iteration" || event.type === "updateNode"),
     withLatestFrom(reduced$),
     concatMap(([event, state]) =>
-      from(layoutGraph(state)).pipe(
-        rxConcatMap((layouted) => relaxGraph(layouted)),
-        map((s) => ({ state: s, event })),
-      ),
+      from(layoutGraph(state)).pipe(map((s) => ({ state: s, event }))),
     ),
     map(({ state, event }) => addPanTarget(state, event)),
 
@@ -76,12 +72,16 @@ function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
       return best.position.y > node.position.y ? best : node;
     }, positionedNodes[0] ?? null);
 
-  const targetId =
-    event.type === "updateNode"
-      ? event.id
-      : event.type === "iteration"
-        ? pickDeepest()?.id ?? null
-        : null;
+  let targetId: string | null = null;
+
+  if (event.type === "iteration") {
+    targetId = pickDeepest()?.id ?? null;
+  } else if (event.type === "updateNode") {
+    const updated = state.nodes[event.id];
+    if (updated?.positioned && updated.state === "resolved") {
+      targetId = updated.id;
+    }
+  }
 
   if (!targetId) return state;
 

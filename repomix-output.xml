@@ -57,9 +57,9 @@ src/
     page.tsx
   components/
     GraphStage/
+      AnimatedGraphEdge.tsx
       GraphStage.tsx
       index.ts
-      layoutGraph.ts
       useFollowNode.ts
     SearchBar/
       idea.md
@@ -71,11 +71,16 @@ src/
       SearchScopeMenu.tsx
       useSearchScopeMenu.ts
     ClientConsoleBridge.tsx
+    GraphEdgeStyles.ts
+    GraphNode.tsx
+    TestControlsInstaller.tsx
   graph/
     events.ts
     fixtures.ts
     graphStream.ts
+    layoutGraph.ts
     reducer.ts
+    relaxGraph.ts
   lib/
     clientLogger.ts
   state/
@@ -89,36 +94,6 @@ src/
     searchScopeMachine.ts
   types/
     d3-quadtree.d.ts
-test-results/
-  SearchBar-SearchBar.e2e-Se-15d87-with-the-graph-stroke-color/
-    error-context.md
-  SearchBar-SearchBar.e2e-Se-81aa7-y-and-matches-segment-width/
-    error-context.md
-  SearchBar-SearchBar.e2e-Se-8d4e6-leaving-the-scope-menu-span/
-    error-context.md
-  SearchScopeMenu-SearchScop-1d137-segment-left-edge-at-center/
-    error-context.md
-  SearchScopeMenu-SearchScop-53b96--width-and-follows-movement/
-    error-context.md
-  SearchScopeMenu-SearchScop-553b5-hen-leaving-the-menu-bounds/
-    error-context.md
-  SearchScopeMenu-SearchScop-56ef8-he-hover-segment-is-present/
-    error-context.md
-  SearchScopeMenu-SearchScop-736b3-ally-with-the-hover-segment/
-    error-context.md
-  SearchScopeMenu-SearchScop-86b54-he-top-left-on-first-render/
-    error-context.md
-  SearchScopeMenu-SearchScop-9dc53-repositions-after-it-spawns/
-    error-context.md
-  SearchScopeMenu-SearchScop-c9864-ft-edge-at-varied-positions/
-    error-context.md
-  SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/
-    error-context.md
-  SearchScopeMenu-SearchScop-e069a-d-menu-share-the-same-width/
-    error-context.md
-  SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band/
-    error-context.md
-  .last-run.json
 .gitignore
 components.json
 eslint.config.mjs
@@ -137,288 +112,159 @@ vitest.setup.ts
 <files>
 This section contains the contents of the repository's files.
 
-<file path="src/components/GraphStage/layoutGraph.ts">
-import ELK from "elkjs/lib/elk.bundled.js";
-import type { Node, Edge } from "@xyflow/react";
+<file path="src/components/GraphEdgeStyles.ts">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import { css } from "../../styled-system/css";
+import { reactFlowTheme } from "@/theme/react-flow";
 
-const elk = new ELK();
+export const graphEdgeClass = css({
+  stroke: reactFlowTheme.edge.stroke,
+  strokeWidth: "1.5px",
+  strokeDasharray: "6 8",
+  strokeLinecap: "round",
+  fill: "none",
+});
 
-const layoutOptions = {
-  "elk.algorithm": "layered",
-  "elk.direction": "DOWN",
-  "elk.layered.incremental": "true",
-  "elk.layered.spacing.nodeNodeBetweenLayers": "180",
-  "elk.spacing.nodeNode": "120",
-};
-
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 40;
-
-export async function layoutGraph(nodes: Node[], edges: Edge[]) {
-  const graph = {
-    id: "root",
-    layoutOptions,
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-      x: node.position.x,
-      y: node.position.y,
-    })),
-    edges: edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
-
-  const layout = await elk.layout(graph);
-
-  return nodes.map((node) => {
-    const elkNode = layout.children?.find((n) => n.id === node.id);
-
-    return {
-      ...node,
-      position: {
-        x: elkNode?.x ?? 0,
-        y: elkNode?.y ?? 0,
-      },
-    };
-  });
-}
+export const graphEdgeLabelClass = css({
+  position: "absolute",
+  fontSize: "11px",
+  color: reactFlowTheme.edge.stroke,
+  pointerEvents: "none",
+  background: "transparent",
+});
 </file>
 
-<file path="src/components/GraphStage/useFollowNode.ts">
-import { useCallback } from "react";
-import { useReactFlow, type Node } from "@xyflow/react";
+<file path="src/components/GraphNode.tsx">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import {
+  Handle,
+  Position,
+  type NodeProps,
+  type Node as FlowNode,
+} from "@xyflow/react";
+import { css, cva, cx } from "../../styled-system/css";
+import type { GraphNode } from "@/graph/events";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
-const NODE_WIDTH = 180;
-const NODE_HEIGHT = 40;
+export type GraphNodeData = Pick<
+  GraphNode,
+  "label" | "state" | "kind" | "tokens"
+>;
 
-export function useFollowNode(
-  containerRef: React.RefObject<HTMLDivElement | null>,
-  zoom: number,
-) {
-  const rf = useReactFlow();
+const graphNodeClass = cva({
+  base: {
+    width: `${NODE_WIDTH}px`,
+    height: `${NODE_HEIGHT}px`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "var(--radii-l3)",
+    fontSize: "14px",
+    fontWeight: 600,
+    lineHeight: 1.2,
+    letterSpacing: "0.01em",
+    transition: "all 0.25s ease",
+    boxShadow: "var(--shadows-panel)",
+    border: "1px solid var(--colors-vercel-surface-border)",
+    background: reactFlowTheme.node.background,
+    color: reactFlowTheme.node.color,
+    textAlign: "center",
+    padding: "10px",
+    gap: "8px",
+    userSelect: "none",
+  },
 
-  return useCallback(
-    (node: Node) => {
-      if (!containerRef.current) return;
+  variants: {
+    state: {
+      anchor: {
+        background: "var(--colors-vercel-brand-9)",
+        borderColor: "var(--colors-vercel-brand-8)",
+        color: "var(--colors-vercel-surface-overlay)",
+        boxShadow: "var(--shadows-glow)",
+      },
 
-      const rect = containerRef.current.getBoundingClientRect();
+      pending: {
+        borderStyle: "dashed",
+        borderColor: "var(--colors-vercel-surface-outline)",
+        background: "transparent",
+        color: "var(--colors-vercel-text-muted)",
+        opacity: 0.85,
+      },
 
-      const width = rect.width;
-      const height = rect.height;
-
-      const nodeCenter = {
-        x: node.position.x + NODE_WIDTH / 2,
-        y: node.position.y + NODE_HEIGHT / 2,
-      };
-
-      const screen = rf.flowToScreenPosition(nodeCenter);
-
-      const marginX = width * 0.25;
-      const marginY = height * 0.25;
-
-      let dx = 0;
-      let dy = 0;
-
-      if (screen.x < marginX) {
-        dx = screen.x - marginX;
-      } else if (screen.x > width - marginX) {
-        dx = screen.x - (width - marginX);
-      }
-
-      if (screen.y < marginY) {
-        dy = screen.y - marginY;
-      } else if (screen.y > height - marginY) {
-        dy = screen.y - (height - marginY);
-      }
-
-      if (dx === 0 && dy === 0) return;
-
-      const viewport = rf.getViewport();
-
-      rf.setViewport(
-        {
-          x: viewport.x - dx,
-          y: viewport.y - dy,
-          zoom,
-        },
-        { duration: 450 },
-      );
+      resolved: {
+        background:
+          "linear-gradient(135deg, var(--colors-vercel-brand-9), var(--colors-green-10))",
+        borderColor: "transparent",
+        color: "var(--colors-vercel-surface-overlay)",
+        boxShadow: "var(--shadows-glow)",
+      },
     },
-    [rf, zoom, containerRef],
+
+    kind: {
+      symbol: {},
+      function: {},
+      file: {
+        fontStyle: "italic",
+      },
+      type: {
+        borderWidth: "2px",
+      },
+    },
+  },
+});
+
+const ghostClass = cva({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "24px",
+    height: "24px",
+    borderRadius: "var(--radii-l3)",
+    background: "var(--colors-vercel-surface-muted)",
+    color: "var(--colors-vercel-text-subtle)",
+    fontSize: "16px",
+    border: "1px solid var(--colors-vercel-surface-border)",
+  },
+});
+
+const handleClass = css({
+  background: "transparent",
+  border: "none",
+});
+
+export function GraphNode({ id, data, selected }: NodeProps) {
+  const nodeData = data as GraphNodeData;
+
+  return (
+    <div
+      className={cx(
+        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
+        selected && "is-selected",
+      )}
+      data-testid="graph-node"
+      data-node-id={id}
+      data-state={nodeData.state}
+      data-kind={nodeData.kind}
+    >
+      {nodeData.state === "pending" ? (
+        <span className={ghostClass()}>👻</span>
+      ) : (
+        nodeData.label
+      )}
+
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={handleClass}
+      />
+    </div>
   );
 }
-</file>
 
-<file path="src/state/graphPlayback.ts">
-import { atom } from "jotai";
-
-export const graphPlayingAtom = atom(false);
-</file>
-
-<file path="test-results/SearchBar-SearchBar.e2e-Se-15d87-with-the-graph-stroke-color/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-1d137-segment-left-edge-at-center/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-53b96--width-and-follows-movement/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-553b5-hen-leaving-the-menu-bounds/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-736b3-ally-with-the-hover-segment/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-86b54-he-top-left-on-first-render/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-9dc53-repositions-after-it-spawns/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-c9864-ft-edge-at-varied-positions/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-e069a-d-menu-share-the-same-width/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
+export type GraphFlowNode = FlowNode<GraphNodeData>;
 </file>
 
 <file path="public/file.svg">
@@ -474,6 +320,87 @@ export async function POST(req: Request) {
     console.log("\n[LOGGER ERROR]", err);
     return new Response(null, { status: 204 });
   }
+}
+</file>
+
+<file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  type EdgeProps,
+  type XYPosition,
+} from "@xyflow/react";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { useRef } from "react";
+import { motion } from "framer-motion";
+import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
+
+export function AnimatedGraphEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  markerEnd,
+  data,
+}: EdgeProps) {
+  const animateOnMount = Boolean((data as any)?.animateOnMount);
+  const label = (data as any)?.kind ?? (data as any)?.label;
+  const hasAnimated = useRef(false);
+  const shouldAnimate = animateOnMount && !hasAnimated.current;
+  if (shouldAnimate) {
+    hasAnimated.current = true;
+  }
+
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
+
+  return (
+    <g data-testid="graph-edge">
+      {shouldAnimate ? (
+        <motion.path
+          id={id}
+          d={edgePath}
+          className={graphEdgeClass}
+          markerEnd={markerEnd}
+          data-animate="true"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+        />
+      ) : (
+        <BaseEdge
+          id={id}
+          path={edgePath}
+          className={graphEdgeClass}
+          markerEnd={markerEnd}
+          data-animate="false"
+        />
+      )}
+
+      {label ? (
+        <EdgeLabelRenderer>
+          <div
+            className={graphEdgeLabelClass}
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            }}
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      ) : null}
+    </g>
+  );
 }
 </file>
 
@@ -685,6 +612,34 @@ export default function ClientConsoleBridge() {
 }
 </file>
 
+<file path="src/components/TestControlsInstaller.tsx">
+"use client";
+
+import { useEffect } from "react";
+import { getDefaultStore } from "jotai";
+import { selectedFixtureAtom } from "@/state/fixtureAtom";
+import { graphPlayingAtom } from "@/state/graphPlayback";
+
+const isE2E = process.env.NEXT_PUBLIC_E2E === "true";
+
+export function TestControlsInstaller() {
+  useEffect(() => {
+    if (!isE2E) return;
+    if (typeof window === "undefined") return;
+
+    const store = getDefaultStore();
+
+    (window as any).__graphControls = {
+      selectFixture: (id: string | null) =>
+        store.set(selectedFixtureAtom, id as any),
+      setPlaying: (playing: boolean) => store.set(graphPlayingAtom, playing),
+    };
+  }, []);
+
+  return null;
+}
+</file>
+
 <file path="src/graph/events.ts">
 export type GraphNode = {
   id: string;
@@ -706,6 +661,691 @@ export type GraphEvent =
   | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
   | { type: "setContext"; nodes: string[] }
   | { type: "iteration"; step: number };
+</file>
+
+<file path="src/graph/layoutGraph.ts">
+import ELK from "elkjs/lib/elk.bundled.js";
+import type { GraphState } from "./reducer";
+
+/**
+ * Single tuning knob for edge length / graph density.
+ *
+ * 1.0 = current spacing
+ * 0.5 = roughly half-sized graph
+ * 0.3 = very compact
+ */
+export const EDGE_SCALE = 0.5;
+
+export const NODE_WIDTH = 180;
+export const NODE_HEIGHT = 40;
+
+const layoutOptions = {
+  "elk.algorithm": "layered",
+  "elk.direction": "DOWN",
+  "elk.layered.incremental": "true",
+  "elk.layered.considerModelOrder": "NODES_AND_EDGES",
+  "elk.randomSeed": "1",
+  "elk.layered.crossingMinimization.strategy": "INTERACTIVE",
+
+  // vertical spacing between layers
+  "elk.layered.spacing.nodeNodeBetweenLayers": String(180 * EDGE_SCALE),
+
+  // horizontal spacing between nodes
+  "elk.spacing.nodeNode": String(120 * EDGE_SCALE),
+};
+
+const elk = new ELK();
+
+export async function layoutGraph(state: GraphState): Promise<GraphState> {
+  const nodes = Object.values(state.nodes);
+
+  if (!nodes.length) return state;
+
+  const graph = {
+    id: "root",
+    layoutOptions,
+    children: nodes.map((node) => ({
+      id: node.id,
+      width: NODE_WIDTH,
+      height: NODE_HEIGHT,
+      x: node.position.x,
+      y: node.position.y,
+    })),
+    edges: state.edges.map((edge, index) => ({
+      id: `${edge.source}-${edge.target}-${index}`,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
+
+  const layout = await elk.layout(graph);
+
+  const positionedNodes = { ...state.nodes };
+
+  const elkNodes = (layout.children ?? []).map((child) => ({
+    id: child.id,
+    x: child.x ?? 0,
+    y: child.y ?? 0,
+  }));
+
+  for (const child of elkNodes) {
+    const existing = state.nodes[child.id];
+
+    if (!existing) continue;
+
+    positionedNodes[child.id] = {
+      ...existing,
+      position: {
+        x: child.x ?? existing.position.x,
+        y: child.y ?? existing.position.y,
+      },
+      positioned: true,
+    };
+  }
+
+  return {
+    ...state,
+    nodes: positionedNodes,
+  };
+}
+</file>
+
+<file path="src/graph/relaxGraph.ts">
+import {
+  forceCollide,
+  forceLink,
+  forceManyBody,
+  forceSimulation,
+  forceX,
+  forceY,
+} from "d3-force";
+import { timer, of } from "rxjs";
+import { finalize, map, take } from "rxjs/operators";
+import type { GraphState } from "./reducer";
+import { EDGE_SCALE, NODE_HEIGHT, NODE_WIDTH } from "./layoutGraph";
+
+/**
+ * Emits a handful of gentle force-sim frames to add subtle motion without
+ * drifting away from the ELK skeleton.
+ */
+export function relaxGraph(state: GraphState, frames = 24, intervalMs = 24) {
+  const nodes = Object.values(state.nodes);
+  if (nodes.length <= 1) return of(state);
+
+  const linkDistance = 150 * EDGE_SCALE;
+  const collisionRadius = Math.max(NODE_WIDTH, NODE_HEIGHT) * 0.55;
+  const maxDelta = 10;
+
+  const simulation = forceSimulation(
+    nodes.map((n) => ({
+      id: n.id,
+      x: n.position.x,
+      y: n.position.y,
+      vx: 0,
+      vy: 0,
+    })),
+  )
+    .force(
+      "link",
+      forceLink(
+        state.edges.map((edge) => ({
+          source: edge.source,
+          target: edge.target,
+        })),
+      )
+        .id((d: any) => d.id)
+        .distance(linkDistance),
+    )
+    .force("charge", forceManyBody().strength(-6))
+    .force("collision", forceCollide(collisionRadius))
+    .force("x", forceX((d: any) => d.x).strength(0.2))
+    .force("y", forceY((d: any) => d.y).strength(0.2))
+    .alpha(0.22)
+    .alphaDecay(0.06);
+
+  return timer(0, intervalMs).pipe(
+    take(frames),
+    map(() => {
+      simulation.tick();
+
+      const positionedNodes = { ...state.nodes };
+
+      simulation.nodes().forEach((node) => {
+        const existing = positionedNodes[node.id];
+        if (!existing) return;
+
+        positionedNodes[node.id] = {
+          ...existing,
+          position: {
+            x: clampDelta(existing.position.x, node.x ?? existing.position.x, maxDelta),
+            y: clampDelta(existing.position.y, node.y ?? existing.position.y, maxDelta),
+          },
+          positioned: true,
+        };
+      });
+
+      return {
+        ...state,
+        nodes: positionedNodes,
+      };
+    }),
+    finalize(() => simulation.stop()),
+  );
+}
+
+function clampDelta(origin: number, candidate: number, max: number) {
+  return Math.min(origin + max, Math.max(origin - max, candidate));
+}
+</file>
+
+<file path="src/lib/clientLogger.ts">
+let sending = false;
+let installed = false;
+
+export function mirrorConsole() {
+  if (typeof window === "undefined") return;
+  if (installed) return; // prevent Fast Refresh duplication
+  installed = true;
+
+  const send = (type: string, args: unknown[]) => {
+    if (sending) return;
+
+    try {
+      sending = true;
+
+      const payload = JSON.stringify({
+        type,
+        args,
+        ts: Date.now(),
+        path: window.location.pathname,
+      });
+
+      navigator.sendBeacon(
+        "/api/log",
+        new Blob([payload], { type: "application/json" }),
+      );
+    } catch {
+      // never log logger errors
+    } finally {
+      sending = false;
+    }
+  };
+
+  const methods = ["error", "warn", "log", "info", "debug"] as const;
+
+  for (const method of methods) {
+    const original = console[method];
+
+    console[method] = (...args: unknown[]) => {
+      send(`console.${method}`, args);
+      original.apply(console, args);
+    };
+  }
+
+  window.addEventListener("error", (event) => {
+    if (String(event.filename ?? "").includes("/api/log")) return;
+
+    send("window.error", [
+      event.message,
+      event.filename,
+      event.lineno,
+      event.colno,
+      event.error?.stack,
+    ]);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const msg = String(event.reason ?? "");
+    if (msg.includes("/api/log")) return;
+
+    send("unhandledrejection", [event.reason]);
+  });
+}
+</file>
+
+<file path="src/state/fixtureAtom.ts">
+import { atom } from "jotai";
+import { fixtureRegistry } from "@/graph/fixtures";
+
+export type FixtureKey = keyof typeof fixtureRegistry;
+
+export const selectedFixtureAtom = atom<FixtureKey | null>(null);
+</file>
+
+<file path="src/state/fixturePromptAtom.ts">
+import { atom } from "jotai";
+import { selectedFixtureAtom } from "./fixtureAtom";
+import { fixtureRegistry } from "@/graph/fixtures";
+
+export const fixturePromptAtom = atom((get) => {
+  const key = get(selectedFixtureAtom);
+
+  if (!key) return "";
+
+  return fixtureRegistry[key].prompt;
+});
+</file>
+
+<file path="src/state/graphPlayback.ts">
+import { atom } from "jotai";
+
+export const graphPlayingAtom = atom(false);
+</file>
+
+<file path="src/types/d3-quadtree.d.ts">
+declare module "d3-quadtree" {
+  export type QuadtreeNode<T> =
+    | { data: T; next?: QuadtreeNode<T>; length?: undefined }
+    | {
+        length: number;
+        0?: QuadtreeNode<T>;
+        1?: QuadtreeNode<T>;
+        2?: QuadtreeNode<T>;
+        3?: QuadtreeNode<T>;
+      };
+
+  export interface Quadtree<T> {
+    visit(
+      callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
+    ): this;
+  }
+
+  export function quadtree<T>(
+    data?: T[],
+    x?: (d: T) => number,
+    y?: (d: T) => number,
+  ): Quadtree<T>;
+}
+</file>
+
+<file path="components.json">
+{
+  "$schema": "https://park-ui.com/schema/components.json",
+  "framework": "react",
+  "panda": {
+    "config": "panda.config.ts"
+  },
+  "aliases": {
+    "components": "@/components",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "recipes": "@/theme/recipes",
+    "theme": "@/theme",
+    "ui": "@/components/ui"
+  }
+}
+</file>
+
+<file path="eslint.config.mjs">
+import tsParser from "@typescript-eslint/parser";
+import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
+import styleFirewall from "./eslint/style-firewall.mjs";
+
+export default [
+  {
+    ignores: [
+      "**/.next/**",
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/build/**",
+      "**/styled-system/**",
+      "**/playwright/**",
+      "**/test-results/**",
+    ],
+  },
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    plugins: {
+      react,
+      "react-hooks": reactHooks,
+      "style-firewall": styleFirewall,
+    },
+    settings: {
+      react: { version: "detect" },
+    },
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+      "style-firewall/no-inline-style-except-geometry": "error",
+      "style-firewall/no-raw-colors": "error",
+      "style-firewall/no-raw-box-shadow": "error",
+      "style-firewall/no-raw-border-radius": "error",
+      "style-firewall/no-styling-outside-ui": [
+        "error",
+        {
+          allow: ["src/components/ui", "src/theme", "src/styled-system"],
+        },
+      ],
+      "style-firewall/no-surface-props-outside-recipes": [
+        "error",
+        {
+          allow: ["src/theme", "src/components/ui"],
+        },
+      ],
+      "style-firewall/prefer-panda-css": "error",
+    },
+  },
+  {
+    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.e2e.spec.ts"],
+    rules: {
+      "style-firewall/no-inline-style-except-geometry": "off",
+      "style-firewall/no-raw-colors": "off",
+      "style-firewall/no-raw-box-shadow": "off",
+      "style-firewall/no-raw-border-radius": "off",
+      "style-firewall/no-styling-outside-ui": "off",
+      "style-firewall/no-surface-props-outside-recipes": "off",
+      "style-firewall/prefer-panda-css": "off",
+    },
+  },
+];
+</file>
+
+<file path="flake.lock">
+{
+  "nodes": {
+    "flake-compat": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1767039857,
+        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "flake-compat",
+        "type": "github"
+      }
+    },
+    "flake-utils": {
+      "inputs": {
+        "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "git-hooks": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "gitignore": "gitignore",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1772665116,
+        "narHash": "sha256-XmjUDG/J8Z8lY5DVNVUf5aoZGc400FxcjsNCqHKiKtc=",
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "rev": "39f53203a8458c330f61cc0759fe243f0ac0d198",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "type": "github"
+      }
+    },
+    "gitignore": {
+      "inputs": {
+        "nixpkgs": [
+          "git-hooks",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1709087332,
+        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "gitignore.nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1770073757,
+        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1772624091,
+        "narHash": "sha256-QKyJ0QGWBn6r0invrMAK8dmJoBYWoOWy7lN+UHzW1jc=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "80bdc1e5ce51f56b19791b52b2901187931f5353",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "git-hooks": "git-hooks",
+        "nixpkgs": "nixpkgs_2"
+      }
+    },
+    "systems": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="vitest.setup.ts">
+import "@testing-library/jest-dom/vitest";
+
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+if (!globalThis.ResizeObserver) {
+  // ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
+  globalThis.ResizeObserver = ResizeObserver;
+}
+</file>
+
+<file path="src/components/GraphStage/useFollowNode.ts">
+import { useCallback } from "react";
+import { useReactFlow, type Node } from "@xyflow/react";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+
+export function useFollowNode(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  zoom: number,
+) {
+  const rf = useReactFlow();
+
+  return useCallback(
+    (node: Node) => {
+      if (!containerRef.current) return;
+
+      const nodeCenterX = node.position.x + NODE_WIDTH / 2;
+      const nodeCenterY = node.position.y + NODE_HEIGHT / 2;
+
+      rf.setCenter(nodeCenterX, nodeCenterY, {
+        zoom,
+        duration: 500,
+      });
+    },
+    [rf, zoom, containerRef],
+  );
+}
+</file>
+
+<file path="src/components/SearchBar/perimeter.ts">
+type Point = { x: number; y: number };
+
+type Segment = { start: Point; end: Point; length: number };
+
+type ClosestLengthInput = {
+  container: HTMLElement | null;
+  path: SVGRectElement | null;
+  clientX: number;
+  clientY: number;
+  inset: number;
+};
+
+const toPoint = (x: number, y: number): Point => ({ x, y });
+
+const segmentLength = (segment: Segment) => segment.length;
+
+const makeSegments = (width: number, height: number): Segment[] => {
+  const p1 = toPoint(0, 0);
+  const p2 = toPoint(width, 0);
+  const p3 = toPoint(width, height);
+  const p4 = toPoint(0, height);
+
+  const build = (start: Point, end: Point): Segment => ({
+    start,
+    end,
+    length: Math.hypot(end.x - start.x, end.y - start.y),
+  });
+
+  return [build(p1, p2), build(p2, p3), build(p3, p4), build(p4, p1)];
+};
+
+const closestOnSegment = (point: Point, segment: Segment) => {
+  const vx = segment.end.x - segment.start.x;
+  const vy = segment.end.y - segment.start.y;
+  const wx = point.x - segment.start.x;
+  const wy = point.y - segment.start.y;
+
+  const segLenSq = vx * vx + vy * vy;
+  if (segLenSq === 0) return { closest: segment.start, distanceSq: 0, t: 0 };
+
+  const t = Math.max(0, Math.min(1, (wx * vx + wy * vy) / segLenSq));
+  const closest = toPoint(segment.start.x + vx * t, segment.start.y + vy * t);
+  const dx = point.x - closest.x;
+  const dy = point.y - closest.y;
+
+  return { closest, distanceSq: dx * dx + dy * dy, t };
+};
+
+export function findClosestPerimeterLength({
+  container,
+  path,
+  clientX,
+  clientY,
+  inset,
+}: ClosestLengthInput) {
+  if (!container || !path) return null;
+
+  const containerRect = container.getBoundingClientRect();
+  const svgX = clientX - containerRect.left + inset;
+  const svgY = clientY - containerRect.top + inset;
+
+  const originX = path.x?.baseVal?.value ?? 0;
+  const originY = path.y?.baseVal?.value ?? 0;
+  const width = path.width?.baseVal?.value ?? 0;
+  const height = path.height?.baseVal?.value ?? 0;
+
+  if (width <= 0 || height <= 0) return null;
+
+  const pointer = toPoint(svgX - originX, svgY - originY);
+  const segments = makeSegments(width, height);
+  const perimeterSimple = segments.reduce(
+    (total, segment) => total + segmentLength(segment),
+    0,
+  );
+
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let bestLengthSimple = 0;
+  let traversed = 0;
+
+  for (const segment of segments) {
+    const { distanceSq, t } = closestOnSegment(pointer, segment);
+    if (distanceSq < bestDistance) {
+      bestDistance = distanceSq;
+      bestLengthSimple = traversed + segment.length * t;
+    }
+    traversed += segment.length;
+  }
+
+  const total =
+    typeof path.getTotalLength === "function"
+      ? path.getTotalLength()
+      : perimeterSimple;
+
+  if (!Number.isFinite(total) || total <= 0) return null;
+
+  const scaledLength =
+    perimeterSimple > 0 ? (bestLengthSimple / perimeterSimple) * total : 0;
+
+  const point =
+    typeof path.getPointAtLength === "function"
+      ? path.getPointAtLength(scaledLength)
+      : { x: 0, y: 0 };
+
+  return { bestLength: scaledLength, total, point };
+}
 </file>
 
 <file path="src/graph/fixtures.ts">
@@ -1065,58 +1705,21 @@ export const fixtureRegistry = {
 } as const satisfies Record<string, Fixture>;
 </file>
 
-<file path="src/graph/graphStream.ts">
-import { Observable, concatMap, delay, of, filter, take, startWith } from "rxjs";
-import { scan, shareReplay, tap } from "rxjs/operators";
-import { applyGraphEvent, initialGraphState } from "./reducer";
-import type { GraphEvent } from "./events";
-
-const EVENT_DELAY_MS = 700;
-
-export function createGraphState$(
-  events$: Observable<GraphEvent>,
-  playing$: Observable<boolean>,
-) {
-  const gatedEvents$ = events$.pipe(
-    // Each event waits until play is true before continuing; pausing halts the next step.
-    concatMap((event) =>
-      playing$.pipe(
-        filter(Boolean),
-        take(1),
-        concatMap(() => of(event).pipe(delay(EVENT_DELAY_MS))),
-      ),
-    ),
-  );
-
-  return gatedEvents$.pipe(
-    tap((event) => {
-      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
-      console.log(event);
-      console.groupEnd();
-    }),
-
-    scan(applyGraphEvent, initialGraphState),
-
-    tap((state) => {
-      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
-      console.log(state);
-      console.groupEnd();
-    }),
-
-    startWith(initialGraphState),
-    shareReplay({ bufferSize: 1, refCount: false }),
-  );
-}
-</file>
-
 <file path="src/graph/reducer.ts">
 import type { GraphEvent, GraphNode, GraphEdge } from "./events";
 
+export type PositionedGraphNode = GraphNode & {
+  positioned: boolean;
+  position: { x: number; y: number };
+};
+
 export type GraphState = {
-  nodes: Record<string, GraphNode>;
+  nodes: Record<string, PositionedGraphNode>;
   edges: GraphEdge[];
   context: Set<string>;
   iteration: number;
+  panTargetId: string | null;
+  panTick: number;
 };
 
 export const initialGraphState: GraphState = {
@@ -1124,6 +1727,8 @@ export const initialGraphState: GraphState = {
   edges: [],
   context: new Set(),
   iteration: 0,
+  panTargetId: null,
+  panTick: 0,
 };
 
 export function applyGraphEvent(
@@ -1133,24 +1738,34 @@ export function applyGraphEvent(
   switch (event.type) {
     case "addNodes": {
       const nodes = { ...state.nodes };
-      for (const n of event.nodes) nodes[n.id] = n;
+      for (const n of event.nodes) {
+        const previous = nodes[n.id];
+        nodes[n.id] = {
+          ...previous,
+          ...n,
+          position: previous?.position ?? { x: 0, y: 0 },
+          positioned: previous?.positioned ?? false,
+        };
+      }
       return { ...state, nodes };
     }
 
     case "addEdges":
       return { ...state, edges: [...state.edges, ...event.edges] };
 
-    case "updateNode":
+    case "updateNode": {
+      const target = state.nodes[event.id];
+
+      if (!target) return state;
+
       return {
         ...state,
         nodes: {
           ...state.nodes,
-          [event.id]: {
-            ...state.nodes[event.id],
-            ...event.patch,
-          },
+          [event.id]: { ...target, ...event.patch },
         },
       };
+    }
 
     case "setContext":
       return { ...state, context: new Set(event.nodes) };
@@ -1162,94 +1777,6 @@ export function applyGraphEvent(
       return state;
   }
 }
-</file>
-
-<file path="src/lib/clientLogger.ts">
-let sending = false;
-let installed = false;
-
-export function mirrorConsole() {
-  if (typeof window === "undefined") return;
-  if (installed) return; // prevent Fast Refresh duplication
-  installed = true;
-
-  const send = (type: string, args: unknown[]) => {
-    if (sending) return;
-
-    try {
-      sending = true;
-
-      const payload = JSON.stringify({
-        type,
-        args,
-        ts: Date.now(),
-        path: window.location.pathname,
-      });
-
-      navigator.sendBeacon(
-        "/api/log",
-        new Blob([payload], { type: "application/json" }),
-      );
-    } catch {
-      // never log logger errors
-    } finally {
-      sending = false;
-    }
-  };
-
-  const methods = ["error", "warn", "log", "info", "debug"] as const;
-
-  for (const method of methods) {
-    const original = console[method];
-
-    console[method] = (...args: unknown[]) => {
-      send(`console.${method}`, args);
-      original.apply(console, args);
-    };
-  }
-
-  window.addEventListener("error", (event) => {
-    if (String(event.filename ?? "").includes("/api/log")) return;
-
-    send("window.error", [
-      event.message,
-      event.filename,
-      event.lineno,
-      event.colno,
-      event.error?.stack,
-    ]);
-  });
-
-  window.addEventListener("unhandledrejection", (event) => {
-    const msg = String(event.reason ?? "");
-    if (msg.includes("/api/log")) return;
-
-    send("unhandledrejection", [event.reason]);
-  });
-}
-</file>
-
-<file path="src/state/fixtureAtom.ts">
-import { atom } from "jotai";
-import { fixtureRegistry } from "@/graph/fixtures";
-
-export type FixtureKey = keyof typeof fixtureRegistry;
-
-export const selectedFixtureAtom = atom<FixtureKey | null>(null);
-</file>
-
-<file path="src/state/fixturePromptAtom.ts">
-import { atom } from "jotai";
-import { selectedFixtureAtom } from "./fixtureAtom";
-import { fixtureRegistry } from "@/graph/fixtures";
-
-export const fixturePromptAtom = atom((get) => {
-  const key = get(selectedFixtureAtom);
-
-  if (!key) return "";
-
-  return fixtureRegistry[key].prompt;
-});
 </file>
 
 <file path="src/state/graphStage.ts">
@@ -1312,612 +1839,6 @@ export const graphStateAtom = atomWithObservable((get) => {
   // convert playback state to observable
   return createGraphState$(events$, of(playing));
 });
-</file>
-
-<file path="src/types/d3-quadtree.d.ts">
-declare module "d3-quadtree" {
-  export type QuadtreeNode<T> =
-    | { data: T; next?: QuadtreeNode<T>; length?: undefined }
-    | {
-        length: number;
-        0?: QuadtreeNode<T>;
-        1?: QuadtreeNode<T>;
-        2?: QuadtreeNode<T>;
-        3?: QuadtreeNode<T>;
-      };
-
-  export interface Quadtree<T> {
-    visit(
-      callback: (node: QuadtreeNode<T>, x0: number, y0: number, x1: number, y1: number) => boolean | void,
-    ): this;
-  }
-
-  export function quadtree<T>(
-    data?: T[],
-    x?: (d: T) => number,
-    y?: (d: T) => number,
-  ): Quadtree<T>;
-}
-</file>
-
-<file path="components.json">
-{
-  "$schema": "https://park-ui.com/schema/components.json",
-  "framework": "react",
-  "panda": {
-    "config": "panda.config.ts"
-  },
-  "aliases": {
-    "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
-    "recipes": "@/theme/recipes",
-    "theme": "@/theme",
-    "ui": "@/components/ui"
-  }
-}
-</file>
-
-<file path="eslint.config.mjs">
-import tsParser from "@typescript-eslint/parser";
-import react from "eslint-plugin-react";
-import reactHooks from "eslint-plugin-react-hooks";
-import styleFirewall from "./eslint/style-firewall.mjs";
-
-export default [
-  {
-    ignores: [
-      "**/.next/**",
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/build/**",
-      "**/styled-system/**",
-      "**/playwright/**",
-      "**/test-results/**",
-    ],
-  },
-  {
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        sourceType: "module",
-        ecmaFeatures: { jsx: true },
-      },
-    },
-    plugins: {
-      react,
-      "react-hooks": reactHooks,
-      "style-firewall": styleFirewall,
-    },
-    settings: {
-      react: { version: "detect" },
-    },
-    rules: {
-      "react-hooks/rules-of-hooks": "error",
-      "react-hooks/exhaustive-deps": "warn",
-      "style-firewall/no-inline-style-except-geometry": "error",
-      "style-firewall/no-raw-colors": "error",
-      "style-firewall/no-raw-box-shadow": "error",
-      "style-firewall/no-raw-border-radius": "error",
-      "style-firewall/no-styling-outside-ui": [
-        "error",
-        {
-          allow: ["src/components/ui", "src/theme", "src/styled-system"],
-        },
-      ],
-      "style-firewall/no-surface-props-outside-recipes": [
-        "error",
-        {
-          allow: ["src/theme", "src/components/ui"],
-        },
-      ],
-      "style-firewall/prefer-panda-css": "error",
-    },
-  },
-  {
-    files: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.e2e.spec.ts"],
-    rules: {
-      "style-firewall/no-inline-style-except-geometry": "off",
-      "style-firewall/no-raw-colors": "off",
-      "style-firewall/no-raw-box-shadow": "off",
-      "style-firewall/no-raw-border-radius": "off",
-      "style-firewall/no-styling-outside-ui": "off",
-      "style-firewall/no-surface-props-outside-recipes": "off",
-      "style-firewall/prefer-panda-css": "off",
-    },
-  },
-];
-</file>
-
-<file path="flake.lock">
-{
-  "nodes": {
-    "flake-compat": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1767039857,
-        "narHash": "sha256-vNpUSpF5Nuw8xvDLj2KCwwksIbjua2LZCqhV1LNRDns=",
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "rev": "5edf11c44bc78a0d334f6334cdaf7d60d732daab",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1731533236,
-        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "git-hooks": {
-      "inputs": {
-        "flake-compat": "flake-compat",
-        "gitignore": "gitignore",
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1772665116,
-        "narHash": "sha256-XmjUDG/J8Z8lY5DVNVUf5aoZGc400FxcjsNCqHKiKtc=",
-        "owner": "cachix",
-        "repo": "git-hooks.nix",
-        "rev": "39f53203a8458c330f61cc0759fe243f0ac0d198",
-        "type": "github"
-      },
-      "original": {
-        "owner": "cachix",
-        "repo": "git-hooks.nix",
-        "type": "github"
-      }
-    },
-    "gitignore": {
-      "inputs": {
-        "nixpkgs": [
-          "git-hooks",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1709087332,
-        "narHash": "sha256-HG2cCnktfHsKV0s4XW83gU3F57gaTljL9KNSuG6bnQs=",
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "rev": "637db329424fd7e46cf4185293b9cc8c88c95394",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "gitignore.nix",
-        "type": "github"
-      }
-    },
-    "nixpkgs": {
-      "locked": {
-        "lastModified": 1770073757,
-        "narHash": "sha256-Vy+G+F+3E/Tl+GMNgiHl9Pah2DgShmIUBJXmbiQPHbI=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "47472570b1e607482890801aeaf29bfb749884f6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1772624091,
-        "narHash": "sha256-QKyJ0QGWBn6r0invrMAK8dmJoBYWoOWy7lN+UHzW1jc=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "80bdc1e5ce51f56b19791b52b2901187931f5353",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "root": {
-      "inputs": {
-        "flake-utils": "flake-utils",
-        "git-hooks": "git-hooks",
-        "nixpkgs": "nixpkgs_2"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    }
-  },
-  "root": "root",
-  "version": 7
-}
-</file>
-
-<file path="next.config.ts">
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-};
-
-export default nextConfig;
-</file>
-
-<file path="vitest.setup.ts">
-import "@testing-library/jest-dom/vitest";
-
-class ResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-if (!globalThis.ResizeObserver) {
-  // ReactFlow expects ResizeObserver to exist; the mock keeps the DOM lightweight for unit tests.
-  globalThis.ResizeObserver = ResizeObserver;
-}
-</file>
-
-<file path="src/app/globals.css">
-/* Elastic edge styling during spring impulse */
-.edge-elastic path {
-  stroke-width: 2.5;
-  stroke-dasharray: 6 6;
-  animation: edgeSpring 0.5s linear infinite;
-}
-
-@keyframes edgeSpring {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: 12;
-  }
-}
-</file>
-
-<file path="src/components/GraphStage/GraphStage.tsx">
-"use client";
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import {
-  BackgroundVariant,
-  ReactFlowProvider,
-  useReactFlow,
-  useEdgesState,
-  useNodesState,
-  Controls,
-  type Edge,
-  type Node,
-} from "@xyflow/react";
-
-import {
-  GraphBackground,
-  ThemedReactFlow,
-  graphStageBackgroundClass,
-  reactFlowCanvasClass,
-} from "@/components/ui";
-
-import { flowDraggingAtom } from "@/state/searchbar";
-
-import {
-  graphInitialEdgesAtom,
-  graphInitialNodesAtom,
-} from "@/state/graphStage";
-
-import { reactFlowTheme } from "@/theme/react-flow";
-import { layoutGraph } from "./layoutGraph";
-
-import { useFollowNode } from "./useFollowNode";
-
-import "@xyflow/react/dist/style.css";
-
-import { graphStateAtom } from "@/state/graphStreamAtom";
-
-const nodeTypes = {};
-const edgeTypes = {};
-const INITIAL_ZOOM = 2;
-
-function GraphStageInner() {
-  const rf = useReactFlow();
-
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
-
-  const initialNodes = useAtomValue(graphInitialNodesAtom);
-  const initialEdges = useAtomValue(graphInitialEdgesAtom);
-
-  const graphState = useAtomValue(graphStateAtom);
-
-  const setFlowDragging = useSetAtom(flowDraggingAtom);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
-
-  const [layoutReady, setLayoutReady] = useState(false);
-
-  const prevNodeIdsRef = useRef<Set<string>>(new Set());
-
-  /**
-   * Rebuild graph whenever stream updates
-   */
-  useEffect(() => {
-    let cancelled = false;
-
-    async function runLayout() {
-      setLayoutReady(false);
-
-      const ids = Object.keys(graphState.nodes);
-
-      const prevIds = prevNodeIdsRef.current;
-      const addedId = ids.find((id) => !prevIds.has(id));
-
-      prevNodeIdsRef.current = new Set(ids);
-
-      const baseNodes: Node[] = ids.map((id) => {
-        const n = graphState.nodes[id];
-
-        return {
-          id: n.id,
-          data: { label: n.label ?? n.id },
-          position: { x: 0, y: 0 },
-          style: {
-            transition: "transform 0.45s cubic-bezier(.22,1,.36,1)",
-          },
-        };
-      });
-
-      const baseEdges: Edge[] = graphState.edges.map((e, index) => ({
-        id: `${e.source}-${e.target}-${index}`,
-        source: e.source,
-        target: e.target,
-        animated: true,
-        label: e.kind,
-        data: { kind: e.kind },
-      }));
-
-      const layoutedNodes = await layoutGraph(baseNodes, baseEdges);
-
-      if (cancelled) return;
-
-      setNodes(layoutedNodes);
-      setEdges(baseEdges);
-
-      setLayoutReady(true);
-
-      const lowestNode = layoutedNodes.reduce((best, n) => {
-        if (!best) return n;
-        return n.position.y > best.position.y ? n : best;
-      }, layoutedNodes[0]);
-
-      if (lowestNode) {
-        requestAnimationFrame(() => {
-          followNode(lowestNode);
-        });
-      }
-    }
-
-    runLayout();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [graphState, rf, setNodes, setEdges, followNode]);
-
-  /**
-   * Drag state (used by SearchBar system)
-   */
-  const handleDragStart = useCallback(() => {
-    setFlowDragging(true);
-  }, [setFlowDragging]);
-
-  const handleDragEnd = useCallback(() => {
-    setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  useEffect(() => {
-    return () => setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={graphStageBackgroundClass}
-      suppressHydrationWarning
-    >
-      <ThemedReactFlow
-        className={reactFlowCanvasClass}
-        defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
-        minZoom={0.25}
-        maxZoom={4}
-        zoomOnScroll
-        zoomOnPinch
-        zoomOnDoubleClick
-        panOnDrag
-        nodes={layoutReady ? nodes : []}
-        edges={layoutReady ? edges : []}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        colorMode="dark"
-        proOptions={{ hideAttribution: true }}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeDragStart={handleDragStart}
-        onNodeDragStop={handleDragEnd}
-        defaultEdgeOptions={{
-          type: "default",
-          style: {
-            stroke: reactFlowTheme.edge.stroke,
-            strokeWidth: 1,
-          },
-          markerEnd: {
-            type: "arrowclosed",
-            color: reactFlowTheme.edge.stroke,
-            width: 10,
-            height: 6,
-          },
-        }}
-      >
-        <Controls position="bottom-right" />
-        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
-      </ThemedReactFlow>
-    </div>
-  );
-}
-
-export default function GraphStage() {
-  return (
-    <ReactFlowProvider>
-      <GraphStageInner />
-    </ReactFlowProvider>
-  );
-}
-</file>
-
-<file path="src/components/SearchBar/perimeter.ts">
-type Point = { x: number; y: number };
-
-type Segment = { start: Point; end: Point; length: number };
-
-type ClosestLengthInput = {
-  container: HTMLElement | null;
-  path: SVGRectElement | null;
-  clientX: number;
-  clientY: number;
-  inset: number;
-};
-
-const toPoint = (x: number, y: number): Point => ({ x, y });
-
-const segmentLength = (segment: Segment) => segment.length;
-
-const makeSegments = (width: number, height: number): Segment[] => {
-  const p1 = toPoint(0, 0);
-  const p2 = toPoint(width, 0);
-  const p3 = toPoint(width, height);
-  const p4 = toPoint(0, height);
-
-  const build = (start: Point, end: Point): Segment => ({
-    start,
-    end,
-    length: Math.hypot(end.x - start.x, end.y - start.y),
-  });
-
-  return [build(p1, p2), build(p2, p3), build(p3, p4), build(p4, p1)];
-};
-
-const closestOnSegment = (point: Point, segment: Segment) => {
-  const vx = segment.end.x - segment.start.x;
-  const vy = segment.end.y - segment.start.y;
-  const wx = point.x - segment.start.x;
-  const wy = point.y - segment.start.y;
-
-  const segLenSq = vx * vx + vy * vy;
-  if (segLenSq === 0) return { closest: segment.start, distanceSq: 0, t: 0 };
-
-  const t = Math.max(0, Math.min(1, (wx * vx + wy * vy) / segLenSq));
-  const closest = toPoint(segment.start.x + vx * t, segment.start.y + vy * t);
-  const dx = point.x - closest.x;
-  const dy = point.y - closest.y;
-
-  return { closest, distanceSq: dx * dx + dy * dy, t };
-};
-
-export function findClosestPerimeterLength({
-  container,
-  path,
-  clientX,
-  clientY,
-  inset,
-}: ClosestLengthInput) {
-  if (!container || !path) return null;
-
-  const containerRect = container.getBoundingClientRect();
-  const svgX = clientX - containerRect.left + inset;
-  const svgY = clientY - containerRect.top + inset;
-
-  const originX = path.x?.baseVal?.value ?? 0;
-  const originY = path.y?.baseVal?.value ?? 0;
-  const width = path.width?.baseVal?.value ?? 0;
-  const height = path.height?.baseVal?.value ?? 0;
-
-  if (width <= 0 || height <= 0) return null;
-
-  const pointer = toPoint(svgX - originX, svgY - originY);
-  const segments = makeSegments(width, height);
-  const perimeterSimple = segments.reduce(
-    (total, segment) => total + segmentLength(segment),
-    0,
-  );
-
-  let bestDistance = Number.POSITIVE_INFINITY;
-  let bestLengthSimple = 0;
-  let traversed = 0;
-
-  for (const segment of segments) {
-    const { distanceSq, t } = closestOnSegment(pointer, segment);
-    if (distanceSq < bestDistance) {
-      bestDistance = distanceSq;
-      bestLengthSimple = traversed + segment.length * t;
-    }
-    traversed += segment.length;
-  }
-
-  const total =
-    typeof path.getTotalLength === "function"
-      ? path.getTotalLength()
-      : perimeterSimple;
-
-  if (!Number.isFinite(total) || total <= 0) return null;
-
-  const scaledLength =
-    perimeterSimple > 0 ? (bestLengthSimple / perimeterSimple) * total : 0;
-
-  const point =
-    typeof path.getPointAtLength === "function"
-      ? path.getPointAtLength(scaledLength)
-      : { x: 0, y: 0 };
-
-  return { bestLength: scaledLength, total, point };
-}
 </file>
 
 <file path="src/state/searchScopeMachine.ts">
@@ -2018,92 +1939,6 @@ export const createSearchScopeMachine = () =>
       },
     },
   });
-</file>
-
-<file path="test-results/SearchBar-SearchBar.e2e-Se-81aa7-y-and-matches-segment-width/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchBar-SearchBar.e2e-Se-8d4e6-leaving-the-scope-menu-span/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-56ef8-he-hover-segment-is-present/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
-<file path="test-results/SearchScopeMenu-SearchScop-e8586-ving-upward-out-of-the-band/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-  - generic [ref=e27]:
-    - generic [ref=e28]:
-      - generic [ref=e29]: Corpus
-      - generic [ref=e30]: Scope
-    - generic [ref=e31]:
-      - generic [ref=e33] [cursor=pointer]:
-        - checkbox "TanStack Query" [ref=e34]
-        - generic [ref=e36]: TanStack Query
-      - generic [ref=e38] [cursor=pointer]:
-        - checkbox "Redux Toolkit" [ref=e39]
-        - generic [ref=e41]: Redux Toolkit
-      - generic [ref=e43] [cursor=pointer]:
-        - checkbox "Zustand" [ref=e44]
-        - generic [ref=e46]: Zustand
-```
 </file>
 
 <file path=".gitignore">
@@ -2288,6 +2123,120 @@ export default defineConfig({
     },
   },
 });
+</file>
+
+<file path="src/app/globals.css">
+/* Elastic edge styling during spring impulse */
+.edge-elastic path {
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  animation: edgeSpring 0.5s linear infinite;
+}
+
+@keyframes edgeSpring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 12;
+  }
+}
+</file>
+
+<file path="src/graph/graphStream.ts">
+import {
+  Observable,
+  concatMap,
+  delay,
+  of,
+  filter,
+  take,
+  startWith,
+  from,
+  withLatestFrom,
+  map,
+} from "rxjs";
+import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators";
+import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
+import type { GraphEvent } from "./events";
+import { layoutGraph } from "./layoutGraph";
+import { relaxGraph } from "./relaxGraph";
+
+const EVENT_DELAY_MS = 700;
+
+export function createGraphState$(
+  events$: Observable<GraphEvent>,
+  playing$: Observable<boolean>,
+  eventDelayMs = EVENT_DELAY_MS,
+) {
+  const gatedEvents$ = events$.pipe(
+    // Each event waits until play is true before continuing; pausing halts the next step.
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        concatMap(() => of(event).pipe(delay(eventDelayMs))),
+      ),
+    ),
+  );
+
+  const reduced$ = gatedEvents$.pipe(
+    tap((event) => {
+      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
+      console.log(event);
+      console.groupEnd();
+    }),
+
+    scan(applyGraphEvent, initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+
+  return gatedEvents$.pipe(
+    filter((event) => event.type === "iteration" || event.type === "updateNode"),
+    withLatestFrom(reduced$),
+    concatMap(([event, state]) =>
+      from(layoutGraph(state)).pipe(
+        rxConcatMap((layouted) => relaxGraph(layouted)),
+        map((s) => ({ state: s, event })),
+      ),
+    ),
+    map(({ state, event }) => addPanTarget(state, event)),
+
+    tap((state) => {
+      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
+      console.log(state);
+      console.groupEnd();
+    }),
+
+    startWith(initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+}
+
+function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
+  const positionedNodes = Object.values(state.nodes).filter((n) => n.positioned);
+
+  const pickDeepest = () =>
+    positionedNodes.reduce((best, node) => {
+      if (!best) return node;
+      return best.position.y > node.position.y ? best : node;
+    }, positionedNodes[0] ?? null);
+
+  const targetId =
+    event.type === "updateNode"
+      ? event.id
+      : event.type === "iteration"
+        ? pickDeepest()?.id ?? null
+        : null;
+
+  if (!targetId) return state;
+
+  return {
+    ...state,
+    panTargetId: targetId,
+    panTick: (state.panTick ?? 0) + 1,
+  };
+}
 </file>
 
 <file path="panda.config.ts">
@@ -2475,14 +2424,237 @@ export default function RootLayout({
 }
 </file>
 
+<file path="src/components/GraphStage/GraphStage.tsx">
+"use client";
+
+import { useCallback, useEffect, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  BackgroundVariant,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  Controls,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
+
+import {
+  GraphBackground,
+  ThemedReactFlow,
+  graphStageBackgroundClass,
+  reactFlowCanvasClass,
+} from "@/components/ui";
+
+import { flowDraggingAtom } from "@/state/searchbar";
+
+import {
+  graphInitialEdgesAtom,
+  graphInitialNodesAtom,
+} from "@/state/graphStage";
+
+import { reactFlowTheme } from "@/theme/react-flow";
+
+import { useFollowNode } from "./useFollowNode";
+import { GraphNode } from "@/components/GraphNode";
+import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
+
+import "@xyflow/react/dist/style.css";
+
+import { graphStateAtom } from "@/state/graphStreamAtom";
+import type { GraphState } from "@/graph/reducer";
+
+const nodeTypes = {
+  graph: GraphNode,
+};
+const edgeTypes = {
+  graph: AnimatedGraphEdge,
+};
+const INITIAL_ZOOM = 1.5;
+
+export function buildFlowElements(
+  graphState: GraphState,
+  prevIds: Set<string>,
+  prevEdgeIds: Set<string>,
+) {
+  const ids = Object.keys(graphState.nodes);
+
+  const nodes: Node[] = ids
+    .map((id) => {
+      const n = graphState.nodes[id];
+      const hasPrev = prevIds.has(id);
+
+      if (!n.positioned) return null;
+
+      return {
+        id: n.id,
+        type: "graph",
+        data: {
+          label: n.label ?? n.id,
+          state: n.state,
+          kind: n.kind,
+          tokens: n.tokens,
+        },
+        position: n.position,
+        selectable: false,
+        draggable: false,
+        style: {
+          transition: hasPrev
+            ? "transform 0.45s cubic-bezier(.22,1,.36,1)"
+            : "none",
+        },
+      };
+    })
+    .filter(Boolean) as Node[];
+
+  const edges: Edge[] = graphState.edges.map((e, index) => ({
+    id: `${e.source}-${e.target}-${index}`,
+    source: e.source,
+    target: e.target,
+    animated: false,
+    type: "graph",
+    label: e.kind,
+    data: { kind: e.kind, animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`) },
+  }));
+
+  return {
+    nodes,
+    edges,
+    renderedIds: nodes.map((n) => n.id),
+    renderedEdgeIds: edges.map((e) => e.id),
+  };
+}
+
+function GraphStageInner() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
+
+  const initialNodes = useAtomValue(graphInitialNodesAtom);
+  const initialEdges = useAtomValue(graphInitialEdgesAtom);
+
+  const graphState = useAtomValue(graphStateAtom);
+
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+
+  const prevNodeIdsRef = useRef<Set<string>>(new Set());
+  const prevEdgeIdsRef = useRef<Set<string>>(new Set());
+
+  /**
+   * Rebuild graph whenever stream updates
+   */
+  useEffect(() => {
+    const prevIds = prevNodeIdsRef.current;
+
+    const { nodes: mappedNodes, edges: mappedEdges, renderedIds, renderedEdgeIds } =
+      buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
+
+    prevNodeIdsRef.current = new Set(renderedIds);
+    prevEdgeIdsRef.current = new Set(renderedEdgeIds);
+
+    setNodes(mappedNodes);
+    setEdges(mappedEdges);
+
+    const focusNode =
+      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
+      mappedNodes.reduce((best, n) => {
+        if (!best) return n;
+        return n.position.y > best.position.y ? n : best;
+      }, mappedNodes[0]);
+
+    if (focusNode) {
+      requestAnimationFrame(() => {
+        followNode(focusNode);
+      });
+    }
+  }, [graphState, setNodes, setEdges, followNode]);
+
+  /**
+   * Drag state (used by SearchBar system)
+   */
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={graphStageBackgroundClass}
+      suppressHydrationWarning
+    >
+      <ThemedReactFlow
+        className={reactFlowCanvasClass}
+        defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
+        /* restore zoom */
+        minZoom={0.25}
+        maxZoom={4}
+        zoomOnScroll
+        zoomOnPinch
+        zoomOnDoubleClick
+        /* restore canvas panning */
+        panOnDrag
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
+        defaultEdgeOptions={{
+          type: "default",
+          style: {
+            stroke: reactFlowTheme.edge.stroke,
+            strokeWidth: 1,
+            strokeDasharray: "6 6",
+          },
+          markerEnd: {
+            type: "arrowclosed",
+            color: reactFlowTheme.edge.stroke,
+            width: 10,
+            height: 6,
+          },
+        }}
+      >
+        <Controls position="bottom-right" />
+        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
+      </ThemedReactFlow>
+    </div>
+  );
+}
+
+export default function GraphStage() {
+  return (
+    <ReactFlowProvider>
+      <GraphStageInner />
+    </ReactFlowProvider>
+  );
+}
+</file>
+
 <file path="src/app/page.tsx">
 import { Box } from "../../styled-system/jsx";
 import GraphStage from "@/components/GraphStage";
 import SearchBar from "@/components/SearchBar";
+import { TestControlsInstaller } from "@/components/TestControlsInstaller";
 
 export default function Home() {
   return (
     <Box position="relative" h="100vh" w="100vw">
+      <TestControlsInstaller />
       <GraphStage />
 
       <Box
@@ -2688,6 +2860,10 @@ export default defineConfig({
         url: "http://127.0.0.1:5173",
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
+        env: {
+          ...process.env,
+          NEXT_PUBLIC_E2E: "true",
+        },
       },
 });
 </file>
@@ -3531,24 +3707,6 @@ export function useSearchBar({
 }
 </file>
 
-<file path="test-results/SearchScopeMenu-SearchScop-d5eb7-weeping-downward-diagonally/error-context.md">
-# Page snapshot
-
-```yaml
-- generic [active] [ref=e1]:
-  - generic [ref=e2]:
-    - application [ref=e4]:
-      - img
-    - generic [ref=e10]:
-      - img [ref=e11]
-      - textbox "Search symbol..." [ref=e14]
-      - button "Play" [ref=e15]
-  - button "Open Next.js Dev Tools" [ref=e21] [cursor=pointer]:
-    - img [ref=e22]
-  - alert [ref=e25]
-```
-</file>
-
 <file path="src/state/searchScopeEngine.ts">
 import { createActor, type ActorRefFrom } from "xstate";
 import { createSearchScopeMachine } from "./searchScopeMachine";
@@ -3787,28 +3945,6 @@ export class SearchScopeEngine {
       dwelling,
     };
   }
-}
-</file>
-
-<file path="test-results/.last-run.json">
-{
-  "status": "interrupted",
-  "failedTests": [
-    "b6f1f85988d2cbda2913-f524f11ffdc506fcfb1a",
-    "b6f1f85988d2cbda2913-23ee1086283bcaf9b75e",
-    "b6f1f85988d2cbda2913-4043f5b4962981995d16",
-    "b89b6e7344509afb616c-b48c0dc85597412e47c2",
-    "b89b6e7344509afb616c-983fa4e6d7a369d22382",
-    "b89b6e7344509afb616c-defc1631d4bdbe1e45ac",
-    "b89b6e7344509afb616c-e736235aa3523d12c0ed",
-    "b89b6e7344509afb616c-132e31e1aeaaf6935e32",
-    "b89b6e7344509afb616c-40cbddd98a2f7f68d23b",
-    "b89b6e7344509afb616c-8a54a6af2d7d2187031e",
-    "b89b6e7344509afb616c-936d5d250b65f37e10b5",
-    "b89b6e7344509afb616c-dd80d503021a5687f5b6",
-    "b89b6e7344509afb616c-c6b670fc48f3b8a46d22",
-    "b89b6e7344509afb616c-07905f130792158577e8"
-  ]
 }
 </file>
 

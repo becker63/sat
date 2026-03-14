@@ -4,6 +4,11 @@ export type GraphNode = {
   kind: "symbol" | "function" | "file" | "type";
   state: "anchor" | "pending" | "resolved";
   tokens?: number;
+  evidence?: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
 };
 
 export type GraphEdge = {

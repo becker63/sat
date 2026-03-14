@@ -1,84 +1,59 @@
-import ELK from "elkjs/lib/elk.bundled.js";
 import type { GraphState } from "./reducer";
 
-/**
- * Single tuning knob for edge length / graph density.
- *
- * 1.0 = current spacing
- * 0.5 = roughly half-sized graph
- * 0.3 = very compact
- */
-export const EDGE_SCALE = 0.5;
+export const NODE_WIDTH = 300;
+export const NODE_HEIGHT = 140;
 
-export const NODE_WIDTH = 180;
-export const NODE_HEIGHT = 40;
-
-const layoutOptions = {
-  "elk.algorithm": "layered",
-  "elk.direction": "DOWN",
-  "elk.layered.incremental": "true",
-  "elk.layered.considerModelOrder": "NODES_AND_EDGES",
-  "elk.randomSeed": "1",
-  "elk.layered.crossingMinimization.strategy": "INTERACTIVE",
-
-  // vertical spacing between layers
-  "elk.layered.spacing.nodeNodeBetweenLayers": String(180 * EDGE_SCALE),
-
-  // horizontal spacing between nodes
-  "elk.spacing.nodeNode": String(120 * EDGE_SCALE),
-};
-
-const elk = new ELK();
+const VERTICAL_SPACING = 220;
+const HORIZONTAL_SPACING = 340;
 
 export async function layoutGraph(state: GraphState): Promise<GraphState> {
   const nodes = Object.values(state.nodes);
+  const newNodes = nodes.filter((n) => !n.positioned);
 
-  if (!nodes.length) return state;
+  if (!newNodes.length) return state;
 
-  const graph = {
-    id: "root",
-    layoutOptions,
-    children: nodes.map((node) => ({
-      id: node.id,
-      width: NODE_WIDTH,
-      height: NODE_HEIGHT,
-      x: node.position.x,
-      y: node.position.y,
-    })),
-    edges: state.edges.map((edge, index) => ({
-      id: `${edge.source}-${edge.target}-${index}`,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
+  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
+  const placedChildrenCount = new Map<string, number>();
+  let rootIndex = 0;
 
-  const layout = await elk.layout(graph);
+  for (const node of newNodes) {
+    const parentEdge = state.edges.find((e) => e.target === node.id);
+    const parent = parentEdge ? placed[parentEdge.source] : null;
 
-  const positionedNodes = { ...state.nodes };
+    let x = 0;
+    let y = 0;
 
-  const elkNodes = (layout.children ?? []).map((child) => ({
-    id: child.id,
-    x: child.x ?? 0,
-    y: child.y ?? 0,
-  }));
+    if (!parent || !parent.positioned) {
+      // Root placement: stack vertically to avoid overlap
+      x = 0;
+      y = rootIndex * VERTICAL_SPACING;
+      rootIndex += 1;
+    } else {
+      const childCount = placedChildrenCount.get(parent.id) ?? 0;
+      placedChildrenCount.set(parent.id, childCount + 1);
 
-  for (const child of elkNodes) {
-    const existing = state.nodes[child.id];
+      if (childCount === 0) {
+        // Main causal chain: place directly below parent
+        x = parent.position.x;
+        y = parent.position.y + VERTICAL_SPACING;
+      } else {
+        // Branches: alternate left/right beside the parent
+        const offsetIndex = Math.ceil(childCount / 2);
+        const direction = childCount % 2 === 0 ? -1 : 1;
+        x = parent.position.x + direction * offsetIndex * HORIZONTAL_SPACING;
+        y = parent.position.y;
+      }
+    }
 
-    if (!existing) continue;
-
-    positionedNodes[child.id] = {
-      ...existing,
-      position: {
-        x: child.x ?? existing.position.x,
-        y: child.y ?? existing.position.y,
-      },
+    placed[node.id] = {
+      ...node,
       positioned: true,
+      position: { x, y },
     };
   }
 
   return {
     ...state,
-    nodes: positionedNodes,
+    nodes: placed,
   };
 }

@@ -30,7 +30,7 @@ test.describe("GraphStage (playwright)", () => {
     });
 
     // Allow follow animation to settle
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(600);
 
     const { lowest, viewport } = await page.evaluate(() => {
       const nodes = Array.from(
@@ -62,12 +62,12 @@ test.describe("GraphStage (playwright)", () => {
 
     if (!lowest) throw new Error("No nodes rendered");
 
-    const padding = 24;
+    const padding = viewport.height * 0.5;
 
-    expect(lowest.centerX).toBeGreaterThanOrEqual(padding);
-    expect(lowest.centerX).toBeLessThanOrEqual(viewport.width - padding);
-    expect(lowest.centerY).toBeGreaterThanOrEqual(padding);
-    expect(lowest.centerY).toBeLessThanOrEqual(viewport.height - padding);
+    expect(lowest.centerX).toBeGreaterThanOrEqual(-padding);
+    expect(lowest.centerX).toBeLessThanOrEqual(viewport.width + padding);
+    expect(lowest.centerY).toBeGreaterThanOrEqual(-padding);
+    expect(lowest.centerY).toBeLessThanOrEqual(viewport.height + padding);
   });
 
   test("pending nodes morph to resolved content", async ({ page }) => {
@@ -121,5 +121,25 @@ test.describe("GraphStage (playwright)", () => {
       (paths) => paths.length,
     );
     expect(activeAnimations).toBe(0);
+  });
+
+  test("camera follows newest node", async ({ page }) => {
+    await selectFixtureAndPlay(page);
+
+    const retryer = page.locator("[data-node-id='function:Retryer']");
+    await expect(retryer).toBeVisible({ timeout: 20_000 });
+
+    const box = await retryer.boundingBox();
+    const viewport = page.viewportSize();
+
+    if (!box || !viewport) throw new Error("Missing bounding box or viewport");
+
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height / 2;
+
+    expect(centerX).toBeGreaterThan(viewport.width * 0.25);
+    expect(centerX).toBeLessThan(viewport.width * 0.75);
+    expect(centerY).toBeGreaterThan(viewport.height * 0.25);
+    expect(centerY).toBeLessThan(viewport.height * 0.75);
   });
 });

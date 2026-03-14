@@ -1,4 +1,5 @@
-import { css } from "../../../styled-system/css";
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import { css } from "../../styled-system/css";
 import { reactFlowTheme } from "@/theme/react-flow";
 
 export const graphEdgeClass = css({

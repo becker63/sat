@@ -8,7 +8,7 @@ import {
 import { reactFlowTheme } from "@/theme/react-flow";
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { graphEdgeClass, graphEdgeLabelClass } from "@/components/ui/edgeStyles";
+import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
 
 export function AnimatedGraphEdge({
   id,
