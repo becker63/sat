@@ -60,7 +60,7 @@ src/
       AnimatedGraphEdge.tsx
       GraphStage.tsx
       index.ts
-      useFollowNode.ts
+      useFollowNodes.ts
     SearchBar/
       idea.md
       index.ts
@@ -106,6 +106,7 @@ package.json
 panda.config.ts
 playwright.config.ts
 README.md
+todo.md
 tsconfig.json
 vitest.config.ts
 vitest.setup.ts
@@ -172,6 +173,118 @@ export async function POST(req: Request) {
 
 <file path="src/components/GraphStage/index.ts">
 export { default } from "./GraphStage";
+</file>
+
+<file path="src/components/GraphStage/useFollowNodes.ts">
+import { useCallback, useEffect, useRef } from "react";
+import { useReactFlow, type Node } from "@xyflow/react";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+
+type Bounds = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+};
+
+export function useFollowNodes(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+  maxZoom: number,
+) {
+  const rf = useReactFlow();
+  const rafRef = useRef<number | null>(null);
+
+  const cancelAnimation = useCallback(() => {
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => cancelAnimation, [cancelAnimation]);
+
+  return useCallback(
+    (nodes: Node[]) => {
+      cancelAnimation();
+
+      if (!containerRef.current || nodes.length === 0) return;
+
+      const padding = 120;
+      const upwardOffset = 80;
+
+      const bounds = nodes.reduce<Bounds>(
+        (acc, node) => {
+          const x = node.position.x;
+          const y = node.position.y;
+
+          acc.minX = Math.min(acc.minX, x);
+          acc.minY = Math.min(acc.minY, y);
+          acc.maxX = Math.max(acc.maxX, x + NODE_WIDTH);
+          acc.maxY = Math.max(acc.maxY, y + NODE_HEIGHT);
+
+          return acc;
+        },
+        {
+          minX: Infinity,
+          minY: Infinity,
+          maxX: -Infinity,
+          maxY: -Infinity,
+        },
+      );
+
+      // Favor showing upcoming nodes by nudging frame upward.
+      bounds.minY -= upwardOffset;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const width = bounds.maxX - bounds.minX;
+      const height = bounds.maxY - bounds.minY;
+
+      const zoom = Math.min(
+        maxZoom,
+        Math.min(
+          containerRect.width / (width + padding * 2),
+          containerRect.height / (height + padding * 2),
+        ),
+      );
+
+      const centerX = bounds.minX + width / 2;
+      const centerY = bounds.minY + height / 2;
+
+      const target = {
+        x: containerRect.width / 2 - centerX * zoom,
+        y: containerRect.height / 2 - centerY * zoom,
+        zoom,
+      };
+
+      const step = () => {
+        const current = rf.getViewport();
+
+        const damp = 0.15;
+        const next = {
+          x: current.x + (target.x - current.x) * damp,
+          y: current.y + (target.y - current.y) * damp,
+          zoom: current.zoom + (target.zoom - current.zoom) * damp,
+        };
+
+        const closeEnough =
+          Math.abs(target.x - next.x) < 0.5 &&
+          Math.abs(target.y - next.y) < 0.5 &&
+          Math.abs(target.zoom - next.zoom) < 0.0005;
+
+        rf.setViewport(next);
+
+        if (!closeEnough) {
+          rafRef.current = requestAnimationFrame(step);
+        } else {
+          cancelAnimation();
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(step);
+    },
+    [rf, containerRef, maxZoom, cancelAnimation],
+  );
+}
 </file>
 
 <file path="src/components/SearchBar/idea.md">
@@ -620,138 +733,6 @@ export function TestControlsInstaller() {
 }
 </file>
 
-<file path="src/graph/layoutGraph.spec.ts">
-import { describe, expect, it } from "vitest";
-import { layoutGraph, NODE_HEIGHT, NODE_WIDTH } from "./layoutGraph";
-import type { GraphState } from "./reducer";
-
-function baseState(nodes: GraphState["nodes"], edges: GraphState["edges"] = []): GraphState {
-  return {
-    nodes,
-    edges,
-    context: new Set(),
-    iteration: 0,
-    panTargetId: null,
-    panTick: 0,
-  };
-}
-
-describe("layoutGraph incremental positioning", () => {
-  it("does not move previously positioned nodes when new nodes are added", async () => {
-    const initial = baseState({
-      a: {
-        id: "a",
-        label: "A",
-        kind: "function",
-        state: "resolved",
-        positioned: true,
-        position: { x: 0, y: 0 },
-      },
-      b: {
-        id: "b",
-        label: "B",
-        kind: "function",
-        state: "pending",
-        positioned: false,
-        position: { x: 0, y: 0 },
-      },
-    }, [{ source: "a", target: "b", kind: "calls" }]);
-
-    const result = await layoutGraph(initial);
-
-    expect(result.nodes.a.position).toEqual({ x: 0, y: 0 });
-  });
-
-  it("places child nodes below their parent on the main chain", async () => {
-    const state = baseState(
-      {
-        a: {
-          id: "a",
-          label: "A",
-          kind: "function",
-          state: "resolved",
-          positioned: true,
-          position: { x: 0, y: 0 },
-        },
-        b: {
-          id: "b",
-          label: "B",
-          kind: "function",
-          state: "pending",
-          positioned: false,
-          position: { x: 0, y: 0 },
-        },
-      },
-      [{ source: "a", target: "b", kind: "calls" }],
-    );
-
-    const result = await layoutGraph(state);
-
-    expect(result.nodes.b.position.y).toBeGreaterThan(result.nodes.a.position.y);
-    expect(result.nodes.b.position.x).toBe(result.nodes.a.position.x);
-  });
-
-  it("places branch nodes horizontally beside parent", async () => {
-    const state = baseState(
-      {
-        a: {
-          id: "a",
-          label: "A",
-          kind: "function",
-          state: "resolved",
-          positioned: true,
-          position: { x: 0, y: 0 },
-        },
-        b: {
-          id: "b",
-          label: "B",
-          kind: "function",
-          state: "pending",
-          positioned: false,
-          position: { x: 0, y: 0 },
-        },
-        c: {
-          id: "c",
-          label: "C",
-          kind: "function",
-          state: "pending",
-          positioned: false,
-          position: { x: 0, y: 0 },
-        },
-      },
-      [
-        { source: "a", target: "b", kind: "references" },
-        { source: "a", target: "c", kind: "references" },
-      ],
-    );
-
-    const result = await layoutGraph(state);
-
-    expect(result.nodes.b.position.x).not.toBe(result.nodes.a.position.x);
-    expect(result.nodes.c.position.x).not.toBe(result.nodes.a.position.x);
-    expect(result.nodes.b.position.y).toBe(result.nodes.a.position.y);
-    expect(result.nodes.c.position.y).toBe(result.nodes.a.position.y);
-  });
-
-  it("does not recompute layout when no new nodes are added", async () => {
-    const state = baseState({
-      a: {
-        id: "a",
-        label: "A",
-        kind: "function",
-        state: "resolved",
-        positioned: true,
-        position: { x: 100, y: 200 },
-      },
-    });
-
-    const result = await layoutGraph(state);
-
-    expect(result.nodes.a.position).toEqual({ x: 100, y: 200 });
-  });
-});
-</file>
-
 <file path="src/lib/clientLogger.ts">
 let sending = false;
 let installed = false;
@@ -1111,6 +1092,10 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
+<file path="todo.md">
+make graph layout more stable
+</file>
+
 <file path="vitest.setup.ts">
 import "@testing-library/jest-dom/vitest";
 
@@ -1343,66 +1328,174 @@ export type GraphEvent =
   | { type: "iteration"; step: number };
 </file>
 
-<file path="src/graph/layoutGraph.ts">
+<file path="src/graph/layoutGraph.spec.ts">
+import { describe, expect, it } from "vitest";
+import { layoutGraph } from "./layoutGraph";
 import type { GraphState } from "./reducer";
 
-export const NODE_WIDTH = 300;
-export const NODE_HEIGHT = 140;
-
-const VERTICAL_SPACING = 220;
-const HORIZONTAL_SPACING = 340;
-
-export async function layoutGraph(state: GraphState): Promise<GraphState> {
-  const nodes = Object.values(state.nodes);
-  const newNodes = nodes.filter((n) => !n.positioned);
-
-  if (!newNodes.length) return state;
-
-  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
-  const placedChildrenCount = new Map<string, number>();
-  let rootIndex = 0;
-
-  for (const node of newNodes) {
-    const parentEdge = state.edges.find((e) => e.target === node.id);
-    const parent = parentEdge ? placed[parentEdge.source] : null;
-
-    let x = 0;
-    let y = 0;
-
-    if (!parent || !parent.positioned) {
-      // Root placement: stack vertically to avoid overlap
-      x = 0;
-      y = rootIndex * VERTICAL_SPACING;
-      rootIndex += 1;
-    } else {
-      const childCount = placedChildrenCount.get(parent.id) ?? 0;
-      placedChildrenCount.set(parent.id, childCount + 1);
-
-      if (childCount === 0) {
-        // Main causal chain: place directly below parent
-        x = parent.position.x;
-        y = parent.position.y + VERTICAL_SPACING;
-      } else {
-        // Branches: alternate left/right beside the parent
-        const offsetIndex = Math.ceil(childCount / 2);
-        const direction = childCount % 2 === 0 ? -1 : 1;
-        x = parent.position.x + direction * offsetIndex * HORIZONTAL_SPACING;
-        y = parent.position.y;
-      }
-    }
-
-    placed[node.id] = {
-      ...node,
-      positioned: true,
-      position: { x, y },
-    };
-  }
-
+function baseState(
+  nodes: GraphState["nodes"],
+  edges: GraphState["edges"] = [],
+): GraphState {
   return {
-    ...state,
-    nodes: placed,
+    nodes,
+    edges,
+    context: new Set(),
+    iteration: 0,
+    panTargetId: null,
+    panTick: 0,
   };
 }
+
+const node = (
+  id: string,
+  state: GraphState["nodes"][string]["state"] = "pending",
+): GraphState["nodes"][string] => ({
+  id,
+  label: id,
+  kind: "function",
+  state,
+  positioned: false,
+  position: { x: 0, y: 0 },
+});
+
+describe("layoutGraph (d3-dag layered layout)", () => {
+  it("keeps anchors on the same layer horizontally", async () => {
+    const state = baseState({
+      a: node("a", "anchor"),
+      b: node("b", "anchor"),
+      c: node("c", "anchor"),
+    });
+
+    const result = await layoutGraph(state);
+
+    const yValues = [
+      result.nodes.a.position.y,
+      result.nodes.b.position.y,
+      result.nodes.c.position.y,
+    ];
+    const xValues = [
+      result.nodes.a.position.x,
+      result.nodes.b.position.x,
+      result.nodes.c.position.x,
+    ];
+
+    expect(new Set(yValues).size).toBe(1);
+    expect(Math.max(...xValues) - Math.min(...xValues)).toBeGreaterThan(0);
+  });
+
+  it("places dependencies on deeper layers in a DAG chain", async () => {
+    const state = baseState(
+      {
+        a: node("a", "anchor"),
+        b: node("b"),
+        c: node("c"),
+      },
+      [
+        { source: "a", target: "b", kind: "calls" },
+        { source: "b", target: "c", kind: "calls" },
+      ],
+    );
+
+    const result = await layoutGraph(state);
+
+    expect(result.nodes.a.position.y).toBeLessThan(result.nodes.b.position.y);
+    expect(result.nodes.b.position.y).toBeLessThan(result.nodes.c.position.y);
+  });
+
+  it("keeps branches from the same parent on the same layer", async () => {
+    const state = baseState(
+      {
+        a: node("a", "anchor"),
+        b: node("b"),
+        c: node("c"),
+        d: node("d"),
+      },
+      [
+        { source: "a", target: "b", kind: "calls" },
+        { source: "b", target: "c", kind: "calls" },
+        { source: "b", target: "d", kind: "calls" },
+      ],
+    );
+
+    const result = await layoutGraph(state);
+
+    expect(result.nodes.c.position.y).toBeCloseTo(result.nodes.d.position.y);
+  });
+
+  it("centers shared dependencies beneath multiple anchors", async () => {
+    const state = baseState(
+      {
+        a: node("a", "anchor"),
+        b: node("b", "anchor"),
+        c: node("c"),
+      },
+      [
+        { source: "a", target: "c", kind: "calls" },
+        { source: "b", target: "c", kind: "calls" },
+      ],
+    );
+
+    const result = await layoutGraph(state);
+
+    const anchorY = result.nodes.a.position.y;
+    const cY = result.nodes.c.position.y;
+    const midpoint = (result.nodes.a.position.x + result.nodes.b.position.x) / 2;
+
+    expect(cY).toBeGreaterThan(anchorY);
+    expect(Math.abs(result.nodes.c.position.x - midpoint)).toBeLessThan(1);
+  });
+
+  it("freezes existing coordinates when new nodes are added", async () => {
+    const initial = await layoutGraph(
+      baseState(
+        {
+          a: node("a", "anchor"),
+          b: node("b"),
+        },
+        [{ source: "a", target: "b", kind: "calls" }],
+      ),
+    );
+
+    const withNewNode: GraphState = {
+      ...initial,
+      nodes: {
+        ...initial.nodes,
+        c: node("c"),
+      },
+      edges: [
+        ...initial.edges,
+        { source: "b", target: "c", kind: "calls" },
+      ],
+    };
+
+    const result = await layoutGraph(withNewNode);
+
+    expect(result.nodes.a.position).toEqual(initial.nodes.a.position);
+    expect(result.nodes.b.position).toEqual(initial.nodes.b.position);
+  });
+
+  it("keeps anchor y fixed across incremental layouts", async () => {
+    const first = await layoutGraph(
+      baseState({
+        anchor: node("anchor", "anchor"),
+      }),
+    );
+
+    const anchorY = first.nodes.anchor.position.y;
+
+    const second = await layoutGraph({
+      ...first,
+      nodes: {
+        ...first.nodes,
+        next: node("next"),
+      },
+      edges: [...first.edges, { source: "anchor", target: "next", kind: "calls" }],
+    });
+
+    expect(second.nodes.anchor.position.y).toBe(anchorY);
+  });
+});
 </file>
 
 <file path="src/graph/reducer.ts">
@@ -1840,61 +1933,6 @@ export default defineConfig({
   to {
     stroke-dashoffset: 12;
   }
-}
-</file>
-
-<file path="src/components/GraphStage/useFollowNode.ts">
-import { useCallback } from "react";
-import { useReactFlow, type Node } from "@xyflow/react";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
-
-export function useFollowNode(
-  containerRef: React.RefObject<HTMLDivElement | null>,
-  zoom: number,
-) {
-  const rf = useReactFlow();
-
-  return useCallback(
-    (node: Node) => {
-      if (!containerRef.current) return;
-
-      const rect = containerRef.current.getBoundingClientRect();
-      const nodeCenterX = node.position.x + NODE_WIDTH / 2;
-      const nodeCenterY = node.position.y + NODE_HEIGHT / 2;
-
-      const targetZoom = Math.min(
-        1,
-        Math.max(0.8, rf.getViewport().zoom ?? zoom ?? 1),
-      );
-
-      rf.setCenter(nodeCenterX, nodeCenterY, {
-        zoom: targetZoom,
-        duration: 450,
-      });
-
-      setTimeout(() => {
-        const screen = rf.flowToScreenPosition({ x: nodeCenterX, y: nodeCenterY });
-        const padding = 48;
-        let dx = 0;
-        let dy = 0;
-
-        if (screen.x < padding) dx = screen.x - padding;
-        else if (screen.x > rect.width - padding) dx = screen.x - (rect.width - padding);
-
-        if (screen.y < padding) dy = screen.y - padding;
-        else if (screen.y > rect.height - padding) dy = screen.y - (rect.height - padding);
-
-        if (dx !== 0 || dy !== 0) {
-          const viewport = rf.getViewport();
-          rf.setViewport(
-            { x: viewport.x - dx, y: viewport.y - dy, zoom: viewport.zoom },
-            { duration: 200 },
-          );
-        }
-      }, 480);
-    },
-    [rf, containerRef, zoom],
-  );
 }
 </file>
 
@@ -2399,6 +2437,143 @@ export const fixtureRegistry = {
 } as const satisfies Record<string, Fixture>;
 </file>
 
+<file path="src/graph/layoutGraph.ts">
+import {
+  coordGreedy,
+  decrossTwoLayer,
+  graphConnect,
+  layeringLongestPath,
+  sugiyama,
+  type Graph as DagGraph,
+  type MutGraphNode as DagMutGraphNode,
+  type SugiNode,
+} from "d3-dag";
+
+import type { GraphEdge } from "./events";
+import type { GraphState } from "./reducer";
+
+export const NODE_WIDTH = 300;
+export const NODE_HEIGHT = 140;
+
+const VERTICAL_SPACING = 220;
+const HORIZONTAL_SPACING = 340;
+
+type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
+
+function buildDag(
+  state: GraphState,
+  discoveryIndex: Map<string, number>,
+): DagGraph<DagNodeDatum, GraphEdge> {
+  const nodeDatumForId = (id: string): DagNodeDatum => ({
+    ...state.nodes[id],
+    discoveryIndex: discoveryIndex.get(id) ?? Number.MAX_SAFE_INTEGER,
+  });
+
+  const builder = graphConnect<DagNodeDatum, GraphEdge>()
+    .sourceId(({ source }) => source)
+    .targetId(({ target }) => target)
+    .nodeDatum(nodeDatumForId);
+
+  const dag = builder(state.edges);
+  const dagNodesById = new Map<string, DagMutGraphNode<DagNodeDatum, GraphEdge>>();
+
+  for (const node of dag.nodes()) {
+    dagNodesById.set(node.data.id, node);
+  }
+
+  // Ensure isolated nodes are represented in the DAG
+  for (const node of Object.values(state.nodes)) {
+    if (!dagNodesById.has(node.id)) {
+      const dagNode = dag.node({
+        ...node,
+        discoveryIndex: discoveryIndex.get(node.id) ?? Number.MAX_SAFE_INTEGER,
+      });
+      dagNodesById.set(node.id, dagNode);
+    }
+  }
+
+  return dag;
+}
+
+const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
+  (
+    topLayer: SugiNode<DagNodeDatum, GraphEdge>[],
+    bottomLayer: SugiNode<DagNodeDatum, GraphEdge>[],
+    topDown: boolean,
+  ) => {
+    const layer = topDown ? bottomLayer : topLayer;
+
+    const valueForNode = (
+      node: DagGraphNode<DagNodeDatum, GraphEdge>,
+    ): number => {
+      if (node.data.role === "node") {
+        const id = node.data.node.data.id;
+        return discoveryIndex.get(id) ?? node.data.node.data.discoveryIndex ?? 0;
+      }
+
+      const sourceId = node.data.link.source.data.id;
+      const targetId = node.data.link.target.data.id;
+      const source = discoveryIndex.get(sourceId) ?? node.data.link.source.data.discoveryIndex ?? 0;
+      const target = discoveryIndex.get(targetId) ?? node.data.link.target.data.discoveryIndex ?? 0;
+      return (source + target) / 2;
+    };
+
+    layer.sort((a, b) => valueForNode(a) - valueForNode(b));
+  };
+
+export async function layoutGraph(state: GraphState): Promise<GraphState> {
+  const nodes = Object.values(state.nodes);
+  const newNodes = nodes.filter((n) => !n.positioned);
+
+  if (!newNodes.length) return state;
+
+  const discoveryIndex = new Map<string, number>();
+  Object.keys(state.nodes).forEach((id, idx) => discoveryIndex.set(id, idx));
+
+  const dag = buildDag(state, discoveryIndex);
+
+  const layout = sugiyama<DagNodeDatum, GraphEdge>()
+    .layering(
+      layeringLongestPath<DagNodeDatum, GraphEdge>().rank((node) =>
+        node.data.state === "anchor" ? 0 : undefined,
+      ),
+    )
+    .decross(decrossTwoLayer<DagNodeDatum, GraphEdge>().order(orderByDiscovery(discoveryIndex)))
+    .coord(coordGreedy())
+    .nodeSize(() => [NODE_WIDTH, NODE_HEIGHT])
+    .gap([HORIZONTAL_SPACING, VERTICAL_SPACING]);
+
+  layout(dag);
+
+  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
+  for (const dagNode of dag.nodes()) {
+    const nodeId = dagNode.data.id;
+    const existing = placed[nodeId];
+
+    if (!existing) continue;
+
+    const x = existing.positioned ? existing.position.x : dagNode.x;
+    const y =
+      existing.positioned && existing.state !== "anchor"
+        ? existing.position.y
+        : existing.state === "anchor"
+          ? 0
+          : dagNode.y;
+
+    placed[nodeId] = {
+      ...existing,
+      positioned: true,
+      position: { x, y },
+    };
+  }
+
+  return {
+    ...state,
+    nodes: placed,
+  };
+}
+</file>
+
 <file path="panda.config.ts">
 import { green } from "@/theme/colors/green";
 import { red } from "@/theme/colors/red";
@@ -2680,6 +2855,37 @@ function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
 }
 </file>
 
+<file path="src/app/page.tsx">
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
+import { TestControlsInstaller } from "@/components/TestControlsInstaller";
+
+export default function Home() {
+  return (
+    <Box position="relative" h="100vh" w="100vw">
+      <TestControlsInstaller />
+      <GraphStage />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        p="5"
+        pointerEvents="none"
+      >
+        <Box pointerEvents="auto" w="100%" h="72px">
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
+</file>
+
 <file path="src/components/GraphStage/GraphStage.tsx">
 "use client";
 
@@ -2693,7 +2899,6 @@ import {
   Controls,
   type Edge,
   type Node,
-  useReactFlow,
 } from "@xyflow/react";
 
 import {
@@ -2712,7 +2917,7 @@ import {
 
 import { reactFlowTheme } from "@/theme/react-flow";
 
-import { useFollowNode } from "./useFollowNode";
+import { useFollowNodes } from "./useFollowNodes";
 import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
 import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
@@ -2729,6 +2934,8 @@ const edgeTypes = {
   graph: AnimatedGraphEdge,
 };
 const INITIAL_ZOOM = 1.5;
+
+const isNode = (n: Node | undefined): n is Node => Boolean(n);
 
 export function buildFlowElements(
   graphState: GraphState,
@@ -2787,8 +2994,7 @@ export function buildFlowElements(
 function GraphStageInner() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const followNode = useFollowNode(containerRef, INITIAL_ZOOM);
-  const rf = useReactFlow();
+  const followNodes = useFollowNodes(containerRef, INITIAL_ZOOM);
 
   const initialNodes = useAtomValue(graphInitialNodesAtom);
   const initialEdges = useAtomValue(graphInitialEdgesAtom);
@@ -2818,17 +3024,43 @@ function GraphStageInner() {
     setNodes(mappedNodes);
     setEdges(mappedEdges);
 
-    const focusNode =
-      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
-      mappedNodes.find((n) => !prevIds.has(n.id));
+    const newNode = mappedNodes.find((n) => !prevIds.has(n.id));
 
-    if (focusNode) {
-      requestAnimationFrame(() => {
-        setTimeout(() => followNode(focusNode), 50);
-      });
+    const parentNodes = newNode
+      ? graphState.edges
+          .filter((e) => e.target === newNode.id)
+          .map((e) => mappedNodes.find((n) => n.id === e.source))
+          .filter(isNode)
+      : [];
+
+    const siblingNodes =
+      newNode && parentNodes.length
+        ? graphState.edges
+            .filter((e) => parentNodes.some((p) => p?.id === e.source))
+            .filter((e) => e.target !== newNode.id)
+            .map((e) => mappedNodes.find((n) => n.id === e.target))
+            .filter(isNode)
+        : [];
+
+    const panTarget = mappedNodes.find((n) => n.id === graphState.panTargetId);
+
+    const regionNodes = [
+      ...(newNode ? [newNode] : []),
+      ...parentNodes,
+      ...siblingNodes,
+    ];
+
+    const fallbackRegion = panTarget ? [panTarget] : [];
+
+    const targets = (regionNodes.length ? regionNodes : fallbackRegion).filter(
+      isNode,
+    );
+
+    if (targets.length) {
+      requestAnimationFrame(() => followNodes(targets));
     }
 
-  }, [graphState, setNodes, setEdges, followNode, rf]);
+  }, [graphState, setNodes, setEdges, followNodes]);
 
   /**
    * Drag state (used by SearchBar system)
@@ -2899,37 +3131,6 @@ export default function GraphStage() {
     <ReactFlowProvider>
       <GraphStageInner />
     </ReactFlowProvider>
-  );
-}
-</file>
-
-<file path="src/app/page.tsx">
-import { Box } from "../../styled-system/jsx";
-import GraphStage from "@/components/GraphStage";
-import SearchBar from "@/components/SearchBar";
-import { TestControlsInstaller } from "@/components/TestControlsInstaller";
-
-export default function Home() {
-  return (
-    <Box position="relative" h="100vh" w="100vw">
-      <TestControlsInstaller />
-      <GraphStage />
-
-      <Box
-        position="absolute"
-        inset="0"
-        zIndex="10"
-        display="flex"
-        justifyContent="center"
-        alignItems="flex-start"
-        p="5"
-        pointerEvents="none"
-      >
-        <Box pointerEvents="auto" w="100%" h="72px">
-          <SearchBar />
-        </Box>
-      </Box>
-    </Box>
   );
 }
 </file>
@@ -3406,76 +3607,6 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
       </MotionButton>
     </MotionStack>
   );
-}
-</file>
-
-<file path="package.json">
-{
-  "name": "sat",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev -p 5000 -H 0.0.0.0",
-    "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
-    "start": "next start -p 5000 -H 0.0.0.0",
-    "lint": "eslint . --ext .ts,.tsx",
-    "format": "eslint . --ext .ts,.tsx --fix",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test && npm run test:e2e",
-    "playwright:install": "playwright install",
-    "shot:theme": "node src/theme/capture-react-flow.mjs"
-  },
-  "dependencies": {
-    "@ark-ui/react": "^5.34.1",
-    "@use-gesture/react": "^10.3.1",
-    "@xyflow/react": "^12.10.1",
-    "d3-force": "^3.0.0",
-    "dagre": "^0.8.5",
-    "elkjs": "^0.11.1",
-    "flatten-js": "^0.6.9",
-    "framer-motion": "^12.35.0",
-    "jotai": "^2.18.0",
-    "lucide-react": "^0.577.0",
-    "next": "16.1.6",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "rxjs": "^7.8.2",
-    "xstate": "^5.28.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.2.0",
-    "@pandacss/dev": "^1.8.2",
-    "@playwright/test": "^1.58.2",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/d3-force": "^3.0.10",
-    "@types/dagre": "^0.7.54",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "@typescript-eslint/eslint-plugin": "^8.24.0",
-    "@typescript-eslint/parser": "^8.24.0",
-    "eslint": "^9.17.0",
-    "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "happy-dom": "^20.8.3",
-    "typescript": "^5",
-    "vitest": "^4.0.18"
-  },
-  "ignoreScripts": [
-    "sharp",
-    "unrs-resolver"
-  ],
-  "trustedDependencies": [
-    "sharp",
-    "unrs-resolver"
-  ]
 }
 </file>
 
@@ -3962,6 +4093,77 @@ export function useSearchBar({
     setValue,
     value,
   };
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "sat",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "panda cssgen \"./src/**/*.{ts,tsx}\" --watch & next dev -p 5000 -H 0.0.0.0",
+    "build": "panda cssgen \"./src/**/*.{ts,tsx}\" && next build",
+    "start": "next start -p 5000 -H 0.0.0.0",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "eslint . --ext .ts,.tsx --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "test:all": "npm run test && npm run test:e2e",
+    "playwright:install": "playwright install",
+    "shot:theme": "node src/theme/capture-react-flow.mjs"
+  },
+  "dependencies": {
+    "@ark-ui/react": "^5.34.1",
+    "@use-gesture/react": "^10.3.1",
+    "@xyflow/react": "^12.10.1",
+    "d3-dag": "^1.1.0",
+    "d3-force": "^3.0.0",
+    "dagre": "^0.8.5",
+    "elkjs": "^0.11.1",
+    "flatten-js": "^0.6.9",
+    "framer-motion": "^12.35.0",
+    "jotai": "^2.18.0",
+    "lucide-react": "^0.577.0",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "rxjs": "^7.8.2",
+    "xstate": "^5.28.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.2.0",
+    "@pandacss/dev": "^1.8.2",
+    "@playwright/test": "^1.58.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/d3-force": "^3.0.10",
+    "@types/dagre": "^0.7.54",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "happy-dom": "^20.8.3",
+    "typescript": "^5",
+    "vitest": "^4.0.18"
+  },
+  "ignoreScripts": [
+    "sharp",
+    "unrs-resolver"
+  ],
+  "trustedDependencies": [
+    "sharp",
+    "unrs-resolver"
+  ]
 }
 </file>
 

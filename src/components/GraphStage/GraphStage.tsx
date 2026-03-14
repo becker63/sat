@@ -137,13 +137,12 @@ function GraphStageInner() {
 
     const newNode = mappedNodes.find((n) => !prevIds.has(n.id));
 
-    const parentNodes =
-      newNode
-        ? graphState.edges
-            .filter((e) => e.target === newNode.id)
-            .map((e) => mappedNodes.find((n) => n.id === e.source))
-            .filter(isNode)
-        : [];
+    const parentNodes = newNode
+      ? graphState.edges
+          .filter((e) => e.target === newNode.id)
+          .map((e) => mappedNodes.find((n) => n.id === e.source))
+          .filter(isNode)
+      : [];
 
     const siblingNodes =
       newNode && parentNodes.length
@@ -154,24 +153,22 @@ function GraphStageInner() {
             .filter(isNode)
         : [];
 
-    const panTarget =
-      mappedNodes.find((n) => n.id === graphState.panTargetId) ??
-      newNode ??
-      null;
+    const panTarget = mappedNodes.find((n) => n.id === graphState.panTargetId);
 
-    const targets = [
-      ...(parentNodes as Node[]),
-      ...(siblingNodes as Node[]),
+    const regionNodes = [
       ...(newNode ? [newNode] : []),
-      ...(panTarget && !newNode ? [panTarget] : []),
+      ...parentNodes,
+      ...siblingNodes,
     ];
 
-    const uniqueTargets = Array.from(
-      new Map(targets.map((n) => [n.id, n])).values(),
+    const fallbackRegion = panTarget ? [panTarget] : [];
+
+    const targets = (regionNodes.length ? regionNodes : fallbackRegion).filter(
+      isNode,
     );
 
-    if (uniqueTargets.length) {
-      requestAnimationFrame(() => followNodes(uniqueTargets));
+    if (targets.length) {
+      requestAnimationFrame(() => followNodes(targets));
     }
 
   }, [graphState, setNodes, setEdges, followNodes]);
