@@ -1,8 +1,19 @@
-export type GraphNode = {
+type BaseNode = {
   id: string;
   label?: string;
   kind: "symbol" | "function" | "file" | "type";
-  state: "anchor" | "pending" | "resolved";
+};
+
+type PendingNode = BaseNode & {
+  state: "pending";
+};
+
+type PrunedNode = BaseNode & {
+  state: "pruned";
+};
+
+type AnchorNode = BaseNode & {
+  state: "anchor";
   tokens?: number;
   evidence?: {
     snippet: string;
@@ -10,6 +21,18 @@ export type GraphNode = {
     startLine?: number;
   };
 };
+
+type ResolvedNode = BaseNode & {
+  state: "resolved";
+  tokens: number;
+  evidence: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
+
+export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
 
 export type GraphEdge = {
   source: string;

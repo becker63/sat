@@ -69,8 +69,14 @@ export function buildFlowElements(
           label: n.label ?? n.id,
           state: n.state,
           kind: n.kind,
-          tokens: n.tokens,
-          evidence: n.evidence,
+          tokens:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.tokens
+              : undefined,
+          evidence:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.evidence
+              : undefined,
         },
         position: n.position,
         selectable: false,
@@ -91,7 +97,10 @@ export function buildFlowElements(
     animated: false,
     type: "graph",
     label: e.kind,
-    data: { kind: e.kind, animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`) },
+    data: {
+      kind: e.kind,
+      animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
+    },
   }));
 
   return {
@@ -126,8 +135,12 @@ function GraphStageInner() {
   useEffect(() => {
     const prevIds = prevNodeIdsRef.current;
 
-    const { nodes: mappedNodes, edges: mappedEdges, renderedIds, renderedEdgeIds } =
-      buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
+    const {
+      nodes: mappedNodes,
+      edges: mappedEdges,
+      renderedIds,
+      renderedEdgeIds,
+    } = buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
 
     prevNodeIdsRef.current = new Set(renderedIds);
     prevEdgeIdsRef.current = new Set(renderedEdgeIds);
@@ -170,7 +183,6 @@ function GraphStageInner() {
     if (targets.length) {
       requestAnimationFrame(() => followNodes(targets));
     }
-
   }, [graphState, setNodes, setEdges, followNodes]);
 
   /**

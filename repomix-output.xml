@@ -41,6 +41,17 @@ The content is organized as follows:
 </file_summary>
 
 <directory_structure>
+arch/
+  architecture-consolidated.md
+  demo-plan.md
+  framer-motion-notes.md
+  frontend-phase-one.md
+  graph-events.md
+  implementation-notes.md
+  positioning.md
+  proof-trace-animations.md
+  rxjs-jotai-pattern.md
+  ui-visualization-notes.md
 public/
   file.svg
   globe.svg
@@ -114,6 +125,565 @@ vitest.setup.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="arch/architecture-consolidated.md">
+# Demo Architecture (Consolidated)
+
+- **Goal:** Show a deterministic context compiler that solves for the minimal evidence graph needed to answer a code question.
+- **Story beat:** query → anchors → deterministic expansion → token-bounded packing → SAT-style refinement → answer/visualization.
+
+## Concept & Novelty
+- Treat context as a **constraint/optimization** problem, not search: enforce definition-before-reference, deterministic expansion, and token budget.
+- Graph-first, semantics-second: structural graph bounds the candidate set; optional semantic ranking orders it but cannot add new nodes.
+- Refinement loop mirrors CEGIS/SAT: detect missing symbols, learn constraint, expand once or twice, stabilize.
+- Deterministic behavior → same query yields same context; failures are explainable (budget, depth, missing anchor).
+
+## System Pipeline
+```
+repo → static index (symbols + edges) → graph store → greedy context solver → LLM reasoning → (optional) refinement → UI
+```
+- Inputs: anchors from query (lexical/embedding search).
+- Outputs: graph slice + context prompt + timeline of solver iterations.
+
+## Data Model (Minimal)
+- Node: { id, name, kind ("function" | "variable" | "file"), file, startLine, endLine, tokens, snippet? }.
+- Edge: { from, to, type ("calls" | "reads" | "writes" | "imports"), weight } with auto reverse edges.
+- SolverState: anchors, frontier, context, tokenBudget, tokensUsed, iteration.
+- Graph store: JSON or SQLite tables (nodes, edges, files, symbols).
+
+## Indexing Options
+- **Tree-sitter (fast, shallow):** extract definitions, calls, imports, writes; string-match symbols; token ≈ chars/4; ~150–200 LOC.
+- **TypeScript Compiler API (semantic, TS-only):** real symbol resolution, module imports, overloads; better call edges; ~460 LOC backend total.
+
+## Expansion & Heuristics
+- Deterministic rules: include definition(node); callers/callees; imports(file); variable writes; bounded depth (≤2–3); max_edges_per_node=3.
+- Edge priorities (calls/writes > reads > imports > same_file); traversal sorted by weight to avoid utility noise.
+- Token optimizer: greedy pack highest signal/low cost until budget; value ≈ priority_score / tokens.
+
+## Solver Loop (Greedy + Refinement)
+```
+context = anchors
+while tokens(context) < budget:
+  missing = referenced(context) - defined(context)
+  if missing: context += definitions(missing); continue
+  candidate = best_frontier(context); if !candidate: break
+  context += candidate
+answer = LLM(context)
+missing = detect_missing_symbols(answer)
+if missing: context += expand(missing); retry once
+```
+- Constraints enforced: definition closure, token budget, anchor inclusion, depth bound.
+
+## UI / Demo Experience
+- Stack: Next.js + React Flow + Framer Motion.
+- Panels:
+  - Graph: blue=anchors, yellow=expanded, green=in-context; animate new nodes on constraints.
+  - Solver timeline: iteration, nodes, tokens, learned constraint.
+  - Context diff: prompt deltas per iteration; show token savings vs naive top-K files.
+- Key moment: LLM flags missing symbol → node animates in → answer stabilizes.
+
+## Value Proposition (for engineers)
+- 3–8× context efficiency: typical debugging path ~400–2000 tokens vs 6000–12000 from top-8 files.
+- Better debugging: causal chains preserved (definitions, callers, state writes) → fewer hallucinations.
+- Stability/explainability: same query ⇒ same context; each node has inclusion rationale; failures are legible.
+
+## Differentiation vs Existing Tools
+- GitHub/Sourcegraph: search + heuristic expansion; truncate arbitrarily; no recovery.
+- This system: constraint-driven, minimal satisfying subgraph, adaptive refinement; deterministic failure modes.
+- Weak spots: higher latency; broad architecture questions still need semantic search for anchors.
+
+## Repo Targets & Demo Prompt
+- Best fit: medium TS/JS libs with multi-hop chains (TanStack Query, Zustand, Redux Toolkit, React Router).
+- Example question: “Why does this query refetch when the window gains focus?” → useQuery → QueryObserver → focusManager → refetch; missing symbol triggers expansion.
+
+## Build Outline (1 Month)
+- Week 1: indexer (Tree-sitter or TS API), node/edge model, graph store.
+- Week 2: deterministic expansion + token estimator + priorities.
+- Week 3: LLM integration, missing-symbol detection, single refinement loop.
+- Week 4: UI (graph + timeline + diff), token-savings display, demo polish.
+
+## Solver Termination (Bounds)
+- Depth ≤ 3; max_edges_per_node ≤ 3; max_nodes ≤ ~60; token_budget enforced. These bounds prevent unbounded expansion.
+
+## Optional Layers
+- Semantic rerank inside candidate set (score/token).
+- Specialized tools: trace_calls(symbol), trace_state_changes(symbol).
+- Constraint set design (~6–8 types) if you want more rigor.
+- Tool/agent flow: LLM plans; `code_search` finds anchors (lexical/embedding); `dependency_solver` returns graph slice + delta; UI animates each solver call; optional second pass when LLM flags missing symbols.
+</file>
+
+<file path="arch/demo-plan.md">
+# Demo Plan (2–3 Minute “Aha”)
+
+- **Goal:** Show that we solve for the minimal evidence graph before reasoning.
+- **Flow to display:** query → anchors → graph expansion → missing symbol → refinement → stable answer.
+
+## Script Outline
+- Prompt: “Why does this query refetch when the window gains focus?” (TanStack Query) or “Why does scrollOwner reset?” (scroll example).
+- Iteration 1: seeds appear (blue): `useQuery`, `focusManager` (or `useAutoScroll`, `scrollOwner`).
+- Expansion: graph grows (yellow); context packed (green) within budget.
+- LLM reasoning: flags missing `QueryObserver`/`scrollOwnerSetter`.
+- Refinement: solver adds definition node; context diff shows `+ symbol`; answer stabilizes.
+- Value callout: live token savings (naive ~6–12k tokens vs solver ~1–2k).
+
+## Architecture Pieces to Demo
+- Indexer: Tree-sitter or TS compiler API → nodes/edges JSON.
+- Solver: deterministic expansion, edge priorities, greedy packing, single refinement loop.
+- UI: React Flow graph + timeline + context diff; animate new nodes on constraints.
+
+## Build Targets (1 Month)
+- Week 1: indexer + graph store (nodes/edges).
+- Week 2: expansion rules + token estimator + edge weighting.
+- Week 3: LLM integration + missing-symbol detection + retry-once.
+- Week 4: UI polish + token-savings display + canned prompts.
+</file>
+
+<file path="arch/framer-motion-notes.md">
+# Framer Motion + RxJS + React Flow (smooth updates)
+
+- Goal: align solver events with animation phases: batch structural updates per frame, animate visual state changes individually.
+
+## Split streams
+```ts
+const [structure$, visual$] = partition(
+  graphEvent$,
+  e => ["addNodes","addEdges","removeNodes","removeEdges"].includes(e.type)
+)
+```
+
+## Batch structural events per frame
+```ts
+const structureBatch$ = structure$.pipe(
+  bufferTime(16),          // or buffer(animationFrames())
+  filter(batch => batch.length > 0)
+)
+```
+
+## Merge back
+```ts
+const merged$ = merge(structureBatch$, visual$)
+```
+
+## Reducer for batches or singles
+```ts
+function applyGraphEvents(state, events) {
+  let next = state
+  for (const e of events) next = applyGraphEvent(next, e)
+  return next
+}
+
+const graphState$ = merged$.pipe(
+  scan((state, e) => Array.isArray(e) ? applyGraphEvents(state, e) : applyGraphEvent(state, e), initialGraphState),
+  shareReplay(1)
+)
+```
+
+## Framer Motion patterns
+- Node pop-in: `initial {scale:0.7, opacity:0} → animate {scale:1, opacity:1}` (~200ms).
+- Pending pulse: slow scale loop on pending nodes.
+- Resolve: color interpolate pending→resolved.
+- Edge draw: motion.path `pathLength 0→1` (~350–400ms).
+- Iteration banner: keyed motion div on `iteration` event.
+- Timing rhythm (suggested): iteration delay ~700ms; node spawn ~200ms; edge draw ~350ms; resolve ~250ms.
+
+## Why it matters
+- Structural bursts (addNodes/Edges) render once per frame → no jitter.
+- Visual state changes still animate smoothly via Framer Motion.
+- Clean pipeline: solver → GraphEvent$ → (partition + batch) → scan → GraphState$ → Jotai atom → React Flow.
+</file>
+
+<file path="arch/frontend-phase-one.md">
+# Frontend-First Phase (Fixtures + UI-Only, Next.js server functions)
+
+- **Goal:** Ship a single-pane graph narrative with fixtures before wiring the TS compiler backend. Use Next.js server functions (no separate API stubs) and RxJS internally; return arrays first, stream later.
+- **Layout:** Query input + full-bleed React Flow graph; no sidebars. Optional small timeline/diff drawer later.
+
+## Node States (visual narrative)
+- anchor (blue): initial symbols.
+- discovered (yellow): graph expansion.
+- pending (spinner/“?”): missing evidence placeholder.
+- resolved (green): included in context.
+- Token badge optional: show per-node token cost to hint at budget optimization.
+
+## Interaction / Script
+1) User enters prompt (fixtures drive response).
+2) Step-through or autoplay updates: anchors appear → edges animate → pending node appears → resolves to symbol → final context highlighted.
+3) Optional “Step” button to advance solver iterations; autoplay for talk-mode.
+
+## Data Shape for Fixtures
+```ts
+type VizNode = {
+  id: string;
+  label: string;
+  state: "anchor" | "discovered" | "pending" | "resolved";
+  tokens?: number;
+};
+
+type VizEdge = { source: string; target: string; type?: string };
+
+type Frame = {
+  nodes: VizNode[];
+  edges: VizEdge[];
+  note?: string; // e.g., "Missing scrollOwnerSetter"
+};
+
+export type Fixture = {
+  name: string;
+  events: GraphEvent[];
+  autoplayDelay?: number;
+};
+
+export const scrollOwnershipFixture: Fixture = {
+  name: "Scroll Ownership Bug",
+  autoplayDelay: 800,
+  events: [...]
+};
+```
+
+- Store frames as JSON fixtures; UI replays them. Later, backend emits frames/deltas.
+
+## Animation Hints
+- Use React Flow + dagre (top→bottom causal chains).
+- Framer Motion for node fade-in, pending pulse, resolved color transition, edge draw.
+- Pending node displays spinner/“?”; swap to label on resolve.
+- Layout strategy: use dagre top-to-bottom; rerun layout only on node adds; preserve positions on label/state updates to avoid jitter. Highlight one main path (anchor → cause → missing symbol → definition → context); others fade.
+
+## Event Stream with RxJS (+ Jotai projection)
+- Define a single `GraphEvent`/`Frame` type used everywhere (solver, fixtures, transport, UI, tests).
+- RxJS inside solver/fixtures: `Observable<GraphEvent>`; fixtures via `from(array).pipe(concatMap(delay(...)))`.
+- Project once into UI state with Jotai: connect the observable, `setGraph(prev => applyGraphEvent(prev, event))` into a `graphAtom`; components read atoms (no RxJS in components).
+- Phase 1 transport: server action collects events (`GraphEvent[]`) via `lastValueFrom(...)`; UI replays list (no streaming yet).
+- Later transport: SSE/WebSocket route can stream the same observable; UI code stays the same.
+
+## Phase Boundaries
+- **Phase 1 (now):** fixtures only; RxJS emits; server action returns `GraphEvent[]`; no TS compiler/LLM.
+- **Phase 2:** wire TS compiler solver to emit the same event shape (definition closure + optional frontier); swap stream source.
+- **Phase 3:** add LLM “MISSING_SYMBOL” loop; event notes show requests; same stream shape.
+
+## UI State Separation
+- GraphState: nodes, edges, context, iteration (from events).
+- UIState: autoplay flag, playbackIndex, selectedNode, solverRunning, selectedFixture (separate atoms).
+- GraphEvent logging: in dev, log all events to replay/save fixtures; UI is a pure projection of the GraphEvent stream (fixtures, solver runs, recorded traces all reuse the same protocol).
+</file>
+
+<file path="arch/graph-events.md">
+# GraphEvent Protocol (minimal, solver-agnostic)
+
+- Keep it small, idempotent, and consistent across solver, fixtures, transport, Jotai reducer, and React Flow.
+
+```ts
+export type GraphEvent =
+  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
+  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
+  | { type: "updateNode"; id: string; patch: Partial<GraphNode>; reason?: string }
+  | { type: "setContext"; nodes: string[]; reason?: string }
+  | { type: "removeNodes"; ids: string[]; reason?: string }   // reserved for pruning
+  | { type: "removeEdges"; ids: string[]; reason?: string }   // reserved for pruning
+  | { type: "iteration"; step: number; description?: string }
+  | { type: "constraintLearned"; constraint: string; symbol?: string; reason?: string }; // optional polish for solver storytelling
+
+export type GraphNode = {
+  id: string;
+  label?: string;
+  kind: "symbol" | "function" | "file" | "type";
+  state: "anchor" | "pending" | "resolved";
+  tokens?: number;
+};
+
+export type GraphEdge = {
+  source: string;
+  target: string;
+  kind: "calls" | "imports" | "references";
+};
+```
+
+- Node ID convention (to avoid collisions and keep traces legible):
+  - `function:<name>` e.g., `function:useAutoScroll`
+  - `symbol:<name>` e.g., `symbol:scrollOwner`
+  - `file:<path>` e.g., `file:src/useAutoScroll.ts`
+
+- Optional reason shape for better UI:
+```ts
+type Reason =
+  | { type: "definition"; detail?: string }
+  | { type: "call_edge"; detail?: string }
+  | { type: "missing_symbol"; detail?: string }
+  | { type: "context_pack"; detail?: string };
+```
+Include as `reason` payload to drive causal overlays.
+
+- GraphState shape:
+```ts
+type GraphState = {
+  nodes: Record<string, GraphNode>
+  edges: GraphEdge[]
+  context: Set<string>
+  iteration: number
+}
+```
+
+- Reducer `applyGraphEvent(prev, event)` builds `GraphState`. Removal events are reserved for future pruning/context adjustments even if not used in the first demo.
+- RxJS produces `Observable<GraphEvent>` (fixture or solver). Server action collects to `GraphEvent[]` initially; UI replays through the reducer and stores in a `graphAtom` via Jotai.
+- Later: stream the same events via SSE/WebSocket; UI code unchanged.
+
+## Principle
+Define a single canonical reducer `applyGraphEvent(state, event)` as the only state transition. All sources (fixtures, solver, recorded traces, tests) emit GraphEvents into this reducer; the UI is a pure projection of the event stream.
+</file>
+
+<file path="arch/implementation-notes.md">
+# Implementation Notes (Minimal, TS Compiler API)
+
+- **Data model:** Node {id, name, kind, file, startLine, endLine, tokens, snippet?}; Edge {from, to, type, weight}; auto reverse edges. SolverState {anchors, frontier, context, tokenBudget, tokensUsed, iteration}.
+
+- **Indexing:** Use **TypeScript Compiler API** (chosen) for semantic symbols (imports, aliases, re-exports). Setup: program + checker; filter out `node_modules`/TS libs when expanding.
+
+- **Token cost:** rough `tokens ≈ chars/4` or `lines × 8`.
+
+- **Greedy solver (definition closure first):**
+  ```
+  context = seeds
+  while tokens(context) < budget and depth < 3:
+    ids = collectIdentifiers(context)
+    refs = resolveSymbols(ids, checker)           // semantic refs
+    missing = refs - defs
+    if missing:
+      defs += addDefinitions(missing, checker)    // definition closure
+      context += defs just added
+      continue
+    frontier = neighbors(context)                 // optional prioritized edges
+    best = pick_highest_signal(frontier, tokens)
+    if !best: break
+    context += best
+  answer = LLM(context)
+  reasoning_missing = parseMissingRequests(answer) // MISSING_SYMBOL: foo
+  if reasoning_missing: context += defs(reasoning_missing); retry once
+  ```
+  - Safety: depth ≤3; max_edges_per_node=3; stop when no missing and no frontier within budget.
+
+- **Priorities (optional frontier step):** calls/writes > reads > imports > same_file; score by weight/tokens.
+
+- **LLM-guided expansion:** Allow `MISSING_SYMBOL: symbolName` tag; union with compiler-detected missing refs; loop max ~6 iterations.
+
+- **Tool/agent flow:** LLM → `code_search` (anchors) → `dependency_solver` (definition-closure + optional frontier) → UI animates deltas; if LLM flags missing symbols, solver adds and reruns once. Server functions stream events via RxJS; fixtures are replayable streams; Jotai projects the event stream into UI state.
+
+- **Solver event loop (GraphEvents-first):** Structure solver so events fall out naturally. Loop: emit `iteration` + `addNodes` for anchors; maintain `frontier`; for each symbol, expand via TS checker (refs/defs) → emit `addNodes`/`addEdges`; when a definition resolves emit `updateNode` (label/state); optionally emit `setContext` when packing context. Fixtures are recorded GraphEvent traces; real solver emits the same stream.
+</file>
+
+<file path="arch/positioning.md">
+# Positioning & Value
+
+- **Pitch:** A deterministic context compiler that solves for the minimal evidence graph needed to answer a code question.
+- **Value:** 3–8× context efficiency; causal chains preserved; deterministic/stable behavior; explainable inclusion rationale.
+
+## Compared to Existing Tools
+- Today: search/embeddings + heuristic expansion → top-k files → truncation; missing dependencies; no recovery.
+- This: constraint-driven selection; definition-before-reference; token budget; adaptive refinement (missing symbol → expand → retry).
+- Strengths: debugging chains, minimal context, stability. Weaknesses: higher latency; broad architecture Qs still need semantic search for anchors.
+
+## Target Repos / Questions
+- Best fit: medium JS/TS libs with multi-hop flows (TanStack Query, Zustand, Redux Toolkit, React Router).
+- Example Q: “Why does this query refetch on window focus?” → useQuery → QueryObserver → focusManager → refetch; missing symbol triggers expansion.
+
+## One-Liners
+- “Solve for the minimal evidence graph, then let the LLM reason.”
+- “A SAT-style context planner for LLMs.”
+</file>
+
+<file path="arch/proof-trace-animations.md">
+# Proof-Trace Animations (causal growth)
+
+- Goal: make the graph feel like causal reasoning: edge grows → pulls node into existence → node resolves.
+- Works with existing events (addNodes/addEdges/updateNode) and Framer Motion + React Flow.
+
+## Edge-first growth
+```tsx
+<motion.path
+  d={path}
+  stroke="white"
+  strokeWidth={2}
+  fill="none"
+  initial={{ pathLength: 0 }}
+  animate={{ pathLength: 1 }}
+  transition={{ duration: 0.35 }}
+/>
+```
+
+## Node spawn after edge reaches tip
+```tsx
+<motion.div
+  initial={{ scale: 0.6, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{ duration: 0.25, delay: 0.35 }} // matches edge draw
+>
+  {label}
+</motion.div>
+```
+
+## Causal pulse on parent
+```tsx
+<motion.div
+  animate={{
+    boxShadow: [
+      "0 0 0px rgba(59,130,246,0)",
+      "0 0 12px rgba(59,130,246,0.8)",
+      "0 0 0px rgba(59,130,246,0)"
+    ]
+  }}
+  transition={{ duration: 0.6 }}
+>
+  {parentLabel}
+</motion.div>
+```
+
+## Pending placeholder
+```tsx
+<motion.div
+  animate={{ scale: [1, 1.05, 1] }}
+  transition={{ repeat: Infinity, duration: 1.2 }}
+>
+  ?
+</motion.div>
+```
+
+## Resolve transition
+```tsx
+<motion.div
+  animate={{
+    backgroundColor: state === "resolved" ? "#22c55e" : "#facc15"
+  }}
+  transition={{ duration: 0.3 }}
+>
+  {label}
+</motion.div>
+```
+
+## Iteration banner
+Flash on `iteration` event: “Iteration N — call expansion/missing symbol” (top-center, ~1s).
+
+## Camera nudge
+Optionally `setCenter(x, y, { duration: 500 })` toward newest node to guide attention.
+
+## Storyboard example
+useQuery (glow) → edge draws → QueryObserver spawns pending → resolves → edge draws → focusManager spawns → resolves → edge draws → refetch spawns → resolves. Path lights up as the answer is “discovered.”
+
+## Edge-Anchored Ghost Nodes (pending frontier)
+- Spawn pending nodes at the tip of the causal edge that discovered them (use parent position + offset). Ghost: dashed/low opacity, spinner/“resolving…”.
+- Sequence: parent glows → edge grows → ghost appears at edge tip → ghost resolves (pending→resolved, label appears, color morph).
+- Keep position stable between ghost and resolved state for a smooth morph; optionally a light layout relax after resolution (not during discovery).
+</file>
+
+<file path="arch/rxjs-jotai-pattern.md">
+# RxJS + Jotai Pattern (clean pipeline)
+
+- Canonical flow: `GraphEvent$ → scan(reducer) → GraphState$ → Jotai atom → React`.
+- Keep a single event stream; everything else derives from it (fixtures, solver, playback).
+
+## Reducer (unchanged)
+```ts
+function applyGraphEvent(state: GraphState, event: GraphEvent): GraphState {
+  switch (event.type) {
+    case "addNodes": {
+      const nodes = { ...state.nodes }
+      for (const n of event.nodes) nodes[n.id] = n
+      return { ...state, nodes }
+    }
+    case "addEdges":
+      return { ...state, edges: [...state.edges, ...event.edges] }
+    case "updateNode":
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [event.id]: { ...state.nodes[event.id], ...event.patch }
+        }
+      }
+    case "setContext":
+      return { ...state, context: new Set(event.nodes) }
+    case "iteration":
+      return { ...state, iteration: event.step }
+    default:
+      return state
+  }
+}
+```
+
+## Event streams
+```ts
+const fixture$ = from(events).pipe(concatMap(e => of(e).pipe(delay(800))))
+const solver$ = solverStream(query) // Observable<GraphEvent>
+```
+
+## State stream
+```ts
+function createGraphState$(events$) {
+  return events$.pipe(
+    scan(applyGraphEvent, initialGraphState),
+    shareReplay(1)
+  )
+}
+```
+
+## Jotai bridge
+```ts
+import { atomWithObservable } from "jotai/utils"
+
+export const graphStateAtom = atomWithObservable(() =>
+  createGraphState$(fixture$) // swap to solver$ later
+)
+```
+
+- UI uses `useAtomValue(graphStateAtom)`; no RxJS in components.
+- Swap fixtures → solver by changing the source observable; UI unchanged.
+- Query cancellation: `query$.pipe(switchMap(q => solverStream(q)))`.
+- Animation pacing: `events$.pipe(concatMap(e => of(e).pipe(delay(600))))` to slow playback without slowing solver.
+- Logging/replay: `events$.subscribe(log)`; replay via `from(loggedEvents)`.
+</file>
+
+<file path="arch/ui-visualization-notes.md">
+# UI Visualization Notes (Graph Flow)
+
+- Goal: make the graph feel like a causal proof trace; animate *why* something appears, not just that it appears.
+- Core rule: stable, append-only layout; the graph grows like a proof tree—never reshuffle on every frame.
+
+## Causal Animation Patterns
+- Causal pulse: briefly highlight `parent → edge → child` when adding a node (use `reason`/`iteration` event to trigger). Sequence: highlight parent, draw edge, spawn node.
+- Node spawn: Framer Motion pop-in (`scale 0.7 → 1`, `opacity 0 → 1`, ~200ms).
+- Edge draw: animate path length/dash (~300ms).
+- Pending node: pulse `?`/spinner (slow scale loop).
+- Resolve: spinner → label; color shift yellow→green (~300ms).
+- Iteration banner: transient overlay per `iteration` event (e.g., “Iteration 2 — call graph expansion”).
+- Context highlight: glow/border for `setContext` nodes; optional token badge.
+- Floating reason: brief label near new node (“missing symbol detected”, “definition closure”).
+
+## Layout Strategy (critical)
+- Never recompute layout for existing nodes; append-only. Keep prior positions; layout only new nodes.
+- Layered DAG: top→bottom; group by iteration/phase; optional faint vertical guides per layer.
+- Semantic X positions: anchors (x=0), discovered/pending (x=400–700), resolved/context (x=400). Dagre controls Y spacing only.
+- Edge types: curved (smoothstep/bezier), downward-only to reduce crossing.
+- Fixed node size to avoid jitter when labels change; consider ghost placeholders for expected nodes.
+- Camera: initial `fitView({ padding: 0.2 })`, then disable auto-fit.
+
+## Fixture Playback / State
+- Fixture type: `{ name, events: GraphEvent[], autoplayDelay?: number }`. Runner supports autoplay and step mode.
+- GraphState (from events): nodes, edges, context, iteration.
+- UIState (separate atoms): autoplay flag, playbackIndex, selectedNode, solverRunning, selectedFixture.
+- Dev logging: log all GraphEvents in dev to record/replay traces; UI is a pure projection of the GraphEvent stream (fixtures, solver runs, recorded traces all reuse the same protocol).
+
+## Single-Pane "Stage" Layout
+- Permanent elements: query input + full-bleed graph stage (~90% of screen) using React Flow. Treat graph as a stage, not a dashboard.
+- Overlays not panels: transient iteration banner (top-center, ~1s), solver note near new node (“missing symbol: X”), tiny token badge (corner), minimal iteration dots (top-right) instead of a timeline panel.
+- Controls: none except a Replay button near the prompt. Context diff is visual (node glow) instead of a text panel.
+- Camera: fit once on load; keep fixed; pan only if a node would appear off-screen. Dim graph slightly before each iteration, brighten affected nodes during animation.
+
+## Scope & Visibility Rules (avoid hairball)
+- Only show the causal slice: anchors ∪ active frontier ∪ in-context nodes; hide unused/background graph.
+- Hard cap: target 5–12 nodes; max visible ~25. Collapse/omit older branches if exceeded.
+- Frontier collapse: if many neighbors, show “+N” expandable placeholder instead of fan-out.
+- Emphasize the evidence chain: thicker/brighter edges along anchor → missing → definition → context; others faded/grey.
+- Temporal fade: older iterations reduce opacity (e.g., 100% → 90% → 80%).
+- Edge simplification: render only solver-relevant edges (calls/writes/imports that drove inclusion); skip utility noise.
+- Maintain a clear vertical path; prefer one main chain with 1–2 side branches. If it can’t be explained in 3 seconds, it’s too complex.
+</file>
 
 <file path="public/file.svg">
 <svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
@@ -2886,6 +3456,198 @@ export default function Home() {
 }
 </file>
 
+<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
+import { AnimatePresence, motion } from "framer-motion";
+import { createPortal } from "react-dom";
+import * as Checkbox from "@/components/ui/checkbox";
+import { VStack, HStack } from "../../../styled-system/jsx";
+import { useAtomValue, useSetAtom } from "jotai";
+import { flowDraggingAtom, scopeMenuHoverAtom } from "@/state/searchbar";
+import { useEffect, useMemo } from "react";
+import {
+  menuContainerClass,
+  menuControlClass,
+  menuHeaderClass,
+  menuIndicatorClass,
+  menuItemClass,
+  menuLabelClass,
+  menuSubLabelClass,
+} from "@/components/ui";
+
+import { fixtureRegistry } from "@/graph/fixtures";
+import { selectedFixtureAtom } from "@/state/fixtureAtom";
+import type { SearchScopeMenuState } from "./useSearchScopeMenu";
+
+type Props = {
+  state: SearchScopeMenuState;
+};
+
+const MotionBox = motion.create(VStack);
+
+export function SearchScopeMenu({ state }: Props) {
+  const flowDragging = useAtomValue(flowDraggingAtom);
+
+  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
+
+  const setFixture = useSetAtom(selectedFixtureAtom);
+  const fixtureState = useAtomValue(selectedFixtureAtom);
+
+  const items = useMemo(() => Object.values(fixtureRegistry), []);
+
+  useEffect(() => {
+    console.log("Fixture changed:", fixtureState);
+  }, [fixtureState]);
+
+  const visible = state.visible;
+  const width = state.width;
+  const offsetLeft = state.offsetLeft;
+  const offsetTop = state.offsetTop;
+
+  const content = (
+    <AnimatePresence>
+      {visible && (
+        <MotionBox
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.14, ease: "easeOut" }}
+          position="absolute"
+          top={`${offsetTop}px`}
+          left={`${offsetLeft}px`}
+          mt="0"
+          w={`${Math.max(0, Math.min(480, width))}px`}
+          px="18px"
+          py="16px"
+          gap="14px"
+          data-testid="searchscope-menu"
+          data-left={`${offsetLeft}`}
+          data-top={`${offsetTop}`}
+          data-width={`${Math.max(0, width)}`}
+          zIndex={1000}
+          className={menuContainerClass}
+          style={{
+            width: `${Math.max(0, Math.min(480, width))}px`,
+            left: `${offsetLeft}px`,
+            top: `${offsetTop}px`,
+          }}
+          onPointerEnter={() => setMenuHover(true)}
+          onPointerLeave={() => {
+            setMenuHover(false);
+          }}
+        >
+          <VStack gap="16px" alignItems="flex-start" width="100%">
+            <HStack
+              justify="space-between"
+              fontSize="14px"
+              w="100%"
+              className={menuHeaderClass}
+              lineHeight="1.3"
+              px="6px"
+            >
+              <span>Corpus</span>
+              <span className={menuSubLabelClass}>Scope</span>
+            </HStack>
+
+            <VStack alignItems="flex-start" gap="12px" w="100%">
+              {items.map((fixture) => (
+                <motion.div
+                  key={fixture.id}
+                  whileHover={{ x: 2 }}
+                  transition={{ duration: 0.1 }}
+                  style={{ width: "100%" }}
+                >
+                  <Checkbox.Root
+                    checked={fixtureState === fixture.id}
+                    onCheckedChange={() => {
+                      setFixture(
+                        fixtureState === fixture.id ? null : fixture.id,
+                      );
+                    }}
+                    className={menuItemClass}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control className={menuControlClass}>
+                      <Checkbox.Indicator className={menuIndicatorClass} />
+                    </Checkbox.Control>
+
+                    <Checkbox.Label className={menuLabelClass}>
+                      {fixture.label}
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                </motion.div>
+              ))}
+            </VStack>
+          </VStack>
+        </MotionBox>
+      )}
+    </AnimatePresence>
+  );
+
+  if (flowDragging) return null;
+  if (typeof document === "undefined") return null;
+
+  return createPortal(content, document.body);
+}
+</file>
+
+<file path="src/state/searchbar.ts">
+import { atom } from "jotai";
+
+export type SearchBarSize = { width: number; height: number };
+export type SearchBarPosition = { left: number; top: number };
+
+export const queryAtom = atom("");
+export const searchFocusedAtom = atom(false);
+export const outlineLockedAtom = atom(false);
+export const hoverOffsetAtom = atom<number | null>(null);
+export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
+export const focusOriginAtom = atom(0);
+export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
+export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
+export const perimeterAtom = atom(0);
+export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
+export const scopeMenuHoverAtom = atom(false);
+export const flowDraggingAtom = atom(false);
+export const searchBarContainerAtom = atom<HTMLElement | null>(null);
+export const searchBarPathAtom = atom<SVGRectElement | null>(null);
+</file>
+
+<file path="playwright.config.ts">
+import { defineConfig } from "@playwright/test";
+
+const isReplit = !!process.env.REPL_ID;
+const basePort = isReplit ? 5000 : 5173;
+
+export default defineConfig({
+  testDir: "./src/components",
+  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
+  timeout: 30_000,
+  workers: process.env.CI ? 4 : 8,
+  use: {
+    headless: true,
+    baseURL: `http://127.0.0.1:${basePort}`,
+    browserName: "chromium",
+    launchOptions: {
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
+  },
+  webServer: isReplit
+    ? undefined
+    : {
+        command:
+          'npx panda cssgen "./src/**/*.{ts,tsx}" && npx next dev --hostname 127.0.0.1 --port 5173',
+        url: "http://127.0.0.1:5173",
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+        env: {
+          ...process.env,
+          NEXT_PUBLIC_E2E: "true",
+        },
+      },
+});
+</file>
+
 <file path="src/components/GraphStage/GraphStage.tsx">
 "use client";
 
@@ -3133,198 +3895,6 @@ export default function GraphStage() {
     </ReactFlowProvider>
   );
 }
-</file>
-
-<file path="src/components/SearchScopeMenu/SearchScopeMenu.tsx">
-import { AnimatePresence, motion } from "framer-motion";
-import { createPortal } from "react-dom";
-import * as Checkbox from "@/components/ui/checkbox";
-import { VStack, HStack } from "../../../styled-system/jsx";
-import { useAtomValue, useSetAtom } from "jotai";
-import { flowDraggingAtom, scopeMenuHoverAtom } from "@/state/searchbar";
-import { useEffect, useMemo } from "react";
-import {
-  menuContainerClass,
-  menuControlClass,
-  menuHeaderClass,
-  menuIndicatorClass,
-  menuItemClass,
-  menuLabelClass,
-  menuSubLabelClass,
-} from "@/components/ui";
-
-import { fixtureRegistry } from "@/graph/fixtures";
-import { selectedFixtureAtom } from "@/state/fixtureAtom";
-import type { SearchScopeMenuState } from "./useSearchScopeMenu";
-
-type Props = {
-  state: SearchScopeMenuState;
-};
-
-const MotionBox = motion.create(VStack);
-
-export function SearchScopeMenu({ state }: Props) {
-  const flowDragging = useAtomValue(flowDraggingAtom);
-
-  const setMenuHover = useSetAtom(scopeMenuHoverAtom);
-
-  const setFixture = useSetAtom(selectedFixtureAtom);
-  const fixtureState = useAtomValue(selectedFixtureAtom);
-
-  const items = useMemo(() => Object.values(fixtureRegistry), []);
-
-  useEffect(() => {
-    console.log("Fixture changed:", fixtureState);
-  }, [fixtureState]);
-
-  const visible = state.visible;
-  const width = state.width;
-  const offsetLeft = state.offsetLeft;
-  const offsetTop = state.offsetTop;
-
-  const content = (
-    <AnimatePresence>
-      {visible && (
-        <MotionBox
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.14, ease: "easeOut" }}
-          position="absolute"
-          top={`${offsetTop}px`}
-          left={`${offsetLeft}px`}
-          mt="0"
-          w={`${Math.max(0, Math.min(480, width))}px`}
-          px="18px"
-          py="16px"
-          gap="14px"
-          data-testid="searchscope-menu"
-          data-left={`${offsetLeft}`}
-          data-top={`${offsetTop}`}
-          data-width={`${Math.max(0, width)}`}
-          zIndex={1000}
-          className={menuContainerClass}
-          style={{
-            width: `${Math.max(0, Math.min(480, width))}px`,
-            left: `${offsetLeft}px`,
-            top: `${offsetTop}px`,
-          }}
-          onPointerEnter={() => setMenuHover(true)}
-          onPointerLeave={() => {
-            setMenuHover(false);
-          }}
-        >
-          <VStack gap="16px" alignItems="flex-start" width="100%">
-            <HStack
-              justify="space-between"
-              fontSize="14px"
-              w="100%"
-              className={menuHeaderClass}
-              lineHeight="1.3"
-              px="6px"
-            >
-              <span>Corpus</span>
-              <span className={menuSubLabelClass}>Scope</span>
-            </HStack>
-
-            <VStack alignItems="flex-start" gap="12px" w="100%">
-              {items.map((fixture) => (
-                <motion.div
-                  key={fixture.id}
-                  whileHover={{ x: 2 }}
-                  transition={{ duration: 0.1 }}
-                  style={{ width: "100%" }}
-                >
-                  <Checkbox.Root
-                    checked={fixtureState === fixture.id}
-                    onCheckedChange={() => {
-                      setFixture(
-                        fixtureState === fixture.id ? null : fixture.id,
-                      );
-                    }}
-                    className={menuItemClass}
-                  >
-                    <Checkbox.HiddenInput />
-                    <Checkbox.Control className={menuControlClass}>
-                      <Checkbox.Indicator className={menuIndicatorClass} />
-                    </Checkbox.Control>
-
-                    <Checkbox.Label className={menuLabelClass}>
-                      {fixture.label}
-                    </Checkbox.Label>
-                  </Checkbox.Root>
-                </motion.div>
-              ))}
-            </VStack>
-          </VStack>
-        </MotionBox>
-      )}
-    </AnimatePresence>
-  );
-
-  if (flowDragging) return null;
-  if (typeof document === "undefined") return null;
-
-  return createPortal(content, document.body);
-}
-</file>
-
-<file path="src/state/searchbar.ts">
-import { atom } from "jotai";
-
-export type SearchBarSize = { width: number; height: number };
-export type SearchBarPosition = { left: number; top: number };
-
-export const queryAtom = atom("");
-export const searchFocusedAtom = atom(false);
-export const outlineLockedAtom = atom(false);
-export const hoverOffsetAtom = atom<number | null>(null);
-export const hoverAnchorAtom = atom<{ x: number; y: number } | null>(null);
-export const focusOriginAtom = atom(0);
-export const searchBarSizeAtom = atom<SearchBarSize>({ width: 0, height: 0 });
-export const searchBarPositionAtom = atom<SearchBarPosition>({ left: 0, top: 0 });
-export const perimeterAtom = atom(0);
-export const pointerPositionAtom = atom<{ x: number; y: number } | null>(null);
-export const scopeMenuHoverAtom = atom(false);
-export const flowDraggingAtom = atom(false);
-export const searchBarContainerAtom = atom<HTMLElement | null>(null);
-export const searchBarPathAtom = atom<SVGRectElement | null>(null);
-</file>
-
-<file path="playwright.config.ts">
-import { defineConfig } from "@playwright/test";
-
-const isReplit = !!process.env.REPL_ID;
-const basePort = isReplit ? 5000 : 5173;
-
-export default defineConfig({
-  testDir: "./src/components",
-  testMatch: ["**/*.e2e.spec.ts", "**/*.e2e.spec.tsx"],
-  timeout: 30_000,
-  workers: process.env.CI ? 4 : 8,
-  use: {
-    headless: true,
-    baseURL: `http://127.0.0.1:${basePort}`,
-    browserName: "chromium",
-    launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    },
-  },
-  webServer: isReplit
-    ? undefined
-    : {
-        command:
-          'npx panda cssgen "./src/**/*.{ts,tsx}" && npx next dev --hostname 127.0.0.1 --port 5173',
-        url: "http://127.0.0.1:5173",
-        reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
-        env: {
-          ...process.env,
-          NEXT_PUBLIC_E2E: "true",
-        },
-      },
-});
 </file>
 
 <file path="src/components/SearchBar/SearchBar.tsx">

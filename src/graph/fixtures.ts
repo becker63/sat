@@ -16,7 +16,7 @@ export type Fixture = {
 
 const tanstackEvents: GraphEvent[] = [
   /**
-   * Semantic anchor phase
+   * Anchor: starting symbol
    */
 
   {
@@ -27,82 +27,36 @@ const tanstackEvents: GraphEvent[] = [
         label: "useQuery",
         kind: "function",
         state: "anchor",
-        tokens: 42,
+        tokens: 40,
         evidence: {
           file: "react-query/useQuery.ts",
           startLine: 15,
           snippet: `export function useQuery(options) {
    const client = useQueryClient()
    const observer = new QueryObserver(client, options)
-   return observer.getOptimisticResult(options)
- }`,
-        },
-      },
-
-      {
-        id: "function:useMutation",
-        label: "useMutation",
-        kind: "function",
-        state: "anchor",
-        tokens: 38,
-        evidence: {
-          file: "react-query/useMutation.ts",
-          startLine: 10,
-          snippet: `export function useMutation(options) {
-   const client = useQueryClient()
-   return new MutationObserver(client, options)
- }`,
-        },
-      },
-
-      {
-        id: "function:QueryClient",
-        label: "QueryClient",
-        kind: "function",
-        state: "anchor",
-        tokens: 50,
-        evidence: {
-          file: "query-core/queryClient.ts",
-          startLine: 20,
-          snippet: `export class QueryClient {
-   constructor(config) {
-     this.queryCache = new QueryCache()
-   }
- }`,
+   return observer.getOptimisticResult(options)`,
         },
       },
     ],
-    reason: "Semantic anchors discovered from query",
   },
 
-  { type: "iteration", step: 1 },
-
   /**
-   * Solver begins exploring useQuery path
+   * ITERATION 1
+   * ctrl-click QueryObserver
    */
+
+  { type: "iteration", step: 1 },
 
   {
     type: "addNodes",
     nodes: [
       {
-        id: "function:QueryObserver",
-        label: "QueryObserver",
-        kind: "function",
+        id: "var:observer",
+        label: "observer",
+        kind: "symbol",
         state: "pending",
-        tokens: 60,
-        evidence: {
-          file: "query-core/queryObserver.ts",
-          startLine: 40,
-          snippet: `export class QueryObserver {
-   constructor(client, options) {
-     this.client = client
-     this.options = options
-   }
- }`,
-        },
       },
     ],
-    reason: "useQuery constructs a QueryObserver",
   },
 
   {
@@ -110,7 +64,7 @@ const tanstackEvents: GraphEvent[] = [
     edges: [
       {
         source: "function:useQuery",
-        target: "function:QueryObserver",
+        target: "var:observer",
         kind: "calls",
       },
     ],
@@ -118,90 +72,52 @@ const tanstackEvents: GraphEvent[] = [
 
   { type: "iteration", step: 2 },
 
+  {
+    type: "updateNode",
+    id: "var:observer",
+    patch: {
+      state: "resolved",
+      tokens: 22,
+      evidence: {
+        file: "query-core/queryObserver.ts",
+        startLine: 40,
+        snippet: `constructor(client, options) {
+   this.client = client
+   this.options = options
+   notifyManager.batch(() =>`,
+      },
+    },
+  },
+
   /**
-   * Branch nodes
+   * ITERATION 3
+   * ctrl-click symbols inside QueryObserver
    */
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:notifyManager",
-        label: "notifyManager",
-        kind: "function",
-        state: "pending",
-        tokens: 30,
-        evidence: {
-          file: "query-core/notifyManager.ts",
-          startLine: 5,
-          snippet: `export const notifyManager = {
-   batch(fn) {
-     queueMicrotask(fn)
-   }
- }`,
-        },
-      },
-
-      {
-        id: "function:focusManager",
-        label: "focusManager",
-        kind: "function",
-        state: "pending",
-        tokens: 28,
-        evidence: {
-          file: "query-core/focusManager.ts",
-          startLine: 10,
-          snippet: `export const focusManager = {
-   setFocused(focused) {
-     this.listeners.forEach(l => l(focused))
-   }
- }`,
-        },
-      },
-    ],
-    reason: "QueryObserver integrates scheduling and focus events",
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:QueryObserver",
-        target: "function:notifyManager",
-        kind: "calls",
-      },
-      {
-        source: "function:QueryObserver",
-        target: "function:focusManager",
-        kind: "references",
-      },
-    ],
-  },
 
   { type: "iteration", step: 3 },
 
-  /**
-   * Continue main causal path
-   */
-
   {
     type: "addNodes",
     nodes: [
       {
-        id: "type:Query",
-        label: "Query",
-        kind: "type",
+        id: "var:client",
+        label: "client",
+        kind: "symbol",
         state: "pending",
-        tokens: 65,
-        evidence: {
-          file: "query-core/query.ts",
-          startLine: 30,
-          snippet: `export class Query {
-   fetch() {
-     this.retryer = new Retryer(this.options)
-   }
- }`,
-        },
+      },
+
+      {
+        id: "var:notifyManager",
+        label: "notifyManager",
+        kind: "symbol",
+        state: "pending",
+      },
+
+      {
+        id: "var:focusManager",
+        label: "focusManager",
+        kind: "symbol",
+        state: "pending",
       },
     ],
   },
@@ -210,37 +126,74 @@ const tanstackEvents: GraphEvent[] = [
     type: "addEdges",
     edges: [
       {
-        source: "function:QueryClient",
-        target: "type:Query",
+        source: "var:observer",
+        target: "var:client",
+        kind: "references",
+      },
+      {
+        source: "var:observer",
+        target: "var:notifyManager",
+        kind: "calls",
+      },
+      {
+        source: "var:observer",
+        target: "var:focusManager",
         kind: "references",
       },
     ],
   },
 
+  /**
+   * ITERATION 4
+   * ctrl-click client
+   */
+
   { type: "iteration", step: 4 },
 
+  {
+    type: "updateNode",
+    id: "var:client",
+    patch: {
+      state: "resolved",
+      tokens: 20,
+      evidence: {
+        file: "query-core/queryClient.ts",
+        startLine: 20,
+        snippet: `constructor(config) {
+   this.queryCache = new QueryCache()
+   this.mutationCache = new MutationCache()
+ `,
+      },
+    },
+  },
+
+  {
+    type: "updateNode",
+    id: "var:notifyManager",
+    patch: { state: "pruned" },
+  },
+
+  {
+    type: "updateNode",
+    id: "var:focusManager",
+    patch: { state: "pruned" },
+  },
+
   /**
-   * Final causal node
+   * ITERATION 5
+   * ctrl-click queryCache inside client
    */
+
+  { type: "iteration", step: 5 },
 
   {
     type: "addNodes",
     nodes: [
       {
-        id: "function:Retryer",
-        label: "Retryer",
-        kind: "function",
+        id: "var:queryCache",
+        label: "queryCache",
+        kind: "symbol",
         state: "pending",
-        tokens: 35,
-        evidence: {
-          file: "query-core/retryer.ts",
-          startLine: 10,
-          snippet: `export class Retryer {
-   constructor(config) {
-     this.retry = config.retry
-   }
- }`,
-        },
       },
     ],
   },
@@ -249,45 +202,151 @@ const tanstackEvents: GraphEvent[] = [
     type: "addEdges",
     edges: [
       {
-        source: "type:Query",
-        target: "function:Retryer",
+        source: "var:client",
+        target: "var:queryCache",
+        kind: "references",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 6
+   */
+
+  { type: "iteration", step: 6 },
+
+  {
+    type: "updateNode",
+    id: "var:queryCache",
+    patch: {
+      state: "resolved",
+      tokens: 24,
+      evidence: {
+        file: "query-core/queryCache.ts",
+        startLine: 10,
+        snippet: `build(client, options) {
+   const query = new Query(client, options)
+   this.queries.push(query)
+ `,
+      },
+    },
+  },
+
+  /**
+   * ITERATION 7
+   * ctrl-click query
+   */
+
+  { type: "iteration", step: 7 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:query",
+        label: "query",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:queryCache",
+        target: "var:query",
         kind: "calls",
       },
     ],
   },
 
-  { type: "iteration", step: 5 },
-
   /**
-   * Solver resolves nodes
+   * ITERATION 8
    */
 
-  {
-    type: "updateNode",
-    id: "function:QueryObserver",
-    patch: { state: "resolved" },
-  },
+  { type: "iteration", step: 8 },
 
   {
     type: "updateNode",
-    id: "type:Query",
-    patch: { state: "resolved" },
+    id: "var:query",
+    patch: {
+      state: "resolved",
+      tokens: 24,
+      evidence: {
+        file: "query-core/query.ts",
+        startLine: 30,
+        snippet: `fetch() {
+   this.retryer = new Retryer({
+     retry: this.options.retry
+ `,
+      },
+    },
+  },
+
+  /**
+   * ITERATION 9
+   * ctrl-click retryer
+   */
+
+  { type: "iteration", step: 9 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:retryer",
+        label: "retryer",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
   },
 
   {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:query",
+        target: "var:retryer",
+        kind: "calls",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 10
+   */
+
+  { type: "iteration", step: 10 },
+
+  {
     type: "updateNode",
-    id: "function:Retryer",
-    patch: { state: "resolved" },
+    id: "var:retryer",
+    patch: {
+      state: "resolved",
+      tokens: 18,
+      evidence: {
+        file: "query-core/retryer.ts",
+        startLine: 10,
+        snippet: `constructor(config) {
+   this.retry = config.retry
+   this.abort = config.abort
+ `,
+      },
+    },
   },
 
   {
     type: "setContext",
     nodes: [
       "function:useQuery",
-      "function:QueryObserver",
-      "function:QueryClient",
-      "type:Query",
-      "function:Retryer",
+      "var:observer",
+      "var:client",
+      "var:queryCache",
+      "var:query",
+      "var:retryer",
     ],
   },
 ];
@@ -371,13 +430,39 @@ const reduxEvents: GraphEvent[] = [
   {
     type: "updateNode",
     id: "function:createReducer",
-    patch: { state: "resolved" },
+    patch: {
+      state: "resolved",
+      tokens: 36,
+      evidence: {
+        file: "redux/createReducer.ts",
+        startLine: 12,
+        snippet: `export function createReducer(initialState, builderCallback) {
+  const actionsMap = builderCallback({})
+  return function reducer(state = initialState, action) {
+    const caseReducer = actionsMap[action.type]
+    return caseReducer ? caseReducer(state, action) : state
+  }
+}`,
+      },
+    },
   },
 
   {
     type: "updateNode",
     id: "function:createAction",
-    patch: { state: "resolved" },
+    patch: {
+      state: "resolved",
+      tokens: 22,
+      evidence: {
+        file: "redux/createAction.ts",
+        startLine: 8,
+        snippet: `export function createAction(type) {
+  const actionCreator = payload => ({ type, payload })
+  actionCreator.toString = () => type
+  return actionCreator
+}`,
+      },
+    },
   },
 ];
 
@@ -460,13 +545,36 @@ const zustandEvents: GraphEvent[] = [
   {
     type: "updateNode",
     id: "function:setState",
-    patch: { state: "resolved" },
+    patch: {
+      state: "resolved",
+      tokens: 26,
+      evidence: {
+        file: "zustand/core.ts",
+        startLine: 14,
+        snippet: `const setState = (partial, replace) => {
+  const nextState = typeof partial === "function" ? partial(state) : partial
+  state = replace ? nextState : { ...state, ...nextState }
+  listeners.forEach(listener => listener(state))
+}`,
+      },
+    },
   },
 
   {
     type: "updateNode",
     id: "function:subscribe",
-    patch: { state: "resolved" },
+    patch: {
+      state: "resolved",
+      tokens: 18,
+      evidence: {
+        file: "zustand/core.ts",
+        startLine: 28,
+        snippet: `const subscribe = listener => {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}`,
+      },
+    },
   },
 ];
 

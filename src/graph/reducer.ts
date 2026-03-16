@@ -29,7 +29,7 @@ export function applyGraphEvent(
 ): GraphState {
   switch (event.type) {
     case "addNodes": {
-      const nodes = { ...state.nodes };
+      const nodes: Record<string, PositionedGraphNode> = { ...state.nodes };
       for (const n of event.nodes) {
         const previous = nodes[n.id];
         nodes[n.id] = {
@@ -37,7 +37,7 @@ export function applyGraphEvent(
           ...n,
           position: previous?.position ?? { x: 0, y: 0 },
           positioned: previous?.positioned ?? false,
-        };
+        } as PositionedGraphNode;
       }
       return { ...state, nodes };
     }
@@ -54,7 +54,7 @@ export function applyGraphEvent(
         ...state,
         nodes: {
           ...state.nodes,
-          [event.id]: { ...target, ...event.patch },
+          [event.id]: { ...target, ...event.patch } as PositionedGraphNode,
         },
       };
     }

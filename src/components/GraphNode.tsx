@@ -10,10 +10,17 @@ import type { GraphNode } from "@/graph/events";
 import { reactFlowTheme } from "@/theme/react-flow";
 import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
-export type GraphNodeData = Pick<
-  GraphNode,
-  "label" | "state" | "kind" | "tokens" | "evidence"
->;
+export type GraphNodeData = {
+  label?: GraphNode["label"];
+  state: GraphNode["state"];
+  kind: GraphNode["kind"];
+  tokens?: number;
+  evidence?: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
 
 const graphNodeClass = cva({
   base: {
@@ -36,7 +43,7 @@ const graphNodeClass = cva({
     userSelect: "none",
   },
 
-  variants: {
+    variants: {
     state: {
     anchor: {
       borderColor: "var(--colors-vercel-brand-9)",
@@ -54,6 +61,15 @@ const graphNodeClass = cva({
     resolved: {
       borderColor: "var(--colors-green-9)",
       boxShadow: "var(--shadows-glow)",
+    },
+
+    pruned: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "var(--colors-vercel-surface-50)",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.45,
+      boxShadow: "none",
     },
   },
 
@@ -139,10 +155,9 @@ const tokenBadgeClass = css({
 
 export function GraphNode({ id, data, selected }: NodeProps) {
   const nodeData = data as GraphNodeData;
-  const snippet =
-    nodeData.evidence?.snippet ??
-    "// evidence unavailable\n// fixture did not include snippet";
-  const fileLabel = nodeData.evidence?.file ?? "unknown file";
+  const snippet = nodeData.evidence?.snippet;
+  const fileLabel =
+    nodeData.state === "resolved" ? nodeData.evidence?.file : undefined;
   const kindLabel = nodeData.kind;
 
   return (
@@ -157,7 +172,15 @@ export function GraphNode({ id, data, selected }: NodeProps) {
       data-kind={nodeData.kind}
     >
       <div className={headerClass}>
-        <div className={labelClass}>{nodeData.label ?? id}</div>
+        <div
+          className={cx(
+            labelClass,
+            nodeData.state === "pruned" &&
+              css({ textDecoration: "line-through" }),
+          )}
+        >
+          {nodeData.label ?? id}
+        </div>
         <div className={tokenBadgeClass}>
           {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
         </div>
@@ -165,12 +188,14 @@ export function GraphNode({ id, data, selected }: NodeProps) {
 
       <div className={metaClass}>
         <span>{kindLabel}</span>
-        <span>{fileLabel}</span>
+        {fileLabel && <span>{fileLabel}</span>}
       </div>
 
       <div className={snippetClass}>
         {nodeData.state === "pending" ? (
           <span className={ghostClass()}>?</span>
+        ) : nodeData.state === "pruned" ? (
+          <span className={ghostClass()}>×</span>
         ) : (
           snippet
         )}

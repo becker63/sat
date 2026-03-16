@@ -5,6 +5,7 @@ import {
   layeringLongestPath,
   sugiyama,
   type Graph as DagGraph,
+  type GraphNode as DagGraphNode,
   type MutGraphNode as DagMutGraphNode,
   type SugiNode,
 } from "d3-dag";
@@ -29,13 +30,13 @@ function buildDag(
     discoveryIndex: discoveryIndex.get(id) ?? Number.MAX_SAFE_INTEGER,
   });
 
-  const builder = graphConnect<DagNodeDatum, GraphEdge>()
-    .sourceId(({ source }) => source)
-    .targetId(({ target }) => target)
+  const builder = graphConnect()
+    .sourceId(({ source }: GraphEdge) => source)
+    .targetId(({ target }: GraphEdge) => target)
     .nodeDatum(nodeDatumForId);
 
-  const dag = builder(state.edges);
-  const dagNodesById = new Map<string, DagMutGraphNode<DagNodeDatum, GraphEdge>>();
+  const dag = builder(state.edges) as DagGraph<DagNodeDatum, GraphEdge>;
+  const dagNodesById = new Map<string, DagGraphNode<DagNodeDatum, GraphEdge>>();
 
   for (const node of dag.nodes()) {
     dagNodesById.set(node.data.id, node);
@@ -44,10 +45,10 @@ function buildDag(
   // Ensure isolated nodes are represented in the DAG
   for (const node of Object.values(state.nodes)) {
     if (!dagNodesById.has(node.id)) {
-      const dagNode = dag.node({
+      const dagNode = (dag as any).node({
         ...node,
         discoveryIndex: discoveryIndex.get(node.id) ?? Number.MAX_SAFE_INTEGER,
-      });
+      }) as DagMutGraphNode<any, GraphEdge>;
       dagNodesById.set(node.id, dagNode);
     }
   }
@@ -57,15 +58,13 @@ function buildDag(
 
 const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
   (
-    topLayer: SugiNode<DagNodeDatum, GraphEdge>[],
-    bottomLayer: SugiNode<DagNodeDatum, GraphEdge>[],
+    topLayer: SugiNode<any, GraphEdge>[],
+    bottomLayer: SugiNode<any, GraphEdge>[],
     topDown: boolean,
   ) => {
     const layer = topDown ? bottomLayer : topLayer;
 
-    const valueForNode = (
-      node: DagGraphNode<DagNodeDatum, GraphEdge>,
-    ): number => {
+    const valueForNode = (node: any): number => {
       if (node.data.role === "node") {
         const id = node.data.node.data.id;
         return discoveryIndex.get(id) ?? node.data.node.data.discoveryIndex ?? 0;
@@ -92,13 +91,13 @@ export async function layoutGraph(state: GraphState): Promise<GraphState> {
 
   const dag = buildDag(state, discoveryIndex);
 
-  const layout = sugiyama<DagNodeDatum, GraphEdge>()
+  const layout = (sugiyama() as any)
     .layering(
-      layeringLongestPath<DagNodeDatum, GraphEdge>().rank((node) =>
+      layeringLongestPath().rank((node: any) =>
         node.data.state === "anchor" ? 0 : undefined,
       ),
     )
-    .decross(decrossTwoLayer<DagNodeDatum, GraphEdge>().order(orderByDiscovery(discoveryIndex)))
+    .decross(decrossTwoLayer().order(orderByDiscovery(discoveryIndex)))
     .coord(coordGreedy())
     .nodeSize(() => [NODE_WIDTH, NODE_HEIGHT])
     .gap([HORIZONTAL_SPACING, VERTICAL_SPACING]);
