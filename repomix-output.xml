@@ -86,14 +86,18 @@ src/
     GraphNode.tsx
     TestControlsInstaller.tsx
   graph/
+    __snapshots__/
+      graphStream.behavior.spec.ts.snap
     rx/
       gatePlayback.ts
       paceEvents.ts
     events.ts
     fixtures.ts
+    graphStream.behavior.spec.ts
     graphStream.ts
     layoutGraph.spec.ts
     layoutGraph.ts
+    panning.spec.ts
     reducer.ts
     timing.ts
   lib/
@@ -109,8 +113,6 @@ src/
     searchScopeMachine.ts
   types/
     d3-quadtree.d.ts
-test-results/
-  .last-run.json
 .gitignore
 components.json
 eslint.config.mjs
@@ -129,72 +131,6 @@ vitest.setup.ts
 
 <files>
 This section contains the contents of the repository's files.
-
-<file path="src/graph/rx/gatePlayback.ts">
-import { type Observable } from "rxjs";
-import { concatMap, filter, map, take } from "rxjs/operators";
-
-export function gatePlayback<T>(
-  events$: Observable<T>,
-  playing$: Observable<boolean>,
-): Observable<T> {
-  return events$.pipe(
-    concatMap((event) =>
-      playing$.pipe(
-        filter(Boolean),
-        take(1),
-        map(() => event),
-      ),
-    ),
-  );
-}
-</file>
-
-<file path="src/graph/rx/paceEvents.ts">
-import { type Observable, of } from "rxjs";
-import { concatMap, delay } from "rxjs/operators";
-import { GRAPH_TIMING } from "../timing";
-
-export function paceEvents<T extends { type: string }>(
-  events$: Observable<T>,
-): Observable<T> {
-  return events$.pipe(
-    concatMap((event) => {
-      const delayMs =
-        GRAPH_TIMING.EVENT_DELAYS[event.type as keyof typeof GRAPH_TIMING.EVENT_DELAYS] ?? 0;
-
-      return of(event).pipe(delay(delayMs));
-    }),
-  );
-}
-</file>
-
-<file path="src/graph/timing.ts">
-export const GRAPH_TIMING = {
-  EVENT_DELAYS: {
-    iteration: 700,
-    addNodes: 200,
-    addEdges: 350,
-    updateNode: 250,
-    removeNode: 200,
-  },
-
-  CAMERA: {
-    FOLLOW_PADDING: 120,
-    UPWARD_OFFSET: 80,
-    PAN_DURATION_MS: 450,
-    RAF_SMOOTHING: 0.15,
-  },
-
-  EDGE_ANIMATION: {
-    DRAW_DURATION_MS: 700,
-  },
-
-  NODE_ANIMATION: {
-    SPAWN_DURATION_MS: 250,
-  },
-} as const;
-</file>
 
 <file path="arch/architecture-consolidated.md">
 # Demo Architecture (Consolidated)
@@ -1133,15 +1069,34 @@ export default function ClientConsoleBridge() {
 
 <file path="src/components/GraphEdgeStyles.ts">
 /* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import { css } from "../../styled-system/css";
+import { cva, css } from "../../styled-system/css";
 import { reactFlowTheme } from "@/theme/react-flow";
 
-export const graphEdgeClass = css({
-  stroke: reactFlowTheme.edge.stroke,
-  strokeWidth: "1.5px",
-  strokeDasharray: "6 8",
-  strokeLinecap: "round",
-  fill: "none",
+export const graphEdgeClass = cva({
+  base: {
+    stroke: reactFlowTheme.edge.stroke,
+    strokeWidth: "1.5px",
+    strokeDasharray: "6 8",
+    strokeLinecap: "round",
+    fill: "none",
+    opacity: 0.86,
+    transition:
+      "stroke-width 0.16s ease, opacity 0.2s ease, stroke 0.2s ease",
+    "&:hover": {
+      strokeWidth: "2px",
+      stroke: reactFlowTheme.edge.hoverStroke,
+      opacity: 1,
+    },
+  },
+  variants: {
+    emphasis: {
+      primary: { strokeWidth: "1.9px", opacity: 0.95 },
+      secondary: { opacity: 0.6, strokeWidth: "1.4px" },
+    },
+  },
+  defaultVariants: {
+    emphasis: "primary",
+  },
 });
 
 export const graphEdgeLabelClass = css({
@@ -1179,6 +1134,317 @@ export function TestControlsInstaller() {
 
   return null;
 }
+</file>
+
+<file path="src/graph/__snapshots__/graphStream.behavior.spec.ts.snap">
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`graphStream behavior > matches golden state trace 1`] = `
+[
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 0,
+    "nodes": {},
+    "panTargetId": null,
+    "panTick": 0,
+  },
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 1,
+    "nodes": {
+      "A": {
+        "id": "A",
+        "kind": "function",
+        "position": {
+          "x": 150,
+          "y": 0,
+        },
+        "positioned": true,
+        "state": "anchor",
+      },
+    },
+    "panTargetId": "A",
+    "panTick": 1,
+  },
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 1,
+    "nodes": {
+      "A": {
+        "evidence": {
+          "snippet": "",
+        },
+        "id": "A",
+        "kind": "function",
+        "position": {
+          "x": 150,
+          "y": 70,
+        },
+        "positioned": true,
+        "state": "resolved",
+        "tokens": 5,
+      },
+    },
+    "panTargetId": "A",
+    "panTick": 1,
+  },
+]
+`;
+</file>
+
+<file path="src/graph/rx/gatePlayback.ts">
+import { type Observable } from "rxjs";
+import { concatMap, filter, map, take } from "rxjs/operators";
+
+export function gatePlayback<T>(
+  events$: Observable<T>,
+  playing$: Observable<boolean>,
+): Observable<T> {
+  return events$.pipe(
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        map(() => event),
+      ),
+    ),
+  );
+}
+</file>
+
+<file path="src/graph/rx/paceEvents.ts">
+import { type Observable, of } from "rxjs";
+import { concatMap, delay } from "rxjs/operators";
+import { GRAPH_TIMING } from "../timing";
+
+export function paceEvents<T extends { type: string }>(
+  events$: Observable<T>,
+): Observable<T> {
+  return events$.pipe(
+    concatMap((event) => {
+      const delayMs =
+        GRAPH_TIMING.EVENT_DELAYS[event.type as keyof typeof GRAPH_TIMING.EVENT_DELAYS] ?? 0;
+
+      return of(event).pipe(delay(delayMs));
+    }),
+  );
+}
+</file>
+
+<file path="src/graph/graphStream.behavior.spec.ts">
+import { describe, it, expect } from "vitest";
+import { from, of } from "rxjs";
+import { createGraphState$ } from "./graphStream";
+
+async function collectStates<T>(stream$: { subscribe: any }) {
+  const states: T[] = [];
+
+  await new Promise<void>((resolve) => {
+    stream$.subscribe({
+      next: (s: T) => states.push(s),
+      complete: resolve,
+    });
+  });
+
+  return states;
+}
+
+describe("graphStream behavior", () => {
+  it("transitions node from pending to resolved", async () => {
+    const events = [
+      {
+        type: "addNodes",
+        nodes: [
+          {
+            id: "nodeA",
+            kind: "function" as const,
+            state: "pending" as const,
+          },
+        ],
+      },
+      {
+        type: "updateNode",
+        id: "nodeA",
+        patch: {
+          state: "resolved" as const,
+          tokens: 12,
+          evidence: { snippet: "test" },
+        },
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    const last = states.at(-1)!;
+
+    expect(last.nodes.nodeA.state).toBe("resolved");
+  });
+
+  it("pans to node when it resolves", async () => {
+    const events = [
+      {
+        type: "addNodes",
+        nodes: [
+          {
+            id: "nodeA",
+            kind: "function" as const,
+            state: "pending" as const,
+          },
+        ],
+      },
+      {
+        type: "updateNode",
+        id: "nodeA",
+        patch: {
+          state: "resolved" as const,
+          tokens: 5,
+          evidence: { snippet: "example" },
+        },
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    const last = states.at(-1)!;
+
+    expect(last.panTargetId).toBe("nodeA");
+    expect(last.panTick).toBeGreaterThan(0);
+  });
+
+  it("pans when iteration advances", async () => {
+    const events = [
+      {
+        type: "addNodes",
+        nodes: [
+          {
+            id: "nodeA",
+            kind: "function" as const,
+            state: "anchor" as const,
+          },
+        ],
+      },
+      {
+        type: "iteration",
+        step: 1,
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    const last = states.at(-1)!;
+
+    expect(last.panTargetId).not.toBeNull();
+  });
+
+  it("preserves event order", async () => {
+    const events = [
+      { type: "iteration", step: 1 },
+      {
+        type: "addNodes",
+        nodes: [{ id: "A", kind: "function" as const, state: "pending" as const }],
+      },
+      {
+        type: "updateNode",
+        id: "A",
+        patch: { state: "resolved" as const, tokens: 1, evidence: { snippet: "" } },
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    expect(states.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("matches golden state trace", async () => {
+    const events = [
+      {
+        type: "addNodes",
+        nodes: [{ id: "A", kind: "function" as const, state: "anchor" as const }],
+      },
+      { type: "iteration", step: 1 },
+      {
+        type: "updateNode",
+        id: "A",
+        patch: { state: "resolved" as const, tokens: 5, evidence: { snippet: "" } },
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    expect(states).toMatchSnapshot();
+  });
+});
+</file>
+
+<file path="src/graph/panning.spec.ts">
+import { describe, it, expect } from "vitest";
+import { from, of } from "rxjs";
+import { createGraphState$ } from "./graphStream";
+
+async function collectStates<T>(stream$: { subscribe: any }) {
+  const states: T[] = [];
+
+  await new Promise<void>((resolve) => {
+    stream$.subscribe({
+      next: (s: T) => states.push(s),
+      complete: resolve,
+    });
+  });
+
+  return states;
+}
+
+describe("panning behavior", () => {
+  it("increments panTick when pan target changes", async () => {
+    const events = [
+      {
+        type: "addNodes",
+        nodes: [{ id: "A", kind: "function" as const, state: "pending" as const }],
+      },
+      {
+        type: "updateNode",
+        id: "A",
+        patch: { state: "resolved" as const, tokens: 1, evidence: { snippet: "" } },
+      },
+    ];
+
+    const states = await collectStates(createGraphState$(from(events), of(true)));
+
+    const ticks = states.map((s: any) => s.panTick);
+
+    expect(Math.max(...ticks)).toBeGreaterThan(0);
+  });
+});
+</file>
+
+<file path="src/graph/timing.ts">
+export const GRAPH_TIMING = {
+  EVENT_DELAYS: {
+    iteration: 700,
+    addNodes: 200,
+    addEdges: 350,
+    updateNode: 250,
+    removeNode: 200,
+  },
+
+  CAMERA: {
+    FOLLOW_PADDING: 120,
+    UPWARD_OFFSET: 80,
+    PAN_DURATION_MS: 450,
+    RAF_SMOOTHING: 0.15,
+  },
+
+  EDGE_ANIMATION: {
+    DRAW_DURATION_MS: 700,
+  },
+
+  NODE_ANIMATION: {
+    SPAWN_DURATION_MS: 250,
+  },
+} as const;
 </file>
 
 <file path="src/lib/clientLogger.ts">
@@ -1584,6 +1850,8 @@ export function AnimatedGraphEdge({
   data,
 }: EdgeProps) {
   const animateOnMount = Boolean((data as any)?.animateOnMount);
+  const isPrimary =
+    (data as any)?.primary ?? ((data as any)?.kind ? (data as any)?.kind === "calls" : true);
   const label = (data as any)?.kind ?? (data as any)?.label;
   const hasAnimated = useRef(false);
   const shouldAnimate = animateOnMount && !hasAnimated.current;
@@ -1601,12 +1869,27 @@ export function AnimatedGraphEdge({
   });
 
   return (
-    <g data-testid="graph-edge">
+    <g data-testid="graph-edge" data-primary={isPrimary ? "true" : "false"}>
+      {shouldAnimate ? (
+        <motion.circle
+          cx={sourceX}
+          cy={sourceY}
+          r={12}
+          fill="none"
+          stroke="var(--colors-vercel-brand-9)"
+          strokeWidth="2"
+          pointerEvents="none"
+          initial={{ opacity: 0.7, r: 6 }}
+          animate={{ opacity: 0, r: 18 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+      ) : null}
+
       {shouldAnimate ? (
         <motion.path
           id={id}
           d={edgePath}
-          className={graphEdgeClass}
+          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
           markerEnd={markerEnd}
           data-animate="true"
           initial={{ pathLength: 0, opacity: 0 }}
@@ -1617,7 +1900,7 @@ export function AnimatedGraphEdge({
         <BaseEdge
           id={id}
           path={edgePath}
-          className={graphEdgeClass}
+          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
           markerEnd={markerEnd}
           data-animate="false"
         />
@@ -1750,12 +2033,15 @@ export function findClosestPerimeterLength({
 
 <file path="src/components/GraphNode.tsx">
 /* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import { useEffect, useRef, useState } from "react";
 import {
   Handle,
   Position,
   type NodeProps,
   type Node as FlowNode,
 } from "@xyflow/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Ghost } from "lucide-react";
 import { css, cva, cx } from "../../styled-system/css";
 import type { GraphNode } from "@/graph/events";
 import { reactFlowTheme } from "@/theme/react-flow";
@@ -1766,6 +2052,7 @@ export type GraphNodeData = {
   state: GraphNode["state"];
   kind: GraphNode["kind"];
   tokens?: number;
+  inContext?: boolean;
   evidence?: {
     snippet: string;
     file?: string;
@@ -1784,7 +2071,8 @@ const graphNodeClass = cva({
     fontWeight: 600,
     lineHeight: 1.2,
     letterSpacing: "0.01em",
-    transition: "all 0.25s ease",
+    transition:
+      "transform 0.18s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease, opacity 0.24s ease",
     boxShadow: "var(--shadows-panel)",
     border: "1px solid var(--colors-vercel-surface-border)",
     background: reactFlowTheme.node.background,
@@ -1792,6 +2080,8 @@ const graphNodeClass = cva({
     padding: "12px",
     gap: "8px",
     userSelect: "none",
+    position: "relative",
+    overflow: "hidden",
   },
 
     variants: {
@@ -1837,19 +2127,9 @@ const graphNodeClass = cva({
   },
 });
 
-const ghostClass = cva({
-  base: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "28px",
-    height: "28px",
-    borderRadius: "var(--radii-l3)",
-    background: "var(--colors-vercel-surface-muted)",
-    color: "var(--colors-vercel-text-subtle)",
-    fontSize: "16px",
-    border: "1px solid var(--colors-vercel-surface-border)",
-  },
+const contextGlowClass = css({
+  boxShadow: "var(--shadows-glow)",
+  borderColor: "var(--colors-vercel-brand-9)",
 });
 
 const handleClass = css({
@@ -1891,7 +2171,11 @@ const snippetClass = css({
   padding: "8px",
   whiteSpace: "pre-wrap",
   overflowY: "hidden",
-  display: "block",
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+  gap: "8px",
+  position: "relative",
   minHeight: "5em",
   maxHeight: "7.5em",
 });
@@ -1904,23 +2188,91 @@ const tokenBadgeClass = css({
   padding: "2px 8px",
 });
 
+const ghostShellClass = css({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  paddingInline: "8px",
+  paddingBlock: "6px",
+  width: "100%",
+  border: "1px dashed var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l2)",
+  background: "var(--colors-vercel-surface-muted)",
+  color: "var(--colors-vercel-text-muted)",
+  letterSpacing: "0.01em",
+});
+
+const ghostIconClass = css({
+  width: "18px",
+  height: "18px",
+});
+
+const ghostLabelClass = css({
+  fontSize: "12px",
+  textTransform: "uppercase",
+});
+
+const resolvedContentClass = css({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+});
+
 export function GraphNode({ id, data, selected }: NodeProps) {
   const nodeData = data as GraphNodeData;
   const snippet = nodeData.evidence?.snippet;
   const fileLabel =
     nodeData.state === "resolved" ? nodeData.evidence?.file : undefined;
   const kindLabel = nodeData.kind;
+  const [contextGlow, setContextGlow] = useState(false);
+  const prevStateRef = useRef(nodeData.state);
+  const prevContextRef = useRef(Boolean(nodeData.inContext));
+  const resolvingNow =
+    nodeData.state === "resolved" && prevStateRef.current === "pending";
+
+  useEffect(() => {
+    prevStateRef.current = nodeData.state;
+  }, [nodeData.state]);
+
+  useEffect(() => {
+    let timer: number | null = null;
+    const wasInContext = prevContextRef.current;
+    if (nodeData.inContext && !wasInContext) {
+      setContextGlow(true);
+      timer = window.setTimeout(() => setContextGlow(false), 820);
+      prevContextRef.current = true;
+    } else {
+      prevContextRef.current = Boolean(nodeData.inContext);
+    }
+
+    return () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, [nodeData.inContext]);
 
   return (
-    <div
+    <motion.div
       className={cx(
         graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
+        contextGlow && contextGlowClass,
         selected && "is-selected",
       )}
       data-testid="graph-node"
       data-node-id={id}
       data-state={nodeData.state}
       data-kind={nodeData.kind}
+      whileHover={{ scale: 1.03 }}
+      initial={resolvingNow ? { scale: 0.95 } : false}
+      animate={{ scale: 1 }}
+      transition={
+        resolvingNow
+          ? { type: "spring", stiffness: 240, damping: 22 }
+          : { duration: 0.12, ease: "easeOut" }
+      }
     >
       <div className={headerClass}>
         <div
@@ -1943,13 +2295,58 @@ export function GraphNode({ id, data, selected }: NodeProps) {
       </div>
 
       <div className={snippetClass}>
-        {nodeData.state === "pending" ? (
-          <span className={ghostClass()}>?</span>
-        ) : nodeData.state === "pruned" ? (
-          <span className={ghostClass()}>×</span>
-        ) : (
-          snippet
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {nodeData.state === "pending" ? (
+            <motion.div
+              key="ghost"
+              className={ghostShellClass}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{
+                opacity: 0.9,
+                scale: 1,
+              }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+              <motion.span
+                className={ghostIconClass}
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{
+                  duration: 1.6,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              >
+                <Ghost size={18} />
+              </motion.span>
+              <span className={ghostLabelClass}>Pending</span>
+            </motion.div>
+          ) : nodeData.state === "pruned" ? (
+            <motion.span
+              key="pruned"
+              className={ghostShellClass}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 0.7, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              ×
+            </motion.span>
+          ) : (
+            <motion.div
+              key="content"
+              className={resolvedContentClass}
+              initial={resolvingNow ? { opacity: 0, y: 6, scale: 0.98 } : false}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.35,
+                ease: "easeOut",
+              }}
+            >
+              {snippet}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <Handle type="target" position={Position.Top} className={handleClass} />
@@ -1958,7 +2355,7 @@ export function GraphNode({ id, data, selected }: NodeProps) {
         position={Position.Bottom}
         className={handleClass}
       />
-    </div>
+    </motion.div>
   );
 }
 
@@ -2540,6 +2937,7 @@ export type GraphEdge = {
   source: string;
   target: string;
   kind: "calls" | "imports" | "references";
+  primary?: boolean;
 };
 
 export type GraphEvent =
@@ -3928,7 +4326,7 @@ const isNode = (n: Node | undefined): n is Node => Boolean(n);
 export function buildFlowElements(
   graphState: GraphState,
   prevIds: Set<string>,
-  prevEdgeIds: Set<string>,
+  prevEdgeIds: Set<string> = new Set(),
 ) {
   const ids = Object.keys(graphState.nodes);
 
@@ -3954,6 +4352,7 @@ export function buildFlowElements(
             n.state === "resolved" || n.state === "anchor"
               ? n.evidence
               : undefined,
+          inContext: graphState.context.has(n.id),
         },
         position: n.position,
         selectable: false,
@@ -3977,6 +4376,7 @@ export function buildFlowElements(
     data: {
       kind: e.kind,
       animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
+      primary: e.primary,
     },
   }));
 
@@ -5324,13 +5724,6 @@ export function useSearchScopeMenu({
     offsetTop: snapshot.offsetTop,
     dwelling: snapshot.dwelling,
   };
-}
-</file>
-
-<file path="test-results/.last-run.json">
-{
-  "status": "passed",
-  "failedTests": []
 }
 </file>
 

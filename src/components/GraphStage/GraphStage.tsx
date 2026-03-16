@@ -52,7 +52,7 @@ const isNode = (n: Node | undefined): n is Node => Boolean(n);
 export function buildFlowElements(
   graphState: GraphState,
   prevIds: Set<string>,
-  prevEdgeIds: Set<string>,
+  prevEdgeIds: Set<string> = new Set(),
 ) {
   const ids = Object.keys(graphState.nodes);
 
@@ -78,6 +78,7 @@ export function buildFlowElements(
             n.state === "resolved" || n.state === "anchor"
               ? n.evidence
               : undefined,
+          inContext: graphState.context.has(n.id),
         },
         position: n.position,
         selectable: false,
@@ -101,6 +102,7 @@ export function buildFlowElements(
     data: {
       kind: e.kind,
       animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
+      primary: e.primary,
     },
   }));
 

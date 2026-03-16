@@ -38,6 +38,7 @@ export type GraphEdge = {
   source: string;
   target: string;
   kind: "calls" | "imports" | "references";
+  primary?: boolean;
 };
 
 export type GraphEvent =
