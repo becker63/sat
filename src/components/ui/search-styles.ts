@@ -21,9 +21,70 @@ export const searchBarShellClass = css({
   overflow: "visible",
 });
 
+export const tokenPaneClass = css({
+  layerStyle: "panel",
+  position: "absolute",
+  bottom: "20px",
+  left: "20px",
+  px: "14px",
+  py: "10px",
+  borderRadius: "var(--radii-l3)",
+  fontSize: "13px",
+  backdropFilter: "blur(8px)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  background: "var(--colors-vercel-surface)",
+  color: "var(--colors-vercel-text-subtle)",
+  zIndex: 9,
+  pointerEvents: "none",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+});
+
 export const searchBarHiddenClass = css({
   pointerEvents: "auto",
   visibility: "hidden",
+});
+
+export const tokenPaneHeaderClass = css({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "10px",
+  fontWeight: 600,
+  color: "var(--colors-vercel-text-primary)",
+});
+
+export const tokenCountBadgeClass = css({
+  borderRadius: "var(--radii-l2)",
+  padding: "4px 8px",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  fontVariantNumeric: "tabular-nums",
+});
+
+export const tokenPaneMetaRowClass = css({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "10px",
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-muted)",
+});
+
+export const tokenPaneProgressClass = css({
+  position: "relative",
+  width: "100%",
+  height: "6px",
+  borderRadius: "var(--radii-l4)",
+  overflow: "hidden",
+  background: "var(--colors-vercel-surface-muted)",
+});
+
+export const tokenPaneProgressFillClass = css({
+  position: "absolute",
+  inset: 0,
+  background: "linear-gradient(90deg, var(--colors-vercel-brand-9), var(--colors-vercel-brand-7))",
+  transformOrigin: "left",
 });
 
 export const graphStageBackgroundClass = css({

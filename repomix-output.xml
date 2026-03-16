@@ -1067,47 +1067,6 @@ export default function ClientConsoleBridge() {
 }
 </file>
 
-<file path="src/components/GraphEdgeStyles.ts">
-/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import { cva, css } from "../../styled-system/css";
-import { reactFlowTheme } from "@/theme/react-flow";
-
-export const graphEdgeClass = cva({
-  base: {
-    stroke: reactFlowTheme.edge.stroke,
-    strokeWidth: "1.5px",
-    strokeDasharray: "6 8",
-    strokeLinecap: "round",
-    fill: "none",
-    opacity: 0.86,
-    transition:
-      "stroke-width 0.16s ease, opacity 0.2s ease, stroke 0.2s ease",
-    "&:hover": {
-      strokeWidth: "2px",
-      stroke: reactFlowTheme.edge.hoverStroke,
-      opacity: 1,
-    },
-  },
-  variants: {
-    emphasis: {
-      primary: { strokeWidth: "1.9px", opacity: 0.95 },
-      secondary: { opacity: 0.6, strokeWidth: "1.4px" },
-    },
-  },
-  defaultVariants: {
-    emphasis: "primary",
-  },
-});
-
-export const graphEdgeLabelClass = css({
-  position: "absolute",
-  fontSize: "11px",
-  color: reactFlowTheme.edge.stroke,
-  pointerEvents: "none",
-  background: "transparent",
-});
-</file>
-
 <file path="src/components/TestControlsInstaller.tsx">
 "use client";
 
@@ -1825,104 +1784,6 @@ if (!globalThis.ResizeObserver) {
 }
 </file>
 
-<file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
-import {
-  BaseEdge,
-  EdgeLabelRenderer,
-  getBezierPath,
-  type EdgeProps,
-  type XYPosition,
-} from "@xyflow/react";
-import { reactFlowTheme } from "@/theme/react-flow";
-import { useRef } from "react";
-import { motion } from "framer-motion";
-import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
-
-export function AnimatedGraphEdge({
-  id,
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-  markerEnd,
-  data,
-}: EdgeProps) {
-  const animateOnMount = Boolean((data as any)?.animateOnMount);
-  const isPrimary =
-    (data as any)?.primary ?? ((data as any)?.kind ? (data as any)?.kind === "calls" : true);
-  const label = (data as any)?.kind ?? (data as any)?.label;
-  const hasAnimated = useRef(false);
-  const shouldAnimate = animateOnMount && !hasAnimated.current;
-  if (shouldAnimate) {
-    hasAnimated.current = true;
-  }
-
-  const [edgePath, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-  });
-
-  return (
-    <g data-testid="graph-edge" data-primary={isPrimary ? "true" : "false"}>
-      {shouldAnimate ? (
-        <motion.circle
-          cx={sourceX}
-          cy={sourceY}
-          r={12}
-          fill="none"
-          stroke="var(--colors-vercel-brand-9)"
-          strokeWidth="2"
-          pointerEvents="none"
-          initial={{ opacity: 0.7, r: 6 }}
-          animate={{ opacity: 0, r: 18 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        />
-      ) : null}
-
-      {shouldAnimate ? (
-        <motion.path
-          id={id}
-          d={edgePath}
-          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
-          markerEnd={markerEnd}
-          data-animate="true"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        />
-      ) : (
-        <BaseEdge
-          id={id}
-          path={edgePath}
-          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
-          markerEnd={markerEnd}
-          data-animate="false"
-        />
-      )}
-
-      {label ? (
-        <EdgeLabelRenderer>
-          <div
-            className={graphEdgeLabelClass}
-            style={{
-              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            }}
-          >
-            {label}
-          </div>
-        </EdgeLabelRenderer>
-      ) : null}
-    </g>
-  );
-}
-</file>
-
 <file path="src/components/SearchBar/perimeter.ts">
 type Point = { x: number; y: number };
 
@@ -2031,335 +1892,45 @@ export function findClosestPerimeterLength({
 }
 </file>
 
-<file path="src/components/GraphNode.tsx">
+<file path="src/components/GraphEdgeStyles.ts">
 /* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import { useEffect, useRef, useState } from "react";
-import {
-  Handle,
-  Position,
-  type NodeProps,
-  type Node as FlowNode,
-} from "@xyflow/react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Ghost } from "lucide-react";
-import { css, cva, cx } from "../../styled-system/css";
-import type { GraphNode } from "@/graph/events";
+import { cva, css } from "../../styled-system/css";
 import { reactFlowTheme } from "@/theme/react-flow";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
-export type GraphNodeData = {
-  label?: GraphNode["label"];
-  state: GraphNode["state"];
-  kind: GraphNode["kind"];
-  tokens?: number;
-  inContext?: boolean;
-  evidence?: {
-    snippet: string;
-    file?: string;
-    startLine?: number;
-  };
-};
-
-const graphNodeClass = cva({
+export const graphEdgeClass = cva({
   base: {
-    width: `${NODE_WIDTH}px`,
-    height: `${NODE_HEIGHT}px`,
-    display: "grid",
-    gridTemplateRows: "auto auto 1fr",
-    borderRadius: "var(--radii-l3)",
-    fontSize: "14px",
-    fontWeight: 600,
-    lineHeight: 1.2,
-    letterSpacing: "0.01em",
+    stroke: reactFlowTheme.edge.stroke,
+    strokeWidth: "1.5px",
+    strokeDasharray: "6 8",
+    strokeLinecap: "round",
+    fill: "none",
+    opacity: 0.86,
     transition:
-      "transform 0.18s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease, opacity 0.24s ease",
-    boxShadow: "var(--shadows-panel)",
-    border: "1px solid var(--colors-vercel-surface-border)",
-    background: reactFlowTheme.node.background,
-    color: reactFlowTheme.node.color,
-    padding: "12px",
-    gap: "8px",
-    userSelect: "none",
-    position: "relative",
-    overflow: "hidden",
-  },
-
-    variants: {
-    state: {
-    anchor: {
-      borderColor: "var(--colors-vercel-brand-9)",
-      boxShadow: "var(--shadows-glow)",
-    },
-
-    pending: {
-      borderStyle: "dashed",
-      borderColor: "var(--colors-vercel-surface-outline)",
-      background: "transparent",
-      color: "var(--colors-vercel-text-muted)",
-      opacity: 0.85,
-    },
-
-    resolved: {
-      borderColor: "var(--colors-green-9)",
-      boxShadow: "var(--shadows-glow)",
-    },
-
-    pruned: {
-      borderStyle: "dashed",
-      borderColor: "var(--colors-vercel-surface-outline)",
-      background: "var(--colors-vercel-surface-50)",
-      color: "var(--colors-vercel-text-muted)",
-      opacity: 0.45,
-      boxShadow: "none",
+      "stroke-width 0.16s ease, opacity 0.2s ease, stroke 0.2s ease",
+    "&:hover": {
+      strokeWidth: "2px",
+      stroke: reactFlowTheme.edge.hoverStroke,
+      opacity: 1,
     },
   },
-
-    kind: {
-      symbol: {},
-      function: {},
-      file: {
-        fontStyle: "italic",
-      },
-      type: {
-        borderWidth: "2px",
-      },
+  variants: {
+    emphasis: {
+      primary: { strokeWidth: "1.9px", opacity: 0.95 },
+      secondary: { opacity: 0.6, strokeWidth: "1.4px" },
     },
+  },
+  defaultVariants: {
+    emphasis: "primary",
   },
 });
 
-const contextGlowClass = css({
-  boxShadow: "var(--shadows-glow)",
-  borderColor: "var(--colors-vercel-brand-9)",
-});
-
-const handleClass = css({
-  background: "transparent",
-  border: "none",
-});
-
-const headerClass = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  justifyContent: "space-between",
-});
-
-const labelClass = css({
-  fontSize: "15px",
-  fontWeight: 700,
-  color: "var(--colors-vercel-text-strong)",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-});
-
-const metaClass = css({
-  fontSize: "12px",
-  color: "var(--colors-vercel-text-subtle)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-});
-
-const snippetClass = css({
-  fontFamily: "var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
-  fontSize: "12px",
-  lineHeight: 1.4,
-  background: "var(--colors-vercel-surface-50)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  borderRadius: "var(--radii-l2)",
-  padding: "8px",
-  whiteSpace: "pre-wrap",
-  overflowY: "hidden",
-  display: "flex",
-  alignItems: "flex-start",
-  justifyContent: "flex-start",
-  gap: "8px",
-  position: "relative",
-  minHeight: "5em",
-  maxHeight: "7.5em",
-});
-
-const tokenBadgeClass = css({
+export const graphEdgeLabelClass = css({
+  position: "absolute",
   fontSize: "11px",
-  color: "var(--colors-vercel-text-muted)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  borderRadius: "var(--radii-l3)",
-  padding: "2px 8px",
+  color: reactFlowTheme.edge.stroke,
+  pointerEvents: "none",
+  background: "transparent",
 });
-
-const ghostShellClass = css({
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: "8px",
-  paddingInline: "8px",
-  paddingBlock: "6px",
-  width: "100%",
-  border: "1px dashed var(--colors-vercel-surface-border)",
-  borderRadius: "var(--radii-l2)",
-  background: "var(--colors-vercel-surface-muted)",
-  color: "var(--colors-vercel-text-muted)",
-  letterSpacing: "0.01em",
-});
-
-const ghostIconClass = css({
-  width: "18px",
-  height: "18px",
-});
-
-const ghostLabelClass = css({
-  fontSize: "12px",
-  textTransform: "uppercase",
-});
-
-const resolvedContentClass = css({
-  width: "100%",
-  display: "flex",
-  flexDirection: "column",
-  gap: "6px",
-});
-
-export function GraphNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as GraphNodeData;
-  const snippet = nodeData.evidence?.snippet;
-  const fileLabel =
-    nodeData.state === "resolved" ? nodeData.evidence?.file : undefined;
-  const kindLabel = nodeData.kind;
-  const [contextGlow, setContextGlow] = useState(false);
-  const prevStateRef = useRef(nodeData.state);
-  const prevContextRef = useRef(Boolean(nodeData.inContext));
-  const resolvingNow =
-    nodeData.state === "resolved" && prevStateRef.current === "pending";
-
-  useEffect(() => {
-    prevStateRef.current = nodeData.state;
-  }, [nodeData.state]);
-
-  useEffect(() => {
-    let timer: number | null = null;
-    const wasInContext = prevContextRef.current;
-    if (nodeData.inContext && !wasInContext) {
-      setContextGlow(true);
-      timer = window.setTimeout(() => setContextGlow(false), 820);
-      prevContextRef.current = true;
-    } else {
-      prevContextRef.current = Boolean(nodeData.inContext);
-    }
-
-    return () => {
-      if (timer) {
-        window.clearTimeout(timer);
-      }
-    };
-  }, [nodeData.inContext]);
-
-  return (
-    <motion.div
-      className={cx(
-        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
-        contextGlow && contextGlowClass,
-        selected && "is-selected",
-      )}
-      data-testid="graph-node"
-      data-node-id={id}
-      data-state={nodeData.state}
-      data-kind={nodeData.kind}
-      whileHover={{ scale: 1.03 }}
-      initial={resolvingNow ? { scale: 0.95 } : false}
-      animate={{ scale: 1 }}
-      transition={
-        resolvingNow
-          ? { type: "spring", stiffness: 240, damping: 22 }
-          : { duration: 0.12, ease: "easeOut" }
-      }
-    >
-      <div className={headerClass}>
-        <div
-          className={cx(
-            labelClass,
-            nodeData.state === "pruned" &&
-              css({ textDecoration: "line-through" }),
-          )}
-        >
-          {nodeData.label ?? id}
-        </div>
-        <div className={tokenBadgeClass}>
-          {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
-        </div>
-      </div>
-
-      <div className={metaClass}>
-        <span>{kindLabel}</span>
-        {fileLabel && <span>{fileLabel}</span>}
-      </div>
-
-      <div className={snippetClass}>
-        <AnimatePresence mode="wait" initial={false}>
-          {nodeData.state === "pending" ? (
-            <motion.div
-              key="ghost"
-              className={ghostShellClass}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{
-                opacity: 0.9,
-                scale: 1,
-              }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.24, ease: "easeOut" }}
-            >
-              <motion.span
-                className={ghostIconClass}
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{
-                  duration: 1.6,
-                  ease: "easeInOut",
-                  repeat: Infinity,
-                }}
-              >
-                <Ghost size={18} />
-              </motion.span>
-              <span className={ghostLabelClass}>Pending</span>
-            </motion.div>
-          ) : nodeData.state === "pruned" ? (
-            <motion.span
-              key="pruned"
-              className={ghostShellClass}
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 0.7, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              ×
-            </motion.span>
-          ) : (
-            <motion.div
-              key="content"
-              className={resolvedContentClass}
-              initial={resolvingNow ? { opacity: 0, y: 6, scale: 0.98 } : false}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                duration: 0.35,
-                ease: "easeOut",
-              }}
-            >
-              {snippet}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <Handle type="target" position={Position.Top} className={handleClass} />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className={handleClass}
-      />
-    </motion.div>
-  );
-}
-
-export type GraphFlowNode = FlowNode<GraphNodeData>;
 </file>
 
 <file path="src/graph/layoutGraph.spec.ts">
@@ -2896,24 +2467,126 @@ export default defineConfig({
 }
 </file>
 
-<file path="src/graph/events.ts">
-type BaseNode = {
-  id: string;
-  label?: string;
-  kind: "symbol" | "function" | "file" | "type";
-};
+<file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
+  type EdgeProps,
+  type XYPosition,
+} from "@xyflow/react";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { useRef } from "react";
+import { motion } from "framer-motion";
+import { graphEdgeClass, graphEdgeLabelClass } from "@/components/GraphEdgeStyles";
 
-type PendingNode = BaseNode & {
-  state: "pending";
-};
+export function AnimatedGraphEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  markerEnd,
+  data,
+}: EdgeProps) {
+  const animateOnMount = Boolean((data as any)?.animateOnMount);
+  const isPrimary =
+    (data as any)?.primary ?? ((data as any)?.kind ? (data as any)?.kind === "calls" : true);
+  const label = (data as any)?.kind ?? (data as any)?.label;
+  const hasAnimated = useRef(false);
+  const shouldAnimate = animateOnMount && !hasAnimated.current;
+  if (shouldAnimate) {
+    hasAnimated.current = true;
+  }
 
-type PrunedNode = BaseNode & {
-  state: "pruned";
-};
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
 
-type AnchorNode = BaseNode & {
-  state: "anchor";
+  return (
+    <g data-testid="graph-edge" data-primary={isPrimary ? "true" : "false"}>
+      {shouldAnimate ? (
+        <motion.circle
+          cx={sourceX}
+          cy={sourceY}
+          r={12}
+          fill="none"
+          stroke="var(--colors-vercel-brand-9)"
+          strokeWidth="2"
+          pointerEvents="none"
+          initial={{ opacity: 0.7, r: 6 }}
+          animate={{ opacity: 0, r: 18 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        />
+      ) : null}
+
+      {shouldAnimate ? (
+        <motion.path
+          id={id}
+          d={edgePath}
+          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
+          markerEnd={markerEnd}
+          data-animate="true"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+        />
+      ) : (
+        <BaseEdge
+          id={id}
+          path={edgePath}
+          className={graphEdgeClass({ emphasis: isPrimary ? "primary" : "secondary" })}
+          markerEnd={markerEnd}
+          data-animate="false"
+        />
+      )}
+
+      {label ? (
+        <EdgeLabelRenderer>
+          <div
+            className={graphEdgeLabelClass}
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+            }}
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      ) : null}
+    </g>
+  );
+}
+</file>
+
+<file path="src/components/GraphNode.tsx">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import { useEffect, useRef, useState } from "react";
+import {
+  Handle,
+  Position,
+  type NodeProps,
+  type Node as FlowNode,
+} from "@xyflow/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Ghost } from "lucide-react";
+import { css, cva, cx } from "../../styled-system/css";
+import type { GraphNode } from "@/graph/events";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+
+export type GraphNodeData = {
+  label?: GraphNode["label"];
+  state: GraphNode["state"];
+  kind: GraphNode["kind"];
   tokens?: number;
+  inContext?: boolean;
   evidence?: {
     snippet: string;
     file?: string;
@@ -2921,31 +2594,306 @@ type AnchorNode = BaseNode & {
   };
 };
 
-type ResolvedNode = BaseNode & {
-  state: "resolved";
-  tokens: number;
-  evidence: {
-    snippet: string;
-    file?: string;
-    startLine?: number;
-  };
-};
+const graphNodeClass = cva({
+  base: {
+    width: `${NODE_WIDTH}px`,
+    height: `${NODE_HEIGHT}px`,
+    display: "grid",
+    gridTemplateRows: "auto auto 1fr",
+    borderRadius: "var(--radii-l3)",
+    fontSize: "14px",
+    fontWeight: 600,
+    lineHeight: 1.2,
+    letterSpacing: "0.01em",
+    transition:
+      "transform 0.18s ease, box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease, opacity 0.24s ease",
+    boxShadow: "var(--shadows-panel)",
+    border: "1px solid var(--colors-vercel-surface-border)",
+    background: reactFlowTheme.node.background,
+    color: reactFlowTheme.node.color,
+    padding: "12px",
+    gap: "8px",
+    userSelect: "none",
+    position: "relative",
+    overflow: "hidden",
+  },
 
-export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
+    variants: {
+    state: {
+    anchor: {
+      borderColor: "var(--colors-vercel-brand-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
 
-export type GraphEdge = {
-  source: string;
-  target: string;
-  kind: "calls" | "imports" | "references";
-  primary?: boolean;
-};
+    pending: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "transparent",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.85,
+    },
 
-export type GraphEvent =
-  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
-  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
-  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
-  | { type: "setContext"; nodes: string[] }
-  | { type: "iteration"; step: number };
+    resolved: {
+      borderColor: "var(--colors-green-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
+
+    pruned: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "var(--colors-vercel-surface-50)",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.45,
+      boxShadow: "none",
+    },
+  },
+
+    kind: {
+      symbol: {},
+      function: {},
+      file: {
+        fontStyle: "italic",
+      },
+      type: {
+        borderWidth: "2px",
+      },
+    },
+  },
+});
+
+const contextGlowClass = css({
+  boxShadow: "var(--shadows-glow)",
+  borderColor: "var(--colors-vercel-brand-9)",
+});
+
+const handleClass = css({
+  background: "transparent",
+  border: "none",
+});
+
+const headerClass = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  justifyContent: "space-between",
+});
+
+const labelClass = css({
+  fontSize: "15px",
+  fontWeight: 700,
+  color: "var(--colors-vercel-text-strong)",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const metaClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-subtle)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+});
+
+const snippetClass = css({
+  fontFamily: "var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
+  fontSize: "12px",
+  lineHeight: 1.4,
+  background: "var(--colors-vercel-surface-50)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l2)",
+  padding: "8px",
+  whiteSpace: "pre-wrap",
+  overflowY: "hidden",
+  display: "flex",
+  alignItems: "flex-start",
+  justifyContent: "flex-start",
+  gap: "8px",
+  position: "relative",
+  minHeight: "5em",
+  maxHeight: "7.5em",
+});
+
+const tokenBadgeClass = css({
+  fontSize: "11px",
+  color: "var(--colors-vercel-text-muted)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l3)",
+  padding: "2px 8px",
+});
+
+const ghostShellClass = css({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  paddingInline: "8px",
+  paddingBlock: "6px",
+  width: "100%",
+  border: "1px dashed var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l2)",
+  background: "var(--colors-vercel-surface-muted)",
+  color: "var(--colors-vercel-text-muted)",
+  letterSpacing: "0.01em",
+});
+
+const ghostIconClass = css({
+  width: "18px",
+  height: "18px",
+});
+
+const ghostLabelClass = css({
+  fontSize: "12px",
+  textTransform: "uppercase",
+});
+
+const resolvedContentClass = css({
+  width: "100%",
+  display: "flex",
+  flexDirection: "column",
+  gap: "6px",
+});
+
+export function GraphNode({ id, data, selected }: NodeProps) {
+  const nodeData = data as GraphNodeData;
+  const snippet = nodeData.evidence?.snippet;
+  const fileLabel =
+    nodeData.state === "resolved" ? nodeData.evidence?.file : undefined;
+  const kindLabel = nodeData.kind;
+  const [contextGlow, setContextGlow] = useState(false);
+  const prevStateRef = useRef(nodeData.state);
+  const prevContextRef = useRef(Boolean(nodeData.inContext));
+  const resolvingNow =
+    nodeData.state === "resolved" && prevStateRef.current === "pending";
+
+  useEffect(() => {
+    prevStateRef.current = nodeData.state;
+  }, [nodeData.state]);
+
+  useEffect(() => {
+    let timer: number | null = null;
+    const wasInContext = prevContextRef.current;
+    if (nodeData.inContext && !wasInContext) {
+      setContextGlow(true);
+      timer = window.setTimeout(() => setContextGlow(false), 820);
+      prevContextRef.current = true;
+    } else {
+      prevContextRef.current = Boolean(nodeData.inContext);
+    }
+
+    return () => {
+      if (timer) {
+        window.clearTimeout(timer);
+      }
+    };
+  }, [nodeData.inContext]);
+
+  return (
+    <motion.div
+      className={cx(
+        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
+        contextGlow && contextGlowClass,
+        selected && "is-selected",
+      )}
+      data-testid="graph-node"
+      data-node-id={id}
+      data-state={nodeData.state}
+      data-kind={nodeData.kind}
+      whileHover={{ scale: 1.03 }}
+      initial={resolvingNow ? { scale: 0.95 } : false}
+      animate={{ scale: 1 }}
+      transition={
+        resolvingNow
+          ? { type: "spring", stiffness: 240, damping: 22 }
+          : { duration: 0.12, ease: "easeOut" }
+      }
+    >
+      <div className={headerClass}>
+        <div
+          className={cx(
+            labelClass,
+            nodeData.state === "pruned" &&
+              css({ textDecoration: "line-through" }),
+          )}
+        >
+          {nodeData.label ?? id}
+        </div>
+        <div className={tokenBadgeClass}>
+          {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
+        </div>
+      </div>
+
+      <div className={metaClass}>
+        <span>{kindLabel}</span>
+        {fileLabel && <span>{fileLabel}</span>}
+      </div>
+
+      <div className={snippetClass}>
+        <AnimatePresence mode="wait" initial={false}>
+          {nodeData.state === "pending" ? (
+            <motion.div
+              key="ghost"
+              className={ghostShellClass}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{
+                opacity: 0.9,
+                scale: 1,
+              }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+              <motion.span
+                className={ghostIconClass}
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{
+                  duration: 1.6,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+              >
+                <Ghost size={18} />
+              </motion.span>
+              <span className={ghostLabelClass}>Pending</span>
+            </motion.div>
+          ) : nodeData.state === "pruned" ? (
+            <motion.span
+              key="pruned"
+              className={ghostShellClass}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 0.7, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              ×
+            </motion.span>
+          ) : (
+            <motion.div
+              key="content"
+              className={resolvedContentClass}
+              initial={resolvingNow ? { opacity: 0, y: 6, scale: 0.98 } : false}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.35,
+                ease: "easeOut",
+              }}
+            >
+              {snippet}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={handleClass}
+      />
+    </motion.div>
+  );
+}
+
+export type GraphFlowNode = FlowNode<GraphNodeData>;
 </file>
 
 <file path="src/graph/reducer.ts">
@@ -3205,6 +3153,58 @@ export default function RootLayout({
     </html>
   );
 }
+</file>
+
+<file path="src/graph/events.ts">
+type BaseNode = {
+  id: string;
+  label?: string;
+  kind: "symbol" | "function" | "file" | "type";
+};
+
+type PendingNode = BaseNode & {
+  state: "pending";
+};
+
+type PrunedNode = BaseNode & {
+  state: "pruned";
+};
+
+type AnchorNode = BaseNode & {
+  state: "anchor";
+  tokens?: number;
+  evidence?: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
+
+type ResolvedNode = BaseNode & {
+  state: "resolved";
+  tokens: number;
+  evidence: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
+
+export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
+
+export type GraphEdge = {
+  source: string;
+  target: string;
+  kind: "calls" | "imports" | "references";
+  primary?: boolean;
+};
+
+export type GraphEvent =
+  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
+  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
+  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
+  | { type: "setContext"; nodes: string[] }
+  | { type: "iteration"; step: number };
 </file>
 
 <file path="src/graph/fixtures.ts">
@@ -4271,263 +4271,6 @@ export default defineConfig({
 });
 </file>
 
-<file path="src/components/GraphStage/GraphStage.tsx">
-"use client";
-
-import { useCallback, useEffect, useRef } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import {
-  BackgroundVariant,
-  ReactFlowProvider,
-  useEdgesState,
-  useNodesState,
-  Controls,
-  type Edge,
-  type Node,
-} from "@xyflow/react";
-
-import {
-  GraphBackground,
-  ThemedReactFlow,
-  graphStageBackgroundClass,
-  reactFlowCanvasClass,
-} from "@/components/ui";
-
-import { flowDraggingAtom } from "@/state/searchbar";
-
-import {
-  graphInitialEdgesAtom,
-  graphInitialNodesAtom,
-} from "@/state/graphStage";
-
-import { reactFlowTheme } from "@/theme/react-flow";
-
-import { useFollowNodes } from "./useFollowNodes";
-import { GraphNode } from "@/components/GraphNode";
-import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
-
-import "@xyflow/react/dist/style.css";
-
-import { graphStateAtom } from "@/state/graphStreamAtom";
-import type { GraphState } from "@/graph/reducer";
-
-const nodeTypes = {
-  graph: GraphNode,
-};
-
-const edgeTypes = {
-  graph: AnimatedGraphEdge,
-};
-
-const INITIAL_ZOOM = 1.5;
-
-const isNode = (n: Node | undefined): n is Node => Boolean(n);
-
-export function buildFlowElements(
-  graphState: GraphState,
-  prevIds: Set<string>,
-  prevEdgeIds: Set<string> = new Set(),
-) {
-  const ids = Object.keys(graphState.nodes);
-
-  const nodes: Node[] = ids
-    .map((id) => {
-      const n = graphState.nodes[id];
-      const hasPrev = prevIds.has(id);
-
-      if (!n.positioned) return null;
-
-      return {
-        id: n.id,
-        type: "graph",
-        data: {
-          label: n.label ?? n.id,
-          state: n.state,
-          kind: n.kind,
-          tokens:
-            n.state === "resolved" || n.state === "anchor"
-              ? n.tokens
-              : undefined,
-          evidence:
-            n.state === "resolved" || n.state === "anchor"
-              ? n.evidence
-              : undefined,
-          inContext: graphState.context.has(n.id),
-        },
-        position: n.position,
-        selectable: false,
-        draggable: false,
-        style: {
-          transition: hasPrev
-            ? "transform 0.45s cubic-bezier(.22,1,.36,1)"
-            : "none",
-        },
-      };
-    })
-    .filter(Boolean) as Node[];
-
-  const edges: Edge[] = graphState.edges.map((e, index) => ({
-    id: `${e.source}-${e.target}-${index}`,
-    source: e.source,
-    target: e.target,
-    animated: false,
-    type: "graph",
-    label: e.kind,
-    data: {
-      kind: e.kind,
-      animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
-      primary: e.primary,
-    },
-  }));
-
-  return {
-    nodes,
-    edges,
-    renderedIds: nodes.map((n) => n.id),
-    renderedEdgeIds: edges.map((e) => e.id),
-  };
-}
-
-function GraphStageInner() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const followNodes = useFollowNodes(containerRef, INITIAL_ZOOM);
-
-  const initialNodes = useAtomValue(graphInitialNodesAtom);
-  const initialEdges = useAtomValue(graphInitialEdgesAtom);
-
-  const graphState = useAtomValue(graphStateAtom);
-
-  const setFlowDragging = useSetAtom(flowDraggingAtom);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
-
-  const prevNodeIdsRef = useRef<Set<string>>(new Set());
-  const prevEdgeIdsRef = useRef<Set<string>>(new Set());
-
-  /**
-   * Always reconcile rendered graph from latest graphState
-   */
-  useEffect(() => {
-    const prevIds = prevNodeIdsRef.current;
-
-    const {
-      nodes: mappedNodes,
-      edges: mappedEdges,
-      renderedIds,
-      renderedEdgeIds,
-    } = buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
-
-    prevNodeIdsRef.current = new Set(renderedIds);
-    prevEdgeIdsRef.current = new Set(renderedEdgeIds);
-
-    setNodes(mappedNodes);
-    setEdges(mappedEdges);
-  }, [graphState, setNodes, setEdges]);
-
-  /**
-   * Camera follows solver intent
-   */
-  useEffect(() => {
-    const panTarget = nodes.find((n) => n.id === graphState.panTargetId);
-
-    if (!panTarget) return;
-
-    const parentNodes = graphState.edges
-      .filter((e) => e.target === panTarget.id)
-      .map((e) => nodes.find((n) => n.id === e.source))
-      .filter(isNode);
-
-    const siblingNodes = parentNodes.length
-      ? graphState.edges
-          .filter((e) => parentNodes.some((p) => p.id === e.source))
-          .filter((e) => e.target !== panTarget.id)
-          .map((e) => nodes.find((n) => n.id === e.target))
-          .filter(isNode)
-      : [];
-
-    const targets = [panTarget, ...parentNodes, ...siblingNodes].filter(isNode);
-
-    if (targets.length) {
-      requestAnimationFrame(() => followNodes(targets));
-    }
-  }, [
-    graphState.panTick,
-    graphState.panTargetId,
-    graphState.edges,
-    nodes,
-    followNodes,
-  ]);
-
-  const handleDragStart = useCallback(() => {
-    setFlowDragging(true);
-  }, [setFlowDragging]);
-
-  const handleDragEnd = useCallback(() => {
-    setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  useEffect(() => {
-    return () => setFlowDragging(false);
-  }, [setFlowDragging]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={graphStageBackgroundClass}
-      suppressHydrationWarning
-    >
-      <ThemedReactFlow
-        className={reactFlowCanvasClass}
-        defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
-        minZoom={0.25}
-        maxZoom={4}
-        zoomOnScroll
-        zoomOnPinch
-        zoomOnDoubleClick
-        panOnDrag
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        colorMode="dark"
-        proOptions={{ hideAttribution: true }}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeDragStart={handleDragStart}
-        onNodeDragStop={handleDragEnd}
-        defaultEdgeOptions={{
-          type: "default",
-          style: {
-            stroke: reactFlowTheme.edge.stroke,
-            strokeWidth: 1,
-            strokeDasharray: "6 6",
-          },
-          markerEnd: {
-            type: "arrowclosed",
-            color: reactFlowTheme.edge.stroke,
-            width: 10,
-            height: 6,
-          },
-        }}
-      >
-        <Controls position="bottom-right" />
-        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
-      </ThemedReactFlow>
-    </div>
-  );
-}
-
-export default function GraphStage() {
-  return (
-    <ReactFlowProvider>
-      <GraphStageInner />
-    </ReactFlowProvider>
-  );
-}
-</file>
-
 <file path="src/components/SearchBar/SearchBar.tsx">
 "use client";
 
@@ -4807,6 +4550,263 @@ export default function SearchBar({ onReplay, outlineLockDelayMs }: Props) {
         {playing ? "Pause" : "Play"}
       </MotionButton>
     </MotionStack>
+  );
+}
+</file>
+
+<file path="src/components/GraphStage/GraphStage.tsx">
+"use client";
+
+import { useCallback, useEffect, useRef } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import {
+  BackgroundVariant,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  Controls,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
+
+import {
+  GraphBackground,
+  ThemedReactFlow,
+  graphStageBackgroundClass,
+  reactFlowCanvasClass,
+} from "@/components/ui";
+
+import { flowDraggingAtom } from "@/state/searchbar";
+
+import {
+  graphInitialEdgesAtom,
+  graphInitialNodesAtom,
+} from "@/state/graphStage";
+
+import { reactFlowTheme } from "@/theme/react-flow";
+
+import { useFollowNodes } from "./useFollowNodes";
+import { GraphNode } from "@/components/GraphNode";
+import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
+
+import "@xyflow/react/dist/style.css";
+
+import { graphStateAtom } from "@/state/graphStreamAtom";
+import type { GraphState } from "@/graph/reducer";
+
+const nodeTypes = {
+  graph: GraphNode,
+};
+
+const edgeTypes = {
+  graph: AnimatedGraphEdge,
+};
+
+const INITIAL_ZOOM = 1.5;
+
+const isNode = (n: Node | undefined): n is Node => Boolean(n);
+
+export function buildFlowElements(
+  graphState: GraphState,
+  prevIds: Set<string>,
+  prevEdgeIds: Set<string> = new Set(),
+) {
+  const ids = Object.keys(graphState.nodes);
+
+  const nodes: Node[] = ids
+    .map((id) => {
+      const n = graphState.nodes[id];
+      const hasPrev = prevIds.has(id);
+
+      if (!n.positioned) return null;
+
+      return {
+        id: n.id,
+        type: "graph",
+        data: {
+          label: n.label ?? n.id,
+          state: n.state,
+          kind: n.kind,
+          tokens:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.tokens
+              : undefined,
+          evidence:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.evidence
+              : undefined,
+          inContext: graphState.context.has(n.id),
+        },
+        position: n.position,
+        selectable: false,
+        draggable: false,
+        style: {
+          transition: hasPrev
+            ? "transform 0.45s cubic-bezier(.22,1,.36,1)"
+            : "none",
+        },
+      };
+    })
+    .filter(Boolean) as Node[];
+
+  const edges: Edge[] = graphState.edges.map((e, index) => ({
+    id: `${e.source}-${e.target}-${index}`,
+    source: e.source,
+    target: e.target,
+    animated: false,
+    type: "graph",
+    label: e.kind,
+    data: {
+      kind: e.kind,
+      animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
+      primary: e.primary,
+    },
+  }));
+
+  return {
+    nodes,
+    edges,
+    renderedIds: nodes.map((n) => n.id),
+    renderedEdgeIds: edges.map((e) => e.id),
+  };
+}
+
+function GraphStageInner() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const followNodes = useFollowNodes(containerRef, INITIAL_ZOOM);
+
+  const initialNodes = useAtomValue(graphInitialNodesAtom);
+  const initialEdges = useAtomValue(graphInitialEdgesAtom);
+
+  const graphState = useAtomValue(graphStateAtom);
+
+  const setFlowDragging = useSetAtom(flowDraggingAtom);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+
+  const prevNodeIdsRef = useRef<Set<string>>(new Set());
+  const prevEdgeIdsRef = useRef<Set<string>>(new Set());
+
+  /**
+   * Always reconcile rendered graph from latest graphState
+   */
+  useEffect(() => {
+    const prevIds = prevNodeIdsRef.current;
+
+    const {
+      nodes: mappedNodes,
+      edges: mappedEdges,
+      renderedIds,
+      renderedEdgeIds,
+    } = buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
+
+    prevNodeIdsRef.current = new Set(renderedIds);
+    prevEdgeIdsRef.current = new Set(renderedEdgeIds);
+
+    setNodes(mappedNodes);
+    setEdges(mappedEdges);
+  }, [graphState, setNodes, setEdges]);
+
+  /**
+   * Camera follows solver intent
+   */
+  useEffect(() => {
+    const panTarget = nodes.find((n) => n.id === graphState.panTargetId);
+
+    if (!panTarget) return;
+
+    const parentNodes = graphState.edges
+      .filter((e) => e.target === panTarget.id)
+      .map((e) => nodes.find((n) => n.id === e.source))
+      .filter(isNode);
+
+    const siblingNodes = parentNodes.length
+      ? graphState.edges
+          .filter((e) => parentNodes.some((p) => p.id === e.source))
+          .filter((e) => e.target !== panTarget.id)
+          .map((e) => nodes.find((n) => n.id === e.target))
+          .filter(isNode)
+      : [];
+
+    const targets = [panTarget, ...parentNodes, ...siblingNodes].filter(isNode);
+
+    if (targets.length) {
+      requestAnimationFrame(() => followNodes(targets));
+    }
+  }, [
+    graphState.panTick,
+    graphState.panTargetId,
+    graphState.edges,
+    nodes,
+    followNodes,
+  ]);
+
+  const handleDragStart = useCallback(() => {
+    setFlowDragging(true);
+  }, [setFlowDragging]);
+
+  const handleDragEnd = useCallback(() => {
+    setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  useEffect(() => {
+    return () => setFlowDragging(false);
+  }, [setFlowDragging]);
+
+  return (
+    <div
+      ref={containerRef}
+      className={graphStageBackgroundClass}
+      suppressHydrationWarning
+    >
+      <ThemedReactFlow
+        className={reactFlowCanvasClass}
+        defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
+        minZoom={0.25}
+        maxZoom={4}
+        zoomOnScroll
+        zoomOnPinch
+        zoomOnDoubleClick
+        panOnDrag
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        colorMode="dark"
+        proOptions={{ hideAttribution: true }}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeDragStart={handleDragStart}
+        onNodeDragStop={handleDragEnd}
+        defaultEdgeOptions={{
+          type: "default",
+          style: {
+            stroke: reactFlowTheme.edge.stroke,
+            strokeWidth: 1,
+            strokeDasharray: "6 6",
+          },
+          markerEnd: {
+            type: "arrowclosed",
+            color: reactFlowTheme.edge.stroke,
+            width: 10,
+            height: 6,
+          },
+        }}
+      >
+        <Controls position="bottom-right" />
+        <GraphBackground variant={BackgroundVariant.Cross} gap={32} size={1} />
+      </ThemedReactFlow>
+    </div>
+  );
+}
+
+export default function GraphStage() {
+  return (
+    <ReactFlowProvider>
+      <GraphStageInner />
+    </ReactFlowProvider>
   );
 }
 </file>

@@ -13,3 +13,10 @@
     stroke-dashoffset: 12;
   }
 }
+
+#__next-build-watcher,
+[data-nextjs-toast],
+#nextjs-portal,
+[data-nextjs-react-dev-overlay] {
+  display: none !important;
+}
