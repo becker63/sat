@@ -18,8 +18,25 @@ export const NODE_HEIGHT = 140;
 
 const VERTICAL_SPACING = 220;
 const HORIZONTAL_SPACING = 340;
+const GRID_COLUMNS = 10;
+const GRID_SPACING_X = NODE_WIDTH + 80;
+const GRID_SPACING_Y = NODE_HEIGHT + 80;
 
 type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
+
+const isAnchorNode = (node: GraphState["nodes"][string]) =>
+  node.state === "anchor" || node.kind === "symbol";
+
+function gridLayout(nodes: GraphState["nodes"][string][]) {
+  return nodes.map((node, i) => ({
+    ...node,
+    positioned: true,
+    position: {
+      x: (i % GRID_COLUMNS) * GRID_SPACING_X,
+      y: Math.floor(i / GRID_COLUMNS) * GRID_SPACING_Y,
+    },
+  }));
+}
 
 function buildDag(
   state: GraphState,
@@ -82,6 +99,22 @@ const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
 
 export async function layoutGraph(state: GraphState): Promise<GraphState> {
   const nodes = Object.values(state.nodes);
+  const anchorCount = nodes.filter(isAnchorNode).length;
+
+  if (anchorCount > 20) {
+    const positionedNodes = gridLayout(nodes);
+    const placed = { ...state.nodes };
+
+    for (const node of positionedNodes) {
+      placed[node.id] = node;
+    }
+
+    return {
+      ...state,
+      nodes: placed,
+    };
+  }
+
   const newNodes = nodes.filter((n) => !n.positioned);
 
   if (!newNodes.length) return state;

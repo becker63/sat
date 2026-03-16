@@ -35,6 +35,7 @@ type ResolvedNode = BaseNode & {
 export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
 
 export type GraphEdge = {
+  id?: string;
   source: string;
   target: string;
   kind: "calls" | "imports" | "references";
@@ -45,5 +46,5 @@ export type GraphEvent =
   | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
   | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
   | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
-  | { type: "setContext"; nodes: string[] }
-  | { type: "iteration"; step: number };
+  | { type: "setContext"; nodes: string[]; tokens?: number }
+  | { type: "iteration"; step: number; description?: string };

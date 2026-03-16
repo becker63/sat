@@ -81,6 +81,8 @@ src/
     SearchScopeMenu/
       SearchScopeMenu.tsx
       useSearchScopeMenu.ts
+    TokenPane/
+      TokenPane.tsx
     ClientConsoleBridge.tsx
     GraphEdgeStyles.ts
     GraphNode.tsx
@@ -111,6 +113,7 @@ src/
     searchbar.ts
     searchScopeEngine.ts
     searchScopeMachine.ts
+    tokenCounterAtom.ts
   types/
     d3-quadtree.d.ts
 .gitignore
@@ -1055,6 +1058,82 @@ Also: Make the repo selector width match the search bar exactly.
 export { default } from "./SearchBar";
 </file>
 
+<file path="src/components/TokenPane/TokenPane.tsx">
+"use client";
+
+import { useAtomValue } from "jotai";
+import { contextTokenCountAtom } from "@/state/tokenCounterAtom";
+import { graphStateAtom } from "@/state/graphStreamAtom";
+import {
+  tokenCountBadgeClass,
+  tokenPaneClass,
+  tokenPaneHeaderClass,
+  tokenPaneMetaRowClass,
+  tokenPaneProgressClass,
+  tokenPaneProgressFillClass,
+} from "@/components/ui/search-styles";
+import { Box } from "../../../styled-system/jsx";
+
+const TOKEN_BUDGET = 4096;
+
+export default function TokenPane() {
+  const tokens = useAtomValue(contextTokenCountAtom);
+  const graphState = useAtomValue(graphStateAtom);
+
+  const currentNode =
+    (graphState.panTargetId &&
+      graphState.nodes[graphState.panTargetId]) ||
+    null;
+  const currentNodeLabel =
+    currentNode?.label || currentNode?.id || "—";
+
+  const budgetRatio = Math.max(
+    0,
+    Math.min(1, tokens / TOKEN_BUDGET),
+  );
+  const fillPercent = budgetRatio === 0 ? 0 : budgetRatio * 100;
+
+  return (
+    <Box className={tokenPaneClass}>
+      <Box className={tokenPaneHeaderClass}>
+        <span>Context Tokens</span>
+        <span className={tokenCountBadgeClass}>{tokens}</span>
+      </Box>
+
+      <Box
+        className={tokenPaneProgressClass}
+        aria-label="Context token usage"
+      >
+        <Box
+          className={tokenPaneProgressFillClass}
+          data-empty={budgetRatio === 0}
+          style={{
+            width: `${fillPercent}%`,
+          }}
+        />
+      </Box>
+
+      <Box className={tokenPaneMetaRowClass}>
+        <span>Budget</span>
+        <span>
+          {tokens} / {TOKEN_BUDGET} (
+          {Math.round(budgetRatio * 100)}%)
+        </span>
+      </Box>
+
+      <Box className={tokenPaneMetaRowClass}>
+        <span>Focus</span>
+        <span>
+          {currentNodeLabel}
+          {currentNode?.tokens !== undefined &&
+            ` · ${currentNode.tokens} tokens`}
+        </span>
+      </Box>
+    </Box>
+  );
+}
+</file>
+
 <file path="src/components/ClientConsoleBridge.tsx">
 "use client";
 
@@ -1498,6 +1577,25 @@ export const fixturePromptAtom = atom((get) => {
 import { atom } from "jotai";
 
 export const graphPlayingAtom = atom(false);
+</file>
+
+<file path="src/state/tokenCounterAtom.ts">
+import { atom } from "jotai";
+import { graphStateAtom } from "./graphStreamAtom";
+
+export const contextTokenCountAtom = atom((get) => {
+  const state = get(graphStateAtom);
+
+  let total = 0;
+
+  for (const node of Object.values(state.nodes)) {
+    if (node.state === "resolved" || node.state === "anchor") {
+      total += node.tokens ?? 0;
+    }
+  }
+
+  return total;
+});
 </file>
 
 <file path="src/types/d3-quadtree.d.ts">
@@ -2449,24 +2547,6 @@ export default defineConfig({
 });
 </file>
 
-<file path="src/app/globals.css">
-/* Elastic edge styling during spring impulse */
-.edge-elastic path {
-  stroke-width: 2.5;
-  stroke-dasharray: 6 6;
-  animation: edgeSpring 0.5s linear infinite;
-}
-
-@keyframes edgeSpring {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: 12;
-  }
-}
-</file>
-
 <file path="src/components/GraphStage/AnimatedGraphEdge.tsx">
 import {
   BaseEdge,
@@ -3117,6 +3197,31 @@ export default defineConfig({
 }
 </file>
 
+<file path="src/app/globals.css">
+/* Elastic edge styling during spring impulse */
+.edge-elastic path {
+  stroke-width: 2.5;
+  stroke-dasharray: 6 6;
+  animation: edgeSpring 0.5s linear infinite;
+}
+
+@keyframes edgeSpring {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: 12;
+  }
+}
+
+#__next-build-watcher,
+[data-nextjs-toast],
+#nextjs-portal,
+[data-nextjs-react-dev-overlay] {
+  display: none !important;
+}
+</file>
+
 <file path="src/app/layout.tsx">
 import "../../styled-system/styles.css";
 import type { Metadata } from "next";
@@ -3193,6 +3298,7 @@ type ResolvedNode = BaseNode & {
 export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
 
 export type GraphEdge = {
+  id?: string;
   source: string;
   target: string;
   kind: "calls" | "imports" | "references";
@@ -3203,12 +3309,12 @@ export type GraphEvent =
   | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
   | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
   | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
-  | { type: "setContext"; nodes: string[] }
-  | { type: "iteration"; step: number };
+  | { type: "setContext"; nodes: string[]; tokens?: number }
+  | { type: "iteration"; step: number; description?: string };
 </file>
 
 <file path="src/graph/fixtures.ts">
-import type { GraphEvent } from "./events";
+import type { GraphEvent, GraphEdge, GraphNode } from "./events";
 import type { Observable } from "rxjs";
 import { from } from "rxjs";
 
@@ -3223,6 +3329,89 @@ export type Fixture = {
  * Fixtures now only define events.
  * No playback timing here.
  */
+
+const CHAOS_ANCHOR_COUNT = 40;
+
+function generateAnchors(count: number): GraphNode[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `anchor:${i}`,
+    label: `candidate_${i}`,
+    kind: "symbol",
+    state: "anchor",
+    tokens: 40 + Math.floor(Math.random() * 120),
+    evidence: {
+      snippet: "…semantic match…",
+    },
+  }));
+}
+
+function generateAnchorEdges(count: number): GraphEdge[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `query-anchor-${i}`,
+    source: "query",
+    target: `anchor:${i}`,
+    kind: "references",
+  }));
+}
+
+function resolveSomeAnchors(): GraphEvent[] {
+  const resolved = [2, 7, 12, 23, 31];
+
+  return resolved.map((i) => ({
+    type: "updateNode",
+    id: `anchor:${i}`,
+    patch: {
+      state: "resolved",
+    },
+  }));
+}
+
+const chaosAnchorIds = Array.from(
+  { length: CHAOS_ANCHOR_COUNT },
+  (_, i) => `anchor:${i}`,
+);
+
+const semanticSearchChaosEvents: GraphEvent[] = [
+  {
+    type: "iteration",
+    step: 1,
+    description: "Top-K semantic search candidates",
+  },
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "query",
+        label: "query",
+        kind: "symbol",
+        state: "resolved",
+        tokens: 32,
+        evidence: {
+          snippet: "User question: find matching symbols in the codebase",
+        },
+      },
+    ],
+  },
+  {
+    type: "addNodes",
+    nodes: generateAnchors(CHAOS_ANCHOR_COUNT),
+  },
+  {
+    type: "addEdges",
+    edges: generateAnchorEdges(CHAOS_ANCHOR_COUNT),
+  },
+  {
+    type: "iteration",
+    step: 2,
+    description: "LLM reasoning over noisy context",
+  },
+  ...resolveSomeAnchors(),
+  {
+    type: "setContext",
+    nodes: ["query", ...chaosAnchorIds],
+    tokens: 1780,
+  },
+];
 
 const tanstackEvents: GraphEvent[] = [
   /**
@@ -3795,6 +3984,13 @@ const tanstackFixture = {
   events$: () => from(tanstackEvents),
 } as const satisfies Fixture;
 
+const semanticSearchChaosFixture = {
+  id: "semantic-search-chaos",
+  label: "Semantic Search Chaos",
+  prompt: "Show semantic search candidates before solver pruning.",
+  events$: () => from(semanticSearchChaosEvents),
+} as const satisfies Fixture;
+
 const reduxFixture = {
   id: "redux",
   label: "Redux Toolkit",
@@ -3811,6 +4007,7 @@ const zustandFixture = {
 
 export const fixtureRegistry = {
   tanstack: tanstackFixture,
+  "semantic-search-chaos": semanticSearchChaosFixture,
   redux: reduxFixture,
   zustand: zustandFixture,
 } as const satisfies Record<string, Fixture>;
@@ -3933,8 +4130,25 @@ export const NODE_HEIGHT = 140;
 
 const VERTICAL_SPACING = 220;
 const HORIZONTAL_SPACING = 340;
+const GRID_COLUMNS = 10;
+const GRID_SPACING_X = NODE_WIDTH + 80;
+const GRID_SPACING_Y = NODE_HEIGHT + 80;
 
 type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
+
+const isAnchorNode = (node: GraphState["nodes"][string]) =>
+  node.state === "anchor" || node.kind === "symbol";
+
+function gridLayout(nodes: GraphState["nodes"][string][]) {
+  return nodes.map((node, i) => ({
+    ...node,
+    positioned: true,
+    position: {
+      x: (i % GRID_COLUMNS) * GRID_SPACING_X,
+      y: Math.floor(i / GRID_COLUMNS) * GRID_SPACING_Y,
+    },
+  }));
+}
 
 function buildDag(
   state: GraphState,
@@ -3997,6 +4211,22 @@ const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
 
 export async function layoutGraph(state: GraphState): Promise<GraphState> {
   const nodes = Object.values(state.nodes);
+  const anchorCount = nodes.filter(isAnchorNode).length;
+
+  if (anchorCount > 20) {
+    const positionedNodes = gridLayout(nodes);
+    const placed = { ...state.nodes };
+
+    for (const node of positionedNodes) {
+      placed[node.id] = node;
+    }
+
+    return {
+      ...state,
+      nodes: placed,
+    };
+  }
+
   const newNodes = nodes.filter((n) => !n.positioned);
 
   if (!newNodes.length) return state;
@@ -4045,37 +4275,6 @@ export async function layoutGraph(state: GraphState): Promise<GraphState> {
     ...state,
     nodes: placed,
   };
-}
-</file>
-
-<file path="src/app/page.tsx">
-import { Box } from "../../styled-system/jsx";
-import GraphStage from "@/components/GraphStage";
-import SearchBar from "@/components/SearchBar";
-import { TestControlsInstaller } from "@/components/TestControlsInstaller";
-
-export default function Home() {
-  return (
-    <Box position="relative" h="100vh" w="100vw">
-      <TestControlsInstaller />
-      <GraphStage />
-
-      <Box
-        position="absolute"
-        inset="0"
-        zIndex="10"
-        display="flex"
-        justifyContent="center"
-        alignItems="flex-start"
-        p="5"
-        pointerEvents="none"
-      >
-        <Box pointerEvents="auto" w="100%" h="72px">
-          <SearchBar />
-        </Box>
-      </Box>
-    </Box>
-  );
 }
 </file>
 
@@ -4269,6 +4468,39 @@ export default defineConfig({
         },
       },
 });
+</file>
+
+<file path="src/app/page.tsx">
+import { Box } from "../../styled-system/jsx";
+import GraphStage from "@/components/GraphStage";
+import SearchBar from "@/components/SearchBar";
+import { TestControlsInstaller } from "@/components/TestControlsInstaller";
+import TokenPane from "@/components/TokenPane/TokenPane";
+
+export default function Home() {
+  return (
+    <Box position="relative" h="100vh" w="100vw">
+      <TestControlsInstaller />
+      <GraphStage />
+      <TokenPane />
+
+      <Box
+        position="absolute"
+        inset="0"
+        zIndex="10"
+        display="flex"
+        justifyContent="center"
+        alignItems="flex-start"
+        p="5"
+        pointerEvents="none"
+      >
+        <Box pointerEvents="auto" w="100%" h="72px">
+          <SearchBar />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 </file>
 
 <file path="src/components/SearchBar/SearchBar.tsx">

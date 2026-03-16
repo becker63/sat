@@ -1,4 +1,4 @@
-import type { GraphEvent } from "./events";
+import type { GraphEvent, GraphEdge, GraphNode } from "./events";
 import type { Observable } from "rxjs";
 import { from } from "rxjs";
 
@@ -13,6 +13,89 @@ export type Fixture = {
  * Fixtures now only define events.
  * No playback timing here.
  */
+
+const CHAOS_ANCHOR_COUNT = 40;
+
+function generateAnchors(count: number): GraphNode[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `anchor:${i}`,
+    label: `candidate_${i}`,
+    kind: "symbol",
+    state: "anchor",
+    tokens: 12 + Math.floor(Math.random() * 18),
+    evidence: {
+      snippet: "…semantic match…",
+    },
+  }));
+}
+
+function generateAnchorEdges(count: number): GraphEdge[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `query-anchor-${i}`,
+    source: "query",
+    target: `anchor:${i}`,
+    kind: "references",
+  }));
+}
+
+function resolveSomeAnchors(): GraphEvent[] {
+  const resolved = [2, 7, 12, 23, 31];
+
+  return resolved.map((i) => ({
+    type: "updateNode",
+    id: `anchor:${i}`,
+    patch: {
+      state: "resolved",
+    },
+  }));
+}
+
+const chaosAnchorIds = Array.from(
+  { length: CHAOS_ANCHOR_COUNT },
+  (_, i) => `anchor:${i}`,
+);
+
+const semanticSearchChaosEvents: GraphEvent[] = [
+  {
+    type: "iteration",
+    step: 1,
+    description: "Top-K semantic search candidates",
+  },
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "query",
+        label: "query",
+        kind: "symbol",
+        state: "resolved",
+        tokens: 32,
+        evidence: {
+          snippet: "User question: find matching symbols in the codebase",
+        },
+      },
+    ],
+  },
+  {
+    type: "addNodes",
+    nodes: generateAnchors(CHAOS_ANCHOR_COUNT),
+  },
+  {
+    type: "addEdges",
+    edges: generateAnchorEdges(CHAOS_ANCHOR_COUNT),
+  },
+  {
+    type: "iteration",
+    step: 2,
+    description: "LLM reasoning over noisy context",
+  },
+  ...resolveSomeAnchors(),
+  {
+    type: "setContext",
+    nodes: ["query", ...chaosAnchorIds],
+    tokens: 820,
+  },
+];
 
 const tanstackEvents: GraphEvent[] = [
   /**
@@ -585,6 +668,13 @@ const tanstackFixture = {
   events$: () => from(tanstackEvents),
 } as const satisfies Fixture;
 
+const semanticSearchChaosFixture = {
+  id: "semantic-search-chaos",
+  label: "Semantic Search Chaos",
+  prompt: "Show semantic search candidates before solver pruning.",
+  events$: () => from(semanticSearchChaosEvents),
+} as const satisfies Fixture;
+
 const reduxFixture = {
   id: "redux",
   label: "Redux Toolkit",
@@ -601,6 +691,7 @@ const zustandFixture = {
 
 export const fixtureRegistry = {
   tanstack: tanstackFixture,
+  "semantic-search-chaos": semanticSearchChaosFixture,
   redux: reduxFixture,
   zustand: zustandFixture,
 } as const satisfies Record<string, Fixture>;

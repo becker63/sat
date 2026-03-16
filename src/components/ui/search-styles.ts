@@ -24,21 +24,23 @@ export const searchBarShellClass = css({
 export const tokenPaneClass = css({
   layerStyle: "panel",
   position: "absolute",
-  bottom: "20px",
-  left: "20px",
-  px: "14px",
-  py: "10px",
-  borderRadius: "var(--radii-l3)",
+  bottom: "16px",
+  left: "16px",
+  width: "360px",
+  minHeight: "96px",
+  px: "12px",
+  py: "12px",
+  borderRadius: "var(--radii-l4)",
   fontSize: "13px",
-  backdropFilter: "blur(8px)",
+  backdropFilter: "blur(10px)",
   border: "1px solid var(--colors-vercel-surface-border)",
-  background: "var(--colors-vercel-surface)",
+  background: "var(--colors-vercel-surface-overlay)",
   color: "var(--colors-vercel-text-subtle)",
   zIndex: 9,
   pointerEvents: "none",
   display: "flex",
   flexDirection: "column",
-  gap: "6px",
+  gap: "10px",
 });
 
 export const searchBarHiddenClass = css({
@@ -83,8 +85,42 @@ export const tokenPaneProgressClass = css({
 export const tokenPaneProgressFillClass = css({
   position: "absolute",
   inset: 0,
-  background: "linear-gradient(90deg, var(--colors-vercel-brand-9), var(--colors-vercel-brand-7))",
-  transformOrigin: "left",
+  background:
+    "linear-gradient(90deg, var(--colors-green-9), var(--colors-yellow-9), var(--colors-red-9))",
+  width: "0%",
+  transition: "width 0.25s ease, opacity 0.2s ease",
+  '&[data-empty="true"]': {
+    opacity: 0.35,
+  },
+});
+
+export const tokenPaneSegmentClass = css({
+  width: "8px",
+  height: "8px",
+  borderRadius: "var(--radii-l1)",
+  background: "var(--colors-vercel-surface-muted)",
+  transition: "background 150ms ease, transform 150ms ease",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  "&[data-source=query]": {
+    background: "var(--colors-vercel-text-primary)",
+  },
+  "&[data-source=anchor]": {
+    background: "var(--colors-vercel-brand-9)",
+  },
+  "&[data-source=closure]": {
+    background: "var(--colors-green-9)",
+  },
+  "&[data-source=semantic]": {
+    background: "var(--colors-red-9)",
+  },
+  "&[data-source]": {
+    transform: "translateY(-1px)",
+  },
+});
+
+export const tokenPaneSubtleTextClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-muted)",
 });
 
 export const graphStageBackgroundClass = css({
