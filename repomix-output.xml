@@ -86,12 +86,16 @@ src/
     GraphNode.tsx
     TestControlsInstaller.tsx
   graph/
+    rx/
+      gatePlayback.ts
+      paceEvents.ts
     events.ts
     fixtures.ts
     graphStream.ts
     layoutGraph.spec.ts
     layoutGraph.ts
     reducer.ts
+    timing.ts
   lib/
     clientLogger.ts
   state/
@@ -125,6 +129,72 @@ vitest.setup.ts
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/graph/rx/gatePlayback.ts">
+import { type Observable } from "rxjs";
+import { concatMap, filter, map, take } from "rxjs/operators";
+
+export function gatePlayback<T>(
+  events$: Observable<T>,
+  playing$: Observable<boolean>,
+): Observable<T> {
+  return events$.pipe(
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        map(() => event),
+      ),
+    ),
+  );
+}
+</file>
+
+<file path="src/graph/rx/paceEvents.ts">
+import { type Observable, of } from "rxjs";
+import { concatMap, delay } from "rxjs/operators";
+import { GRAPH_TIMING } from "../timing";
+
+export function paceEvents<T extends { type: string }>(
+  events$: Observable<T>,
+): Observable<T> {
+  return events$.pipe(
+    concatMap((event) => {
+      const delayMs =
+        GRAPH_TIMING.EVENT_DELAYS[event.type as keyof typeof GRAPH_TIMING.EVENT_DELAYS] ?? 0;
+
+      return of(event).pipe(delay(delayMs));
+    }),
+  );
+}
+</file>
+
+<file path="src/graph/timing.ts">
+export const GRAPH_TIMING = {
+  EVENT_DELAYS: {
+    iteration: 700,
+    addNodes: 200,
+    addEdges: 350,
+    updateNode: 250,
+    removeNode: 200,
+  },
+
+  CAMERA: {
+    FOLLOW_PADDING: 120,
+    UPWARD_OFFSET: 80,
+    PAN_DURATION_MS: 450,
+    RAF_SMOOTHING: 0.15,
+  },
+
+  EDGE_ANIMATION: {
+    DRAW_DURATION_MS: 700,
+  },
+
+  NODE_ANIMATION: {
+    SPAWN_DURATION_MS: 250,
+  },
+} as const;
+</file>
 
 <file path="arch/architecture-consolidated.md">
 # Demo Architecture (Consolidated)

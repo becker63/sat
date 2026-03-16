@@ -1,0 +1,56 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`graphStream behavior > matches golden state trace 1`] = `
+[
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 0,
+    "nodes": {},
+    "panTargetId": null,
+    "panTick": 0,
+  },
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 1,
+    "nodes": {
+      "A": {
+        "id": "A",
+        "kind": "function",
+        "position": {
+          "x": 150,
+          "y": 0,
+        },
+        "positioned": true,
+        "state": "anchor",
+      },
+    },
+    "panTargetId": "A",
+    "panTick": 1,
+  },
+  {
+    "context": Set {},
+    "edges": [],
+    "iteration": 1,
+    "nodes": {
+      "A": {
+        "evidence": {
+          "snippet": "",
+        },
+        "id": "A",
+        "kind": "function",
+        "position": {
+          "x": 150,
+          "y": 70,
+        },
+        "positioned": true,
+        "state": "resolved",
+        "tokens": 5,
+      },
+    },
+    "panTargetId": "A",
+    "panTick": 1,
+  },
+]
+`;
