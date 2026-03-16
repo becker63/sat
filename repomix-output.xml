@@ -1083,198 +1083,6 @@ export const graphEdgeLabelClass = css({
 });
 </file>
 
-<file path="src/components/GraphNode.tsx">
-/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
-import {
-  Handle,
-  Position,
-  type NodeProps,
-  type Node as FlowNode,
-} from "@xyflow/react";
-import { css, cva, cx } from "../../styled-system/css";
-import type { GraphNode } from "@/graph/events";
-import { reactFlowTheme } from "@/theme/react-flow";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
-
-export type GraphNodeData = Pick<
-  GraphNode,
-  "label" | "state" | "kind" | "tokens" | "evidence"
->;
-
-const graphNodeClass = cva({
-  base: {
-    width: `${NODE_WIDTH}px`,
-    height: `${NODE_HEIGHT}px`,
-    display: "grid",
-    gridTemplateRows: "auto auto 1fr",
-    borderRadius: "var(--radii-l3)",
-    fontSize: "14px",
-    fontWeight: 600,
-    lineHeight: 1.2,
-    letterSpacing: "0.01em",
-    transition: "all 0.25s ease",
-    boxShadow: "var(--shadows-panel)",
-    border: "1px solid var(--colors-vercel-surface-border)",
-    background: reactFlowTheme.node.background,
-    color: reactFlowTheme.node.color,
-    padding: "12px",
-    gap: "8px",
-    userSelect: "none",
-  },
-
-  variants: {
-    state: {
-    anchor: {
-      borderColor: "var(--colors-vercel-brand-9)",
-      boxShadow: "var(--shadows-glow)",
-    },
-
-    pending: {
-      borderStyle: "dashed",
-      borderColor: "var(--colors-vercel-surface-outline)",
-      background: "transparent",
-      color: "var(--colors-vercel-text-muted)",
-      opacity: 0.85,
-    },
-
-    resolved: {
-      borderColor: "var(--colors-green-9)",
-      boxShadow: "var(--shadows-glow)",
-    },
-  },
-
-    kind: {
-      symbol: {},
-      function: {},
-      file: {
-        fontStyle: "italic",
-      },
-      type: {
-        borderWidth: "2px",
-      },
-    },
-  },
-});
-
-const ghostClass = cva({
-  base: {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "28px",
-    height: "28px",
-    borderRadius: "var(--radii-l3)",
-    background: "var(--colors-vercel-surface-muted)",
-    color: "var(--colors-vercel-text-subtle)",
-    fontSize: "16px",
-    border: "1px solid var(--colors-vercel-surface-border)",
-  },
-});
-
-const handleClass = css({
-  background: "transparent",
-  border: "none",
-});
-
-const headerClass = css({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  justifyContent: "space-between",
-});
-
-const labelClass = css({
-  fontSize: "15px",
-  fontWeight: 700,
-  color: "var(--colors-vercel-text-strong)",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-});
-
-const metaClass = css({
-  fontSize: "12px",
-  color: "var(--colors-vercel-text-subtle)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-});
-
-const snippetClass = css({
-  fontFamily: "var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
-  fontSize: "12px",
-  lineHeight: 1.4,
-  background: "var(--colors-vercel-surface-50)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  borderRadius: "var(--radii-l2)",
-  padding: "8px",
-  whiteSpace: "pre-wrap",
-  overflowY: "hidden",
-  display: "block",
-  minHeight: "5em",
-  maxHeight: "7.5em",
-});
-
-const tokenBadgeClass = css({
-  fontSize: "11px",
-  color: "var(--colors-vercel-text-muted)",
-  border: "1px solid var(--colors-vercel-surface-border)",
-  borderRadius: "var(--radii-l3)",
-  padding: "2px 8px",
-});
-
-export function GraphNode({ id, data, selected }: NodeProps) {
-  const nodeData = data as GraphNodeData;
-  const snippet =
-    nodeData.evidence?.snippet ??
-    "// evidence unavailable\n// fixture did not include snippet";
-  const fileLabel = nodeData.evidence?.file ?? "unknown file";
-  const kindLabel = nodeData.kind;
-
-  return (
-    <div
-      className={cx(
-        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
-        selected && "is-selected",
-      )}
-      data-testid="graph-node"
-      data-node-id={id}
-      data-state={nodeData.state}
-      data-kind={nodeData.kind}
-    >
-      <div className={headerClass}>
-        <div className={labelClass}>{nodeData.label ?? id}</div>
-        <div className={tokenBadgeClass}>
-          {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
-        </div>
-      </div>
-
-      <div className={metaClass}>
-        <span>{kindLabel}</span>
-        <span>{fileLabel}</span>
-      </div>
-
-      <div className={snippetClass}>
-        {nodeData.state === "pending" ? (
-          <span className={ghostClass()}>?</span>
-        ) : (
-          snippet
-        )}
-      </div>
-
-      <Handle type="target" position={Position.Top} className={handleClass} />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className={handleClass}
-      />
-    </div>
-  );
-}
-
-export type GraphFlowNode = FlowNode<GraphNodeData>;
-</file>
-
 <file path="src/components/TestControlsInstaller.tsx">
 "use client";
 
@@ -1870,12 +1678,23 @@ export function findClosestPerimeterLength({
 }
 </file>
 
-<file path="src/graph/events.ts">
-export type GraphNode = {
-  id: string;
-  label?: string;
-  kind: "symbol" | "function" | "file" | "type";
-  state: "anchor" | "pending" | "resolved";
+<file path="src/components/GraphNode.tsx">
+/* eslint-disable style-firewall/no-styling-outside-ui, style-firewall/no-surface-props-outside-recipes */
+import {
+  Handle,
+  Position,
+  type NodeProps,
+  type Node as FlowNode,
+} from "@xyflow/react";
+import { css, cva, cx } from "../../styled-system/css";
+import type { GraphNode } from "@/graph/events";
+import { reactFlowTheme } from "@/theme/react-flow";
+import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
+
+export type GraphNodeData = {
+  label?: GraphNode["label"];
+  state: GraphNode["state"];
+  kind: GraphNode["kind"];
   tokens?: number;
   evidence?: {
     snippet: string;
@@ -1884,18 +1703,196 @@ export type GraphNode = {
   };
 };
 
-export type GraphEdge = {
-  source: string;
-  target: string;
-  kind: "calls" | "imports" | "references";
-};
+const graphNodeClass = cva({
+  base: {
+    width: `${NODE_WIDTH}px`,
+    height: `${NODE_HEIGHT}px`,
+    display: "grid",
+    gridTemplateRows: "auto auto 1fr",
+    borderRadius: "var(--radii-l3)",
+    fontSize: "14px",
+    fontWeight: 600,
+    lineHeight: 1.2,
+    letterSpacing: "0.01em",
+    transition: "all 0.25s ease",
+    boxShadow: "var(--shadows-panel)",
+    border: "1px solid var(--colors-vercel-surface-border)",
+    background: reactFlowTheme.node.background,
+    color: reactFlowTheme.node.color,
+    padding: "12px",
+    gap: "8px",
+    userSelect: "none",
+  },
 
-export type GraphEvent =
-  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
-  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
-  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
-  | { type: "setContext"; nodes: string[] }
-  | { type: "iteration"; step: number };
+    variants: {
+    state: {
+    anchor: {
+      borderColor: "var(--colors-vercel-brand-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
+
+    pending: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "transparent",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.85,
+    },
+
+    resolved: {
+      borderColor: "var(--colors-green-9)",
+      boxShadow: "var(--shadows-glow)",
+    },
+
+    pruned: {
+      borderStyle: "dashed",
+      borderColor: "var(--colors-vercel-surface-outline)",
+      background: "var(--colors-vercel-surface-50)",
+      color: "var(--colors-vercel-text-muted)",
+      opacity: 0.45,
+      boxShadow: "none",
+    },
+  },
+
+    kind: {
+      symbol: {},
+      function: {},
+      file: {
+        fontStyle: "italic",
+      },
+      type: {
+        borderWidth: "2px",
+      },
+    },
+  },
+});
+
+const ghostClass = cva({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "28px",
+    height: "28px",
+    borderRadius: "var(--radii-l3)",
+    background: "var(--colors-vercel-surface-muted)",
+    color: "var(--colors-vercel-text-subtle)",
+    fontSize: "16px",
+    border: "1px solid var(--colors-vercel-surface-border)",
+  },
+});
+
+const handleClass = css({
+  background: "transparent",
+  border: "none",
+});
+
+const headerClass = css({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  justifyContent: "space-between",
+});
+
+const labelClass = css({
+  fontSize: "15px",
+  fontWeight: 700,
+  color: "var(--colors-vercel-text-strong)",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+});
+
+const metaClass = css({
+  fontSize: "12px",
+  color: "var(--colors-vercel-text-subtle)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "2px",
+});
+
+const snippetClass = css({
+  fontFamily: "var(--fonts-mono, ui-monospace, SFMono-Regular, Menlo, monospace)",
+  fontSize: "12px",
+  lineHeight: 1.4,
+  background: "var(--colors-vercel-surface-50)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l2)",
+  padding: "8px",
+  whiteSpace: "pre-wrap",
+  overflowY: "hidden",
+  display: "block",
+  minHeight: "5em",
+  maxHeight: "7.5em",
+});
+
+const tokenBadgeClass = css({
+  fontSize: "11px",
+  color: "var(--colors-vercel-text-muted)",
+  border: "1px solid var(--colors-vercel-surface-border)",
+  borderRadius: "var(--radii-l3)",
+  padding: "2px 8px",
+});
+
+export function GraphNode({ id, data, selected }: NodeProps) {
+  const nodeData = data as GraphNodeData;
+  const snippet = nodeData.evidence?.snippet;
+  const fileLabel =
+    nodeData.state === "resolved" ? nodeData.evidence?.file : undefined;
+  const kindLabel = nodeData.kind;
+
+  return (
+    <div
+      className={cx(
+        graphNodeClass({ state: nodeData.state, kind: nodeData.kind }),
+        selected && "is-selected",
+      )}
+      data-testid="graph-node"
+      data-node-id={id}
+      data-state={nodeData.state}
+      data-kind={nodeData.kind}
+    >
+      <div className={headerClass}>
+        <div
+          className={cx(
+            labelClass,
+            nodeData.state === "pruned" &&
+              css({ textDecoration: "line-through" }),
+          )}
+        >
+          {nodeData.label ?? id}
+        </div>
+        <div className={tokenBadgeClass}>
+          {nodeData.tokens ? `${nodeData.tokens}t` : kindLabel}
+        </div>
+      </div>
+
+      <div className={metaClass}>
+        <span>{kindLabel}</span>
+        {fileLabel && <span>{fileLabel}</span>}
+      </div>
+
+      <div className={snippetClass}>
+        {nodeData.state === "pending" ? (
+          <span className={ghostClass()}>?</span>
+        ) : nodeData.state === "pruned" ? (
+          <span className={ghostClass()}>×</span>
+        ) : (
+          snippet
+        )}
+      </div>
+
+      <Handle type="target" position={Position.Top} className={handleClass} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={handleClass}
+      />
+    </div>
+  );
+}
+
+export type GraphFlowNode = FlowNode<GraphNodeData>;
 </file>
 
 <file path="src/graph/layoutGraph.spec.ts">
@@ -2066,80 +2063,6 @@ describe("layoutGraph (d3-dag layered layout)", () => {
     expect(second.nodes.anchor.position.y).toBe(anchorY);
   });
 });
-</file>
-
-<file path="src/graph/reducer.ts">
-import type { GraphEvent, GraphNode, GraphEdge } from "./events";
-
-export type PositionedGraphNode = GraphNode & {
-  positioned: boolean;
-  position: { x: number; y: number };
-};
-
-export type GraphState = {
-  nodes: Record<string, PositionedGraphNode>;
-  edges: GraphEdge[];
-  context: Set<string>;
-  iteration: number;
-  panTargetId: string | null;
-  panTick: number;
-};
-
-export const initialGraphState: GraphState = {
-  nodes: {},
-  edges: [],
-  context: new Set(),
-  iteration: 0,
-  panTargetId: null,
-  panTick: 0,
-};
-
-export function applyGraphEvent(
-  state: GraphState,
-  event: GraphEvent,
-): GraphState {
-  switch (event.type) {
-    case "addNodes": {
-      const nodes = { ...state.nodes };
-      for (const n of event.nodes) {
-        const previous = nodes[n.id];
-        nodes[n.id] = {
-          ...previous,
-          ...n,
-          position: previous?.position ?? { x: 0, y: 0 },
-          positioned: previous?.positioned ?? false,
-        };
-      }
-      return { ...state, nodes };
-    }
-
-    case "addEdges":
-      return { ...state, edges: [...state.edges, ...event.edges] };
-
-    case "updateNode": {
-      const target = state.nodes[event.id];
-
-      if (!target) return state;
-
-      return {
-        ...state,
-        nodes: {
-          ...state.nodes,
-          [event.id]: { ...target, ...event.patch },
-        },
-      };
-    }
-
-    case "setContext":
-      return { ...state, context: new Set(event.nodes) };
-
-    case "iteration":
-      return { ...state, iteration: event.step };
-
-    default:
-      return state;
-  }
-}
 </file>
 
 <file path="src/state/graphStage.ts">
@@ -2506,641 +2429,128 @@ export default defineConfig({
 }
 </file>
 
-<file path="src/graph/fixtures.ts">
-import type { GraphEvent } from "./events";
-import type { Observable } from "rxjs";
-import { from } from "rxjs";
-
-export type Fixture = {
+<file path="src/graph/events.ts">
+type BaseNode = {
   id: string;
-  label: string;
-  prompt: string;
-  events$: () => Observable<GraphEvent>;
+  label?: string;
+  kind: "symbol" | "function" | "file" | "type";
 };
 
-/**
- * Fixtures now only define events.
- * No playback timing here.
- */
+type PendingNode = BaseNode & {
+  state: "pending";
+};
 
-const tanstackEvents: GraphEvent[] = [
-  /**
-   * Semantic anchor phase
-   */
+type PrunedNode = BaseNode & {
+  state: "pruned";
+};
 
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:useQuery",
-        label: "useQuery",
-        kind: "function",
-        state: "anchor",
-        tokens: 42,
-        evidence: {
-          file: "react-query/useQuery.ts",
-          startLine: 15,
-          snippet: `export function useQuery(options) {
-   const client = useQueryClient()
-   const observer = new QueryObserver(client, options)
-   return observer.getOptimisticResult(options)
- }`,
-        },
-      },
+type AnchorNode = BaseNode & {
+  state: "anchor";
+  tokens?: number;
+  evidence?: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
 
-      {
-        id: "function:useMutation",
-        label: "useMutation",
-        kind: "function",
-        state: "anchor",
-        tokens: 38,
-        evidence: {
-          file: "react-query/useMutation.ts",
-          startLine: 10,
-          snippet: `export function useMutation(options) {
-   const client = useQueryClient()
-   return new MutationObserver(client, options)
- }`,
-        },
-      },
+type ResolvedNode = BaseNode & {
+  state: "resolved";
+  tokens: number;
+  evidence: {
+    snippet: string;
+    file?: string;
+    startLine?: number;
+  };
+};
 
-      {
-        id: "function:QueryClient",
-        label: "QueryClient",
-        kind: "function",
-        state: "anchor",
-        tokens: 50,
-        evidence: {
-          file: "query-core/queryClient.ts",
-          startLine: 20,
-          snippet: `export class QueryClient {
-   constructor(config) {
-     this.queryCache = new QueryCache()
-   }
- }`,
-        },
-      },
-    ],
-    reason: "Semantic anchors discovered from query",
-  },
+export type GraphNode = PendingNode | PrunedNode | AnchorNode | ResolvedNode;
 
-  { type: "iteration", step: 1 },
+export type GraphEdge = {
+  source: string;
+  target: string;
+  kind: "calls" | "imports" | "references";
+};
 
-  /**
-   * Solver begins exploring useQuery path
-   */
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:QueryObserver",
-        label: "QueryObserver",
-        kind: "function",
-        state: "pending",
-        tokens: 60,
-        evidence: {
-          file: "query-core/queryObserver.ts",
-          startLine: 40,
-          snippet: `export class QueryObserver {
-   constructor(client, options) {
-     this.client = client
-     this.options = options
-   }
- }`,
-        },
-      },
-    ],
-    reason: "useQuery constructs a QueryObserver",
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:useQuery",
-        target: "function:QueryObserver",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 2 },
-
-  /**
-   * Branch nodes
-   */
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:notifyManager",
-        label: "notifyManager",
-        kind: "function",
-        state: "pending",
-        tokens: 30,
-        evidence: {
-          file: "query-core/notifyManager.ts",
-          startLine: 5,
-          snippet: `export const notifyManager = {
-   batch(fn) {
-     queueMicrotask(fn)
-   }
- }`,
-        },
-      },
-
-      {
-        id: "function:focusManager",
-        label: "focusManager",
-        kind: "function",
-        state: "pending",
-        tokens: 28,
-        evidence: {
-          file: "query-core/focusManager.ts",
-          startLine: 10,
-          snippet: `export const focusManager = {
-   setFocused(focused) {
-     this.listeners.forEach(l => l(focused))
-   }
- }`,
-        },
-      },
-    ],
-    reason: "QueryObserver integrates scheduling and focus events",
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:QueryObserver",
-        target: "function:notifyManager",
-        kind: "calls",
-      },
-      {
-        source: "function:QueryObserver",
-        target: "function:focusManager",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 3 },
-
-  /**
-   * Continue main causal path
-   */
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "type:Query",
-        label: "Query",
-        kind: "type",
-        state: "pending",
-        tokens: 65,
-        evidence: {
-          file: "query-core/query.ts",
-          startLine: 30,
-          snippet: `export class Query {
-   fetch() {
-     this.retryer = new Retryer(this.options)
-   }
- }`,
-        },
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:QueryClient",
-        target: "type:Query",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 4 },
-
-  /**
-   * Final causal node
-   */
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:Retryer",
-        label: "Retryer",
-        kind: "function",
-        state: "pending",
-        tokens: 35,
-        evidence: {
-          file: "query-core/retryer.ts",
-          startLine: 10,
-          snippet: `export class Retryer {
-   constructor(config) {
-     this.retry = config.retry
-   }
- }`,
-        },
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "type:Query",
-        target: "function:Retryer",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 5 },
-
-  /**
-   * Solver resolves nodes
-   */
-
-  {
-    type: "updateNode",
-    id: "function:QueryObserver",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "type:Query",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:Retryer",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "setContext",
-    nodes: [
-      "function:useQuery",
-      "function:QueryObserver",
-      "function:QueryClient",
-      "type:Query",
-      "function:Retryer",
-    ],
-  },
-];
-
-const reduxEvents: GraphEvent[] = [
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createSlice",
-        label: "createSlice",
-        kind: "function",
-        state: "anchor",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 1 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createReducer",
-        label: "createReducer",
-        kind: "function",
-        state: "pending",
-      },
-      {
-        id: "function:createAction",
-        label: "createAction",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createSlice",
-        target: "function:createReducer",
-        kind: "calls",
-      },
-      {
-        source: "function:createSlice",
-        target: "function:createAction",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 2 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "type:Slice",
-        label: "Slice",
-        kind: "type",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createSlice",
-        target: "type:Slice",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 3 },
-
-  {
-    type: "updateNode",
-    id: "function:createReducer",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:createAction",
-    patch: { state: "resolved" },
-  },
-];
-
-const zustandEvents: GraphEvent[] = [
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:createStore",
-        label: "createStore",
-        kind: "function",
-        state: "anchor",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 1 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "function:setState",
-        label: "setState",
-        kind: "function",
-        state: "pending",
-      },
-      {
-        id: "function:subscribe",
-        label: "subscribe",
-        kind: "function",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createStore",
-        target: "function:setState",
-        kind: "calls",
-      },
-      {
-        source: "function:createStore",
-        target: "function:subscribe",
-        kind: "calls",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 2 },
-
-  {
-    type: "addNodes",
-    nodes: [
-      {
-        id: "type:StoreApi",
-        label: "StoreApi",
-        kind: "type",
-        state: "pending",
-      },
-    ],
-  },
-
-  {
-    type: "addEdges",
-    edges: [
-      {
-        source: "function:createStore",
-        target: "type:StoreApi",
-        kind: "references",
-      },
-    ],
-  },
-
-  { type: "iteration", step: 3 },
-
-  {
-    type: "updateNode",
-    id: "function:setState",
-    patch: { state: "resolved" },
-  },
-
-  {
-    type: "updateNode",
-    id: "function:subscribe",
-    patch: { state: "resolved" },
-  },
-];
-
-const tanstackFixture = {
-  id: "tanstack",
-  label: "TanStack Query",
-  prompt: "How does useQuery work internally in TanStack Query?",
-  events$: () => from(tanstackEvents),
-} as const satisfies Fixture;
-
-const reduxFixture = {
-  id: "redux",
-  label: "Redux Toolkit",
-  prompt: "How does createSlice generate reducers in Redux Toolkit?",
-  events$: () => from(reduxEvents),
-} as const satisfies Fixture;
-
-const zustandFixture = {
-  id: "zustand",
-  label: "Zustand",
-  prompt: "How does Zustand create and update store state?",
-  events$: () => from(zustandEvents),
-} as const satisfies Fixture;
-
-export const fixtureRegistry = {
-  tanstack: tanstackFixture,
-  redux: reduxFixture,
-  zustand: zustandFixture,
-} as const satisfies Record<string, Fixture>;
+export type GraphEvent =
+  | { type: "addNodes"; nodes: GraphNode[]; reason?: string }
+  | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
+  | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
+  | { type: "setContext"; nodes: string[] }
+  | { type: "iteration"; step: number };
 </file>
 
-<file path="src/graph/layoutGraph.ts">
-import {
-  coordGreedy,
-  decrossTwoLayer,
-  graphConnect,
-  layeringLongestPath,
-  sugiyama,
-  type Graph as DagGraph,
-  type MutGraphNode as DagMutGraphNode,
-  type SugiNode,
-} from "d3-dag";
+<file path="src/graph/reducer.ts">
+import type { GraphEvent, GraphNode, GraphEdge } from "./events";
 
-import type { GraphEdge } from "./events";
-import type { GraphState } from "./reducer";
+export type PositionedGraphNode = GraphNode & {
+  positioned: boolean;
+  position: { x: number; y: number };
+};
 
-export const NODE_WIDTH = 300;
-export const NODE_HEIGHT = 140;
+export type GraphState = {
+  nodes: Record<string, PositionedGraphNode>;
+  edges: GraphEdge[];
+  context: Set<string>;
+  iteration: number;
+  panTargetId: string | null;
+  panTick: number;
+};
 
-const VERTICAL_SPACING = 220;
-const HORIZONTAL_SPACING = 340;
+export const initialGraphState: GraphState = {
+  nodes: {},
+  edges: [],
+  context: new Set(),
+  iteration: 0,
+  panTargetId: null,
+  panTick: 0,
+};
 
-type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
-
-function buildDag(
+export function applyGraphEvent(
   state: GraphState,
-  discoveryIndex: Map<string, number>,
-): DagGraph<DagNodeDatum, GraphEdge> {
-  const nodeDatumForId = (id: string): DagNodeDatum => ({
-    ...state.nodes[id],
-    discoveryIndex: discoveryIndex.get(id) ?? Number.MAX_SAFE_INTEGER,
-  });
-
-  const builder = graphConnect<DagNodeDatum, GraphEdge>()
-    .sourceId(({ source }) => source)
-    .targetId(({ target }) => target)
-    .nodeDatum(nodeDatumForId);
-
-  const dag = builder(state.edges);
-  const dagNodesById = new Map<string, DagMutGraphNode<DagNodeDatum, GraphEdge>>();
-
-  for (const node of dag.nodes()) {
-    dagNodesById.set(node.data.id, node);
-  }
-
-  // Ensure isolated nodes are represented in the DAG
-  for (const node of Object.values(state.nodes)) {
-    if (!dagNodesById.has(node.id)) {
-      const dagNode = dag.node({
-        ...node,
-        discoveryIndex: discoveryIndex.get(node.id) ?? Number.MAX_SAFE_INTEGER,
-      });
-      dagNodesById.set(node.id, dagNode);
-    }
-  }
-
-  return dag;
-}
-
-const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
-  (
-    topLayer: SugiNode<DagNodeDatum, GraphEdge>[],
-    bottomLayer: SugiNode<DagNodeDatum, GraphEdge>[],
-    topDown: boolean,
-  ) => {
-    const layer = topDown ? bottomLayer : topLayer;
-
-    const valueForNode = (
-      node: DagGraphNode<DagNodeDatum, GraphEdge>,
-    ): number => {
-      if (node.data.role === "node") {
-        const id = node.data.node.data.id;
-        return discoveryIndex.get(id) ?? node.data.node.data.discoveryIndex ?? 0;
+  event: GraphEvent,
+): GraphState {
+  switch (event.type) {
+    case "addNodes": {
+      const nodes: Record<string, PositionedGraphNode> = { ...state.nodes };
+      for (const n of event.nodes) {
+        const previous = nodes[n.id];
+        nodes[n.id] = {
+          ...previous,
+          ...n,
+          position: previous?.position ?? { x: 0, y: 0 },
+          positioned: previous?.positioned ?? false,
+        } as PositionedGraphNode;
       }
+      return { ...state, nodes };
+    }
 
-      const sourceId = node.data.link.source.data.id;
-      const targetId = node.data.link.target.data.id;
-      const source = discoveryIndex.get(sourceId) ?? node.data.link.source.data.discoveryIndex ?? 0;
-      const target = discoveryIndex.get(targetId) ?? node.data.link.target.data.discoveryIndex ?? 0;
-      return (source + target) / 2;
-    };
+    case "addEdges":
+      return { ...state, edges: [...state.edges, ...event.edges] };
 
-    layer.sort((a, b) => valueForNode(a) - valueForNode(b));
-  };
+    case "updateNode": {
+      const target = state.nodes[event.id];
 
-export async function layoutGraph(state: GraphState): Promise<GraphState> {
-  const nodes = Object.values(state.nodes);
-  const newNodes = nodes.filter((n) => !n.positioned);
+      if (!target) return state;
 
-  if (!newNodes.length) return state;
+      return {
+        ...state,
+        nodes: {
+          ...state.nodes,
+          [event.id]: { ...target, ...event.patch } as PositionedGraphNode,
+        },
+      };
+    }
 
-  const discoveryIndex = new Map<string, number>();
-  Object.keys(state.nodes).forEach((id, idx) => discoveryIndex.set(id, idx));
+    case "setContext":
+      return { ...state, context: new Set(event.nodes) };
 
-  const dag = buildDag(state, discoveryIndex);
+    case "iteration":
+      return { ...state, iteration: event.step };
 
-  const layout = sugiyama<DagNodeDatum, GraphEdge>()
-    .layering(
-      layeringLongestPath<DagNodeDatum, GraphEdge>().rank((node) =>
-        node.data.state === "anchor" ? 0 : undefined,
-      ),
-    )
-    .decross(decrossTwoLayer<DagNodeDatum, GraphEdge>().order(orderByDiscovery(discoveryIndex)))
-    .coord(coordGreedy())
-    .nodeSize(() => [NODE_WIDTH, NODE_HEIGHT])
-    .gap([HORIZONTAL_SPACING, VERTICAL_SPACING]);
-
-  layout(dag);
-
-  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
-  for (const dagNode of dag.nodes()) {
-    const nodeId = dagNode.data.id;
-    const existing = placed[nodeId];
-
-    if (!existing) continue;
-
-    const x = existing.positioned ? existing.position.x : dagNode.x;
-    const y =
-      existing.positioned && existing.state !== "anchor"
-        ? existing.position.y
-        : existing.state === "anchor"
-          ? 0
-          : dagNode.y;
-
-    placed[nodeId] = {
-      ...existing,
-      positioned: true,
-      position: { x, y },
-    };
+    default:
+      return state;
   }
-
-  return {
-    ...state,
-    nodes: placed,
-  };
 }
 </file>
 
@@ -3329,6 +2739,615 @@ export default function RootLayout({
 }
 </file>
 
+<file path="src/graph/fixtures.ts">
+import type { GraphEvent } from "./events";
+import type { Observable } from "rxjs";
+import { from } from "rxjs";
+
+export type Fixture = {
+  id: string;
+  label: string;
+  prompt: string;
+  events$: () => Observable<GraphEvent>;
+};
+
+/**
+ * Fixtures now only define events.
+ * No playback timing here.
+ */
+
+const tanstackEvents: GraphEvent[] = [
+  /**
+   * Anchor: starting symbol
+   */
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:useQuery",
+        label: "useQuery",
+        kind: "function",
+        state: "anchor",
+        tokens: 40,
+        evidence: {
+          file: "react-query/useQuery.ts",
+          startLine: 15,
+          snippet: `export function useQuery(options) {
+   const client = useQueryClient()
+   const observer = new QueryObserver(client, options)
+   return observer.getOptimisticResult(options)`,
+        },
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 1
+   * ctrl-click QueryObserver
+   */
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:observer",
+        label: "observer",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:useQuery",
+        target: "var:observer",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "updateNode",
+    id: "var:observer",
+    patch: {
+      state: "resolved",
+      tokens: 22,
+      evidence: {
+        file: "query-core/queryObserver.ts",
+        startLine: 40,
+        snippet: `constructor(client, options) {
+   this.client = client
+   this.options = options
+   notifyManager.batch(() =>`,
+      },
+    },
+  },
+
+  /**
+   * ITERATION 3
+   * ctrl-click symbols inside QueryObserver
+   */
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:client",
+        label: "client",
+        kind: "symbol",
+        state: "pending",
+      },
+
+      {
+        id: "var:notifyManager",
+        label: "notifyManager",
+        kind: "symbol",
+        state: "pending",
+      },
+
+      {
+        id: "var:focusManager",
+        label: "focusManager",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:observer",
+        target: "var:client",
+        kind: "references",
+      },
+      {
+        source: "var:observer",
+        target: "var:notifyManager",
+        kind: "calls",
+      },
+      {
+        source: "var:observer",
+        target: "var:focusManager",
+        kind: "references",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 4
+   * ctrl-click client
+   */
+
+  { type: "iteration", step: 4 },
+
+  {
+    type: "updateNode",
+    id: "var:client",
+    patch: {
+      state: "resolved",
+      tokens: 20,
+      evidence: {
+        file: "query-core/queryClient.ts",
+        startLine: 20,
+        snippet: `constructor(config) {
+   this.queryCache = new QueryCache()
+   this.mutationCache = new MutationCache()
+ `,
+      },
+    },
+  },
+
+  {
+    type: "updateNode",
+    id: "var:notifyManager",
+    patch: { state: "pruned" },
+  },
+
+  {
+    type: "updateNode",
+    id: "var:focusManager",
+    patch: { state: "pruned" },
+  },
+
+  /**
+   * ITERATION 5
+   * ctrl-click queryCache inside client
+   */
+
+  { type: "iteration", step: 5 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:queryCache",
+        label: "queryCache",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:client",
+        target: "var:queryCache",
+        kind: "references",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 6
+   */
+
+  { type: "iteration", step: 6 },
+
+  {
+    type: "updateNode",
+    id: "var:queryCache",
+    patch: {
+      state: "resolved",
+      tokens: 24,
+      evidence: {
+        file: "query-core/queryCache.ts",
+        startLine: 10,
+        snippet: `build(client, options) {
+   const query = new Query(client, options)
+   this.queries.push(query)
+ `,
+      },
+    },
+  },
+
+  /**
+   * ITERATION 7
+   * ctrl-click query
+   */
+
+  { type: "iteration", step: 7 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:query",
+        label: "query",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:queryCache",
+        target: "var:query",
+        kind: "calls",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 8
+   */
+
+  { type: "iteration", step: 8 },
+
+  {
+    type: "updateNode",
+    id: "var:query",
+    patch: {
+      state: "resolved",
+      tokens: 24,
+      evidence: {
+        file: "query-core/query.ts",
+        startLine: 30,
+        snippet: `fetch() {
+   this.retryer = new Retryer({
+     retry: this.options.retry
+ `,
+      },
+    },
+  },
+
+  /**
+   * ITERATION 9
+   * ctrl-click retryer
+   */
+
+  { type: "iteration", step: 9 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "var:retryer",
+        label: "retryer",
+        kind: "symbol",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "var:query",
+        target: "var:retryer",
+        kind: "calls",
+      },
+    ],
+  },
+
+  /**
+   * ITERATION 10
+   */
+
+  { type: "iteration", step: 10 },
+
+  {
+    type: "updateNode",
+    id: "var:retryer",
+    patch: {
+      state: "resolved",
+      tokens: 18,
+      evidence: {
+        file: "query-core/retryer.ts",
+        startLine: 10,
+        snippet: `constructor(config) {
+   this.retry = config.retry
+   this.abort = config.abort
+ `,
+      },
+    },
+  },
+
+  {
+    type: "setContext",
+    nodes: [
+      "function:useQuery",
+      "var:observer",
+      "var:client",
+      "var:queryCache",
+      "var:query",
+      "var:retryer",
+    ],
+  },
+];
+
+const reduxEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createSlice",
+        label: "createSlice",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createReducer",
+        label: "createReducer",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:createAction",
+        label: "createAction",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "function:createReducer",
+        kind: "calls",
+      },
+      {
+        source: "function:createSlice",
+        target: "function:createAction",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:Slice",
+        label: "Slice",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createSlice",
+        target: "type:Slice",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:createReducer",
+    patch: {
+      state: "resolved",
+      tokens: 36,
+      evidence: {
+        file: "redux/createReducer.ts",
+        startLine: 12,
+        snippet: `export function createReducer(initialState, builderCallback) {
+  const actionsMap = builderCallback({})
+  return function reducer(state = initialState, action) {
+    const caseReducer = actionsMap[action.type]
+    return caseReducer ? caseReducer(state, action) : state
+  }
+}`,
+      },
+    },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:createAction",
+    patch: {
+      state: "resolved",
+      tokens: 22,
+      evidence: {
+        file: "redux/createAction.ts",
+        startLine: 8,
+        snippet: `export function createAction(type) {
+  const actionCreator = payload => ({ type, payload })
+  actionCreator.toString = () => type
+  return actionCreator
+}`,
+      },
+    },
+  },
+];
+
+const zustandEvents: GraphEvent[] = [
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:createStore",
+        label: "createStore",
+        kind: "function",
+        state: "anchor",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 1 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "function:setState",
+        label: "setState",
+        kind: "function",
+        state: "pending",
+      },
+      {
+        id: "function:subscribe",
+        label: "subscribe",
+        kind: "function",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "function:setState",
+        kind: "calls",
+      },
+      {
+        source: "function:createStore",
+        target: "function:subscribe",
+        kind: "calls",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 2 },
+
+  {
+    type: "addNodes",
+    nodes: [
+      {
+        id: "type:StoreApi",
+        label: "StoreApi",
+        kind: "type",
+        state: "pending",
+      },
+    ],
+  },
+
+  {
+    type: "addEdges",
+    edges: [
+      {
+        source: "function:createStore",
+        target: "type:StoreApi",
+        kind: "references",
+      },
+    ],
+  },
+
+  { type: "iteration", step: 3 },
+
+  {
+    type: "updateNode",
+    id: "function:setState",
+    patch: {
+      state: "resolved",
+      tokens: 26,
+      evidence: {
+        file: "zustand/core.ts",
+        startLine: 14,
+        snippet: `const setState = (partial, replace) => {
+  const nextState = typeof partial === "function" ? partial(state) : partial
+  state = replace ? nextState : { ...state, ...nextState }
+  listeners.forEach(listener => listener(state))
+}`,
+      },
+    },
+  },
+
+  {
+    type: "updateNode",
+    id: "function:subscribe",
+    patch: {
+      state: "resolved",
+      tokens: 18,
+      evidence: {
+        file: "zustand/core.ts",
+        startLine: 28,
+        snippet: `const subscribe = listener => {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}`,
+      },
+    },
+  },
+];
+
+const tanstackFixture = {
+  id: "tanstack",
+  label: "TanStack Query",
+  prompt: "How does useQuery work internally in TanStack Query?",
+  events$: () => from(tanstackEvents),
+} as const satisfies Fixture;
+
+const reduxFixture = {
+  id: "redux",
+  label: "Redux Toolkit",
+  prompt: "How does createSlice generate reducers in Redux Toolkit?",
+  events$: () => from(reduxEvents),
+} as const satisfies Fixture;
+
+const zustandFixture = {
+  id: "zustand",
+  label: "Zustand",
+  prompt: "How does Zustand create and update store state?",
+  events$: () => from(zustandEvents),
+} as const satisfies Fixture;
+
+export const fixtureRegistry = {
+  tanstack: tanstackFixture,
+  redux: reduxFixture,
+  zustand: zustandFixture,
+} as const satisfies Record<string, Fixture>;
+</file>
+
 <file path="src/graph/graphStream.ts">
 import {
   Observable,
@@ -3421,6 +3440,142 @@ function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
     ...state,
     panTargetId: targetId,
     panTick: (state.panTick ?? 0) + 1,
+  };
+}
+</file>
+
+<file path="src/graph/layoutGraph.ts">
+import {
+  coordGreedy,
+  decrossTwoLayer,
+  graphConnect,
+  layeringLongestPath,
+  sugiyama,
+  type Graph as DagGraph,
+  type GraphNode as DagGraphNode,
+  type MutGraphNode as DagMutGraphNode,
+  type SugiNode,
+} from "d3-dag";
+
+import type { GraphEdge } from "./events";
+import type { GraphState } from "./reducer";
+
+export const NODE_WIDTH = 300;
+export const NODE_HEIGHT = 140;
+
+const VERTICAL_SPACING = 220;
+const HORIZONTAL_SPACING = 340;
+
+type DagNodeDatum = GraphState["nodes"][string] & { discoveryIndex?: number };
+
+function buildDag(
+  state: GraphState,
+  discoveryIndex: Map<string, number>,
+): DagGraph<DagNodeDatum, GraphEdge> {
+  const nodeDatumForId = (id: string): DagNodeDatum => ({
+    ...state.nodes[id],
+    discoveryIndex: discoveryIndex.get(id) ?? Number.MAX_SAFE_INTEGER,
+  });
+
+  const builder = graphConnect()
+    .sourceId(({ source }: GraphEdge) => source)
+    .targetId(({ target }: GraphEdge) => target)
+    .nodeDatum(nodeDatumForId);
+
+  const dag = builder(state.edges) as DagGraph<DagNodeDatum, GraphEdge>;
+  const dagNodesById = new Map<string, DagGraphNode<DagNodeDatum, GraphEdge>>();
+
+  for (const node of dag.nodes()) {
+    dagNodesById.set(node.data.id, node);
+  }
+
+  // Ensure isolated nodes are represented in the DAG
+  for (const node of Object.values(state.nodes)) {
+    if (!dagNodesById.has(node.id)) {
+      const dagNode = (dag as any).node({
+        ...node,
+        discoveryIndex: discoveryIndex.get(node.id) ?? Number.MAX_SAFE_INTEGER,
+      }) as DagMutGraphNode<any, GraphEdge>;
+      dagNodesById.set(node.id, dagNode);
+    }
+  }
+
+  return dag;
+}
+
+const orderByDiscovery = (discoveryIndex: Map<string, number>) =>
+  (
+    topLayer: SugiNode<any, GraphEdge>[],
+    bottomLayer: SugiNode<any, GraphEdge>[],
+    topDown: boolean,
+  ) => {
+    const layer = topDown ? bottomLayer : topLayer;
+
+    const valueForNode = (node: any): number => {
+      if (node.data.role === "node") {
+        const id = node.data.node.data.id;
+        return discoveryIndex.get(id) ?? node.data.node.data.discoveryIndex ?? 0;
+      }
+
+      const sourceId = node.data.link.source.data.id;
+      const targetId = node.data.link.target.data.id;
+      const source = discoveryIndex.get(sourceId) ?? node.data.link.source.data.discoveryIndex ?? 0;
+      const target = discoveryIndex.get(targetId) ?? node.data.link.target.data.discoveryIndex ?? 0;
+      return (source + target) / 2;
+    };
+
+    layer.sort((a, b) => valueForNode(a) - valueForNode(b));
+  };
+
+export async function layoutGraph(state: GraphState): Promise<GraphState> {
+  const nodes = Object.values(state.nodes);
+  const newNodes = nodes.filter((n) => !n.positioned);
+
+  if (!newNodes.length) return state;
+
+  const discoveryIndex = new Map<string, number>();
+  Object.keys(state.nodes).forEach((id, idx) => discoveryIndex.set(id, idx));
+
+  const dag = buildDag(state, discoveryIndex);
+
+  const layout = (sugiyama() as any)
+    .layering(
+      layeringLongestPath().rank((node: any) =>
+        node.data.state === "anchor" ? 0 : undefined,
+      ),
+    )
+    .decross(decrossTwoLayer().order(orderByDiscovery(discoveryIndex)))
+    .coord(coordGreedy())
+    .nodeSize(() => [NODE_WIDTH, NODE_HEIGHT])
+    .gap([HORIZONTAL_SPACING, VERTICAL_SPACING]);
+
+  layout(dag);
+
+  const placed: Record<string, GraphState["nodes"][string]> = { ...state.nodes };
+  for (const dagNode of dag.nodes()) {
+    const nodeId = dagNode.data.id;
+    const existing = placed[nodeId];
+
+    if (!existing) continue;
+
+    const x = existing.positioned ? existing.position.x : dagNode.x;
+    const y =
+      existing.positioned && existing.state !== "anchor"
+        ? existing.position.y
+        : existing.state === "anchor"
+          ? 0
+          : dagNode.y;
+
+    placed[nodeId] = {
+      ...existing,
+      positioned: true,
+      position: { x, y },
+    };
+  }
+
+  return {
+    ...state,
+    nodes: placed,
   };
 }
 </file>
@@ -3682,7 +3837,6 @@ import { reactFlowTheme } from "@/theme/react-flow";
 import { useFollowNodes } from "./useFollowNodes";
 import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
 import "@xyflow/react/dist/style.css";
 
@@ -3692,9 +3846,11 @@ import type { GraphState } from "@/graph/reducer";
 const nodeTypes = {
   graph: GraphNode,
 };
+
 const edgeTypes = {
   graph: AnimatedGraphEdge,
 };
+
 const INITIAL_ZOOM = 1.5;
 
 const isNode = (n: Node | undefined): n is Node => Boolean(n);
@@ -3720,8 +3876,14 @@ export function buildFlowElements(
           label: n.label ?? n.id,
           state: n.state,
           kind: n.kind,
-          tokens: n.tokens,
-          evidence: n.evidence,
+          tokens:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.tokens
+              : undefined,
+          evidence:
+            n.state === "resolved" || n.state === "anchor"
+              ? n.evidence
+              : undefined,
         },
         position: n.position,
         selectable: false,
@@ -3742,7 +3904,10 @@ export function buildFlowElements(
     animated: false,
     type: "graph",
     label: e.kind,
-    data: { kind: e.kind, animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`) },
+    data: {
+      kind: e.kind,
+      animateOnMount: !prevEdgeIds.has(`${e.source}-${e.target}-${index}`),
+    },
   }));
 
   return {
@@ -3772,61 +3937,59 @@ function GraphStageInner() {
   const prevEdgeIdsRef = useRef<Set<string>>(new Set());
 
   /**
-   * Rebuild graph whenever stream updates
+   * Always reconcile rendered graph from latest graphState
    */
   useEffect(() => {
     const prevIds = prevNodeIdsRef.current;
 
-    const { nodes: mappedNodes, edges: mappedEdges, renderedIds, renderedEdgeIds } =
-      buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
+    const {
+      nodes: mappedNodes,
+      edges: mappedEdges,
+      renderedIds,
+      renderedEdgeIds,
+    } = buildFlowElements(graphState, prevIds, prevEdgeIdsRef.current);
 
     prevNodeIdsRef.current = new Set(renderedIds);
     prevEdgeIdsRef.current = new Set(renderedEdgeIds);
 
     setNodes(mappedNodes);
     setEdges(mappedEdges);
+  }, [graphState, setNodes, setEdges]);
 
-    const newNode = mappedNodes.find((n) => !prevIds.has(n.id));
+  /**
+   * Camera follows solver intent
+   */
+  useEffect(() => {
+    const panTarget = nodes.find((n) => n.id === graphState.panTargetId);
 
-    const parentNodes = newNode
+    if (!panTarget) return;
+
+    const parentNodes = graphState.edges
+      .filter((e) => e.target === panTarget.id)
+      .map((e) => nodes.find((n) => n.id === e.source))
+      .filter(isNode);
+
+    const siblingNodes = parentNodes.length
       ? graphState.edges
-          .filter((e) => e.target === newNode.id)
-          .map((e) => mappedNodes.find((n) => n.id === e.source))
+          .filter((e) => parentNodes.some((p) => p.id === e.source))
+          .filter((e) => e.target !== panTarget.id)
+          .map((e) => nodes.find((n) => n.id === e.target))
           .filter(isNode)
       : [];
 
-    const siblingNodes =
-      newNode && parentNodes.length
-        ? graphState.edges
-            .filter((e) => parentNodes.some((p) => p?.id === e.source))
-            .filter((e) => e.target !== newNode.id)
-            .map((e) => mappedNodes.find((n) => n.id === e.target))
-            .filter(isNode)
-        : [];
-
-    const panTarget = mappedNodes.find((n) => n.id === graphState.panTargetId);
-
-    const regionNodes = [
-      ...(newNode ? [newNode] : []),
-      ...parentNodes,
-      ...siblingNodes,
-    ];
-
-    const fallbackRegion = panTarget ? [panTarget] : [];
-
-    const targets = (regionNodes.length ? regionNodes : fallbackRegion).filter(
-      isNode,
-    );
+    const targets = [panTarget, ...parentNodes, ...siblingNodes].filter(isNode);
 
     if (targets.length) {
       requestAnimationFrame(() => followNodes(targets));
     }
+  }, [
+    graphState.panTick,
+    graphState.panTargetId,
+    graphState.edges,
+    nodes,
+    followNodes,
+  ]);
 
-  }, [graphState, setNodes, setEdges, followNodes]);
-
-  /**
-   * Drag state (used by SearchBar system)
-   */
   const handleDragStart = useCallback(() => {
     setFlowDragging(true);
   }, [setFlowDragging]);
@@ -3848,13 +4011,11 @@ function GraphStageInner() {
       <ThemedReactFlow
         className={reactFlowCanvasClass}
         defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
-        /* restore zoom */
         minZoom={0.25}
         maxZoom={4}
         zoomOnScroll
         zoomOnPinch
         zoomOnDoubleClick
-        /* restore canvas panning */
         panOnDrag
         nodes={nodes}
         edges={edges}

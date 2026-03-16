@@ -31,7 +31,6 @@ import { reactFlowTheme } from "@/theme/react-flow";
 import { useFollowNodes } from "./useFollowNodes";
 import { GraphNode } from "@/components/GraphNode";
 import { AnimatedGraphEdge } from "./AnimatedGraphEdge";
-import { NODE_HEIGHT, NODE_WIDTH } from "@/graph/layoutGraph";
 
 import "@xyflow/react/dist/style.css";
 
@@ -41,9 +40,11 @@ import type { GraphState } from "@/graph/reducer";
 const nodeTypes = {
   graph: GraphNode,
 };
+
 const edgeTypes = {
   graph: AnimatedGraphEdge,
 };
+
 const INITIAL_ZOOM = 1.5;
 
 const isNode = (n: Node | undefined): n is Node => Boolean(n);
@@ -130,7 +131,7 @@ function GraphStageInner() {
   const prevEdgeIdsRef = useRef<Set<string>>(new Set());
 
   /**
-   * Rebuild graph whenever stream updates
+   * Always reconcile rendered graph from latest graphState
    */
   useEffect(() => {
     const prevIds = prevNodeIdsRef.current;
@@ -147,47 +148,42 @@ function GraphStageInner() {
 
     setNodes(mappedNodes);
     setEdges(mappedEdges);
+  }, [graphState, setNodes, setEdges]);
 
-    const newNode = mappedNodes.find((n) => !prevIds.has(n.id));
+  /**
+   * Camera follows solver intent
+   */
+  useEffect(() => {
+    const panTarget = nodes.find((n) => n.id === graphState.panTargetId);
 
-    const parentNodes = newNode
+    if (!panTarget) return;
+
+    const parentNodes = graphState.edges
+      .filter((e) => e.target === panTarget.id)
+      .map((e) => nodes.find((n) => n.id === e.source))
+      .filter(isNode);
+
+    const siblingNodes = parentNodes.length
       ? graphState.edges
-          .filter((e) => e.target === newNode.id)
-          .map((e) => mappedNodes.find((n) => n.id === e.source))
+          .filter((e) => parentNodes.some((p) => p.id === e.source))
+          .filter((e) => e.target !== panTarget.id)
+          .map((e) => nodes.find((n) => n.id === e.target))
           .filter(isNode)
       : [];
 
-    const siblingNodes =
-      newNode && parentNodes.length
-        ? graphState.edges
-            .filter((e) => parentNodes.some((p) => p?.id === e.source))
-            .filter((e) => e.target !== newNode.id)
-            .map((e) => mappedNodes.find((n) => n.id === e.target))
-            .filter(isNode)
-        : [];
-
-    const panTarget = mappedNodes.find((n) => n.id === graphState.panTargetId);
-
-    const regionNodes = [
-      ...(newNode ? [newNode] : []),
-      ...parentNodes,
-      ...siblingNodes,
-    ];
-
-    const fallbackRegion = panTarget ? [panTarget] : [];
-
-    const targets = (regionNodes.length ? regionNodes : fallbackRegion).filter(
-      isNode,
-    );
+    const targets = [panTarget, ...parentNodes, ...siblingNodes].filter(isNode);
 
     if (targets.length) {
       requestAnimationFrame(() => followNodes(targets));
     }
-  }, [graphState, setNodes, setEdges, followNodes]);
+  }, [
+    graphState.panTick,
+    graphState.panTargetId,
+    graphState.edges,
+    nodes,
+    followNodes,
+  ]);
 
-  /**
-   * Drag state (used by SearchBar system)
-   */
   const handleDragStart = useCallback(() => {
     setFlowDragging(true);
   }, [setFlowDragging]);
@@ -209,13 +205,11 @@ function GraphStageInner() {
       <ThemedReactFlow
         className={reactFlowCanvasClass}
         defaultViewport={{ x: 0, y: 0, zoom: INITIAL_ZOOM }}
-        /* restore zoom */
         minZoom={0.25}
         maxZoom={4}
         zoomOnScroll
         zoomOnPinch
         zoomOnDoubleClick
-        /* restore canvas panning */
         panOnDrag
         nodes={nodes}
         edges={edges}
