@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 export function useAnimatedTokenCount(target: number) {
   const [value, setValue] = useState(target);
-  const raf = useRef<number>();
+  const raf = useRef<number | null>(null);
 
   useEffect(() => {
-    if (raf.current !== undefined) {
+    if (raf.current !== null) {
       cancelAnimationFrame(raf.current);
     }
 
@@ -25,7 +25,7 @@ export function useAnimatedTokenCount(target: number) {
     raf.current = requestAnimationFrame(step);
 
     return () => {
-      if (raf.current !== undefined) {
+      if (raf.current !== null) {
         cancelAnimationFrame(raf.current);
       }
     };

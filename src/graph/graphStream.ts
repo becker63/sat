@@ -14,14 +14,87 @@ import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators
 import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
 import type { GraphEvent } from "./events";
 import { layoutGraph } from "./layoutGraph";
+import { getDefaultStore } from "jotai";
+import { initialTokenState, tokenReducer } from "@/state/tokenReducer";
+import { tokenStateAtom } from "@/state/tokenStateAtom";
+import type { TokenSource } from "@/state/tokenSources";
 
 const EVENT_DELAY_MS = 700;
+const tokenStore = getDefaultStore();
+const nodeTokenCache = new Map<string, number>();
+const resolvedNodes = new Set<string>();
+
+const emitTokenAdd = (source: TokenSource, tokens: number) => {
+  if (tokens <= 0) return;
+  tokenStore.set(tokenStateAtom, (prev) => tokenReducer(prev, source, tokens));
+};
+
+function handleTokenSideEffects(event: GraphEvent) {
+  if (event.type === "tokenAdd") {
+    emitTokenAdd(event.source, event.tokens);
+    return;
+  }
+
+  if (event.type === "addNodes") {
+    for (const node of event.nodes) {
+      if (node.state !== "anchor" && node.state !== "resolved") continue;
+
+      const tokens = node.tokens ?? (node.state === "anchor" ? 24 : 0);
+      if (!tokens) continue;
+
+      nodeTokenCache.set(node.id, tokens);
+      const source: TokenSource =
+        node.id === "query"
+          ? "query"
+          : node.state === "anchor"
+            ? "anchor"
+            : "closure";
+
+      emitTokenAdd(source, tokens);
+    }
+  }
+
+  if (event.type === "updateNode" && event.patch.state === "resolved") {
+    if (resolvedNodes.has(event.id)) return;
+
+    const patchTokens =
+      "tokens" in event.patch
+        ? (event.patch as { tokens?: number }).tokens
+        : undefined;
+
+    const cached = nodeTokenCache.get(event.id) ?? 0;
+    const tokens = patchTokens ?? cached;
+
+    if (!tokens) return;
+    resolvedNodes.add(event.id);
+    nodeTokenCache.set(event.id, tokens);
+
+    emitTokenAdd("anchor", -tokens);
+    const source: TokenSource = event.id === "query" ? "query" : "closure";
+    emitTokenAdd(source, tokens);
+  }
+
+  if (
+    event.type === "updateNode" &&
+    "tokens" in event.patch &&
+    (event.patch as { tokens?: number }).tokens !== undefined
+  ) {
+    nodeTokenCache.set(
+      event.id,
+      (event.patch as { tokens?: number }).tokens as number,
+    );
+  }
+}
 
 export function createGraphState$(
   events$: Observable<GraphEvent>,
   playing$: Observable<boolean>,
   eventDelayMs = EVENT_DELAY_MS,
 ) {
+  tokenStore.set(tokenStateAtom, { ...initialTokenState });
+  nodeTokenCache.clear();
+  resolvedNodes.clear();
+
   const gatedEvents$ = events$.pipe(
     // Each event waits until play is true before continuing; pausing halts the next step.
     concatMap((event) =>
@@ -34,6 +107,7 @@ export function createGraphState$(
   );
 
   const reduced$ = gatedEvents$.pipe(
+    tap(handleTokenSideEffects),
     tap((event) => {
       console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
       console.log(event);

@@ -102,6 +102,8 @@ src/
     panning.spec.ts
     reducer.ts
     timing.ts
+  hooks/
+    useAnimatedTokenCount.ts
   lib/
     clientLogger.ts
   state/
@@ -114,6 +116,7 @@ src/
     searchScopeEngine.ts
     searchScopeMachine.ts
     tokenCounterAtom.ts
+    tokenSources.ts
   types/
     d3-quadtree.d.ts
 .gitignore
@@ -1058,82 +1061,6 @@ Also: Make the repo selector width match the search bar exactly.
 export { default } from "./SearchBar";
 </file>
 
-<file path="src/components/TokenPane/TokenPane.tsx">
-"use client";
-
-import { useAtomValue } from "jotai";
-import { contextTokenCountAtom } from "@/state/tokenCounterAtom";
-import { graphStateAtom } from "@/state/graphStreamAtom";
-import {
-  tokenCountBadgeClass,
-  tokenPaneClass,
-  tokenPaneHeaderClass,
-  tokenPaneMetaRowClass,
-  tokenPaneProgressClass,
-  tokenPaneProgressFillClass,
-} from "@/components/ui/search-styles";
-import { Box } from "../../../styled-system/jsx";
-
-const TOKEN_BUDGET = 4096;
-
-export default function TokenPane() {
-  const tokens = useAtomValue(contextTokenCountAtom);
-  const graphState = useAtomValue(graphStateAtom);
-
-  const currentNode =
-    (graphState.panTargetId &&
-      graphState.nodes[graphState.panTargetId]) ||
-    null;
-  const currentNodeLabel =
-    currentNode?.label || currentNode?.id || "—";
-
-  const budgetRatio = Math.max(
-    0,
-    Math.min(1, tokens / TOKEN_BUDGET),
-  );
-  const fillPercent = budgetRatio === 0 ? 0 : budgetRatio * 100;
-
-  return (
-    <Box className={tokenPaneClass}>
-      <Box className={tokenPaneHeaderClass}>
-        <span>Context Tokens</span>
-        <span className={tokenCountBadgeClass}>{tokens}</span>
-      </Box>
-
-      <Box
-        className={tokenPaneProgressClass}
-        aria-label="Context token usage"
-      >
-        <Box
-          className={tokenPaneProgressFillClass}
-          data-empty={budgetRatio === 0}
-          style={{
-            width: `${fillPercent}%`,
-          }}
-        />
-      </Box>
-
-      <Box className={tokenPaneMetaRowClass}>
-        <span>Budget</span>
-        <span>
-          {tokens} / {TOKEN_BUDGET} (
-          {Math.round(budgetRatio * 100)}%)
-        </span>
-      </Box>
-
-      <Box className={tokenPaneMetaRowClass}>
-        <span>Focus</span>
-        <span>
-          {currentNodeLabel}
-          {currentNode?.tokens !== undefined &&
-            ` · ${currentNode.tokens} tokens`}
-        </span>
-      </Box>
-    </Box>
-  );
-}
-</file>
-
 <file path="src/components/ClientConsoleBridge.tsx">
 "use client";
 
@@ -1485,6 +1412,44 @@ export const GRAPH_TIMING = {
 } as const;
 </file>
 
+<file path="src/hooks/useAnimatedTokenCount.ts">
+import { useEffect, useRef, useState } from "react";
+
+export function useAnimatedTokenCount(target: number) {
+  const [value, setValue] = useState(target);
+  const raf = useRef<number>();
+
+  useEffect(() => {
+    if (raf.current !== undefined) {
+      cancelAnimationFrame(raf.current);
+    }
+
+    const step = () => {
+      setValue((prev) => {
+        const next = prev + (target - prev) * 0.15;
+
+        if (Math.abs(target - next) < 0.5) {
+          return target;
+        }
+
+        raf.current = requestAnimationFrame(step);
+        return next;
+      });
+    };
+
+    raf.current = requestAnimationFrame(step);
+
+    return () => {
+      if (raf.current !== undefined) {
+        cancelAnimationFrame(raf.current);
+      }
+    };
+  }, [target]);
+
+  return value;
+}
+</file>
+
 <file path="src/lib/clientLogger.ts">
 let sending = false;
 let installed = false;
@@ -1596,6 +1561,19 @@ export const contextTokenCountAtom = atom((get) => {
 
   return total;
 });
+</file>
+
+<file path="src/state/tokenSources.ts">
+import { atom } from "jotai";
+
+export type TokenSource = "query" | "anchor" | "closure" | "semantic";
+
+export interface TokenContribution {
+  source: TokenSource;
+  tokens: number;
+}
+
+export const tokenContributionsAtom = atom<TokenContribution[]>([]);
 </file>
 
 <file path="src/types/d3-quadtree.d.ts">
@@ -1987,6 +1965,191 @@ export function findClosestPerimeterLength({
       : { x: 0, y: 0 };
 
   return { bestLength: scaledLength, total, point };
+}
+</file>
+
+<file path="src/components/TokenPane/TokenPane.tsx">
+"use client";
+
+import { useAtomValue, useSetAtom } from "jotai";
+import { graphStateAtom } from "@/state/graphStreamAtom";
+import {
+  tokenCountBadgeClass,
+  tokenPaneClass,
+  tokenPaneHeaderClass,
+  tokenPaneMetaRowClass,
+  tokenPaneSegmentClass,
+  tokenPaneSubtleTextClass,
+} from "@/components/ui/search-styles";
+import { useEffect, useMemo } from "react";
+import { useAnimatedTokenCount } from "@/hooks/useAnimatedTokenCount";
+import {
+  tokenContributionsAtom,
+  type TokenContribution,
+  type TokenSource,
+} from "@/state/tokenSources";
+import { Box, HStack } from "../../../styled-system/jsx";
+
+const TOKEN_BUDGET = 1024;
+const SEGMENTS = 32;
+
+export default function TokenPane() {
+  const graphState = useAtomValue(graphStateAtom);
+  const setContributions = useSetAtom(tokenContributionsAtom);
+
+  const currentNode =
+    (graphState.panTargetId &&
+      graphState.nodes[graphState.panTargetId]) ||
+    null;
+  const currentNodeLabel =
+    currentNode?.label || currentNode?.id || "—";
+
+  const anchorNodes = useMemo(
+    () =>
+      Object.values(graphState.nodes).filter(
+        (n) => n.state === "anchor",
+      ),
+    [graphState.nodes],
+  );
+
+  useEffect(() => {
+    const entries: Record<TokenSource, number> = {
+      query: 0,
+      anchor: 0,
+      closure: 0,
+      semantic: 0,
+    };
+
+    for (const node of Object.values(graphState.nodes)) {
+      const nodeTokens =
+        node.tokens ??
+        (node.state === "anchor" ? 24 : 0);
+
+      // only count nodes in or ready for context
+      if (node.state !== "anchor" && node.state !== "resolved") continue;
+
+      if (node.id === "query") {
+        entries.query += nodeTokens;
+        continue;
+      }
+
+      if (node.state === "anchor") {
+        entries.anchor += nodeTokens;
+        continue;
+      }
+
+      if (node.state === "resolved") {
+        entries.closure += nodeTokens;
+        continue;
+      }
+    }
+
+    const nextContributions: TokenContribution[] = [
+      { source: "query", tokens: entries.query },
+      { source: "anchor", tokens: entries.anchor },
+      { source: "closure", tokens: entries.closure },
+      { source: "semantic", tokens: entries.semantic },
+    ];
+
+    setContributions(nextContributions);
+  }, [graphState.nodes, setContributions]);
+
+  const contributions = useAtomValue(tokenContributionsAtom);
+
+  const queryTarget =
+    contributions.find((c) => c.source === "query")?.tokens ?? 0;
+  const anchorTarget =
+    contributions.find((c) => c.source === "anchor")?.tokens ?? 0;
+  const closureTarget =
+    contributions.find((c) => c.source === "closure")?.tokens ?? 0;
+  const semanticTarget =
+    contributions.find((c) => c.source === "semantic")?.tokens ?? 0;
+
+  const animatedQuery = useAnimatedTokenCount(queryTarget);
+  const animatedAnchor = useAnimatedTokenCount(anchorTarget);
+  const animatedClosure = useAnimatedTokenCount(closureTarget);
+  const animatedSemantic = useAnimatedTokenCount(semanticTarget);
+
+  const animatedContributions: TokenContribution[] = [
+    { source: "query", tokens: animatedQuery },
+    { source: "anchor", tokens: animatedAnchor },
+    { source: "closure", tokens: animatedClosure },
+    { source: "semantic", tokens: animatedSemantic },
+  ];
+
+  const animatedTotal = animatedContributions.reduce(
+    (sum, c) => sum + c.tokens,
+    0,
+  );
+
+  const budgetRatio = Math.max(
+    0,
+    Math.min(1, animatedTotal / TOKEN_BUDGET),
+  );
+  const anchorCount = anchorNodes.length;
+  const avgAnchorTokens =
+    anchorCount === 0
+      ? 0
+      : Math.round(
+          anchorNodes.reduce(
+            (sum, n) => sum + (n.tokens ?? 0),
+            0,
+          ) / anchorCount,
+        );
+
+  const tokensPerSegment = TOKEN_BUDGET / SEGMENTS;
+  const segments = animatedContributions.flatMap((contrib) => {
+    const count = Math.round(contrib.tokens / tokensPerSegment);
+    return Array.from({ length: count }, () => ({
+      source: contrib.source,
+    }));
+  });
+
+  while (segments.length < SEGMENTS) {
+    segments.push({ source: null });
+  }
+  const limitedSegments = segments.slice(0, SEGMENTS);
+
+  return (
+    <Box className={tokenPaneClass}>
+      <Box className={tokenPaneHeaderClass}>
+        <span>Context Window</span>
+        <span className={tokenCountBadgeClass}>
+          {Math.round(animatedTotal)}
+        </span>
+      </Box>
+
+      <Box>
+        <HStack gap="0.5">
+          {limitedSegments.map((seg, i) => (
+            <Box
+              key={i}
+              className={tokenPaneSegmentClass}
+              data-source={seg.source ?? undefined}
+            />
+          ))}
+        </HStack>
+      </Box>
+
+      <Box className={tokenPaneSubtleTextClass}>
+        {Math.round(animatedTotal)} / {TOKEN_BUDGET} tokens (
+        {Math.round(budgetRatio * 100)}%)
+      </Box>
+
+      <Box className={tokenPaneSubtleTextClass}>
+        anchors: {anchorCount} · avg tokens/anchor: {avgAnchorTokens}
+      </Box>
+
+      <Box className={tokenPaneMetaRowClass}>
+        <span>Focus</span>
+        <span>
+          {currentNodeLabel}
+          {currentNode?.tokens !== undefined &&
+            ` · ${currentNode.tokens} tokens`}
+        </span>
+      </Box>
+    </Box>
+  );
 }
 </file>
 
@@ -3260,6 +3423,102 @@ export default function RootLayout({
 }
 </file>
 
+<file path="src/graph/graphStream.ts">
+import {
+  Observable,
+  concatMap,
+  delay,
+  of,
+  filter,
+  take,
+  startWith,
+  from,
+  withLatestFrom,
+  map,
+} from "rxjs";
+import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators";
+import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
+import type { GraphEvent } from "./events";
+import { layoutGraph } from "./layoutGraph";
+
+const EVENT_DELAY_MS = 700;
+
+export function createGraphState$(
+  events$: Observable<GraphEvent>,
+  playing$: Observable<boolean>,
+  eventDelayMs = EVENT_DELAY_MS,
+) {
+  const gatedEvents$ = events$.pipe(
+    // Each event waits until play is true before continuing; pausing halts the next step.
+    concatMap((event) =>
+      playing$.pipe(
+        filter(Boolean),
+        take(1),
+        concatMap(() => of(event).pipe(delay(eventDelayMs))),
+      ),
+    ),
+  );
+
+  const reduced$ = gatedEvents$.pipe(
+    tap((event) => {
+      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
+      console.log(event);
+      console.groupEnd();
+    }),
+
+    scan(applyGraphEvent, initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+
+  return gatedEvents$.pipe(
+    filter((event) => event.type === "iteration" || event.type === "updateNode"),
+    withLatestFrom(reduced$),
+    concatMap(([event, state]) =>
+      from(layoutGraph(state)).pipe(map((s) => ({ state: s, event }))),
+    ),
+    map(({ state, event }) => addPanTarget(state, event)),
+
+    tap((state) => {
+      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
+      console.log(state);
+      console.groupEnd();
+    }),
+
+    startWith(initialGraphState),
+    shareReplay({ bufferSize: 1, refCount: false }),
+  );
+}
+
+function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
+  const positionedNodes = Object.values(state.nodes).filter((n) => n.positioned);
+
+  const pickDeepest = () =>
+    positionedNodes.reduce((best, node) => {
+      if (!best) return node;
+      return best.position.y > node.position.y ? best : node;
+    }, positionedNodes[0] ?? null);
+
+  let targetId: string | null = null;
+
+  if (event.type === "iteration") {
+    targetId = pickDeepest()?.id ?? null;
+  } else if (event.type === "updateNode") {
+    const updated = state.nodes[event.id];
+    if (updated?.positioned && updated.state === "resolved") {
+      targetId = updated.id;
+    }
+  }
+
+  if (!targetId) return state;
+
+  return {
+    ...state,
+    panTargetId: targetId,
+    panTick: (state.panTick ?? 0) + 1,
+  };
+}
+</file>
+
 <file path="src/graph/events.ts">
 type BaseNode = {
   id: string;
@@ -3338,7 +3597,7 @@ function generateAnchors(count: number): GraphNode[] {
     label: `candidate_${i}`,
     kind: "symbol",
     state: "anchor",
-    tokens: 40 + Math.floor(Math.random() * 120),
+    tokens: 12 + Math.floor(Math.random() * 18),
     evidence: {
       snippet: "…semantic match…",
     },
@@ -3409,7 +3668,7 @@ const semanticSearchChaosEvents: GraphEvent[] = [
   {
     type: "setContext",
     nodes: ["query", ...chaosAnchorIds],
-    tokens: 1780,
+    tokens: 820,
   },
 ];
 
@@ -4011,102 +4270,6 @@ export const fixtureRegistry = {
   redux: reduxFixture,
   zustand: zustandFixture,
 } as const satisfies Record<string, Fixture>;
-</file>
-
-<file path="src/graph/graphStream.ts">
-import {
-  Observable,
-  concatMap,
-  delay,
-  of,
-  filter,
-  take,
-  startWith,
-  from,
-  withLatestFrom,
-  map,
-} from "rxjs";
-import { scan, shareReplay, tap, concatMap as rxConcatMap } from "rxjs/operators";
-import { applyGraphEvent, initialGraphState, type GraphState } from "./reducer";
-import type { GraphEvent } from "./events";
-import { layoutGraph } from "./layoutGraph";
-
-const EVENT_DELAY_MS = 700;
-
-export function createGraphState$(
-  events$: Observable<GraphEvent>,
-  playing$: Observable<boolean>,
-  eventDelayMs = EVENT_DELAY_MS,
-) {
-  const gatedEvents$ = events$.pipe(
-    // Each event waits until play is true before continuing; pausing halts the next step.
-    concatMap((event) =>
-      playing$.pipe(
-        filter(Boolean),
-        take(1),
-        concatMap(() => of(event).pipe(delay(eventDelayMs))),
-      ),
-    ),
-  );
-
-  const reduced$ = gatedEvents$.pipe(
-    tap((event) => {
-      console.groupCollapsed("%cGraphEvent", "color:#4CAF50;font-weight:bold");
-      console.log(event);
-      console.groupEnd();
-    }),
-
-    scan(applyGraphEvent, initialGraphState),
-    shareReplay({ bufferSize: 1, refCount: false }),
-  );
-
-  return gatedEvents$.pipe(
-    filter((event) => event.type === "iteration" || event.type === "updateNode"),
-    withLatestFrom(reduced$),
-    concatMap(([event, state]) =>
-      from(layoutGraph(state)).pipe(map((s) => ({ state: s, event }))),
-    ),
-    map(({ state, event }) => addPanTarget(state, event)),
-
-    tap((state) => {
-      console.groupCollapsed("%cGraphState", "color:#FF9800;font-weight:bold");
-      console.log(state);
-      console.groupEnd();
-    }),
-
-    startWith(initialGraphState),
-    shareReplay({ bufferSize: 1, refCount: false }),
-  );
-}
-
-function addPanTarget(state: GraphState, event: GraphEvent): GraphState {
-  const positionedNodes = Object.values(state.nodes).filter((n) => n.positioned);
-
-  const pickDeepest = () =>
-    positionedNodes.reduce((best, node) => {
-      if (!best) return node;
-      return best.position.y > node.position.y ? best : node;
-    }, positionedNodes[0] ?? null);
-
-  let targetId: string | null = null;
-
-  if (event.type === "iteration") {
-    targetId = pickDeepest()?.id ?? null;
-  } else if (event.type === "updateNode") {
-    const updated = state.nodes[event.id];
-    if (updated?.positioned && updated.state === "resolved") {
-      targetId = updated.id;
-    }
-  }
-
-  if (!targetId) return state;
-
-  return {
-    ...state,
-    panTargetId: targetId,
-    panTick: (state.panTick ?? 0) + 1,
-  };
-}
 </file>
 
 <file path="src/graph/layoutGraph.ts">

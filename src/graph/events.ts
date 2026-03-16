@@ -47,4 +47,5 @@ export type GraphEvent =
   | { type: "addEdges"; edges: GraphEdge[]; reason?: string }
   | { type: "updateNode"; id: string; patch: Partial<GraphNode> }
   | { type: "setContext"; nodes: string[]; tokens?: number }
-  | { type: "iteration"; step: number; description?: string };
+  | { type: "iteration"; step: number; description?: string }
+  | { type: "tokenAdd"; source: import("@/state/tokenSources").TokenSource; tokens: number };

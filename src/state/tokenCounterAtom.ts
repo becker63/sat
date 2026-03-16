@@ -1,8 +1,9 @@
 import { atom } from "jotai";
+import type { GraphState } from "@/graph/reducer";
 import { graphStateAtom } from "./graphStreamAtom";
 
 export const contextTokenCountAtom = atom((get) => {
-  const state = get(graphStateAtom);
+  const state = get(graphStateAtom) as GraphState;
 
   let total = 0;
 
